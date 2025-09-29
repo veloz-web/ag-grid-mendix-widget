@@ -1,4 +1,4 @@
-import { Properties, StructurePreviewProps } from "@mendix/pluggable-widgets-tools";
+import { Properties } from "@mendix/pluggable-widgets-tools";
 import { AGGridPreviewProps } from "../typings/AGGridProps";
 
 export function getProperties(
@@ -8,7 +8,7 @@ export function getProperties(
     return defaultProperties;
 }
 
-export function getPreview(values: AGGridPreviewProps): StructurePreviewProps {
+export function getPreview(values: AGGridPreviewProps): any {
     return {
         type: "Container",
         borders: true,

@@ -73,8 +73,12 @@ export class AGGrid extends Component<AGGridContainerProps> {
 
     private onRowClicked = (event: any) => {
         const { onRowClick } = this.props;
-        if (onRowClick && onRowClick.canExecute && event.data) {
-            onRowClick.execute();
+        // runtime-safe check: ListActionValue typings may not expose canExecute
+        const canExecute = (onRowClick && (onRowClick as any).canExecute !== undefined)
+            ? (onRowClick as any).canExecute
+            : true;
+        if (onRowClick && canExecute && event.data) {
+            (onRowClick as any).execute && (onRowClick as any).execute();
         }
     };
 

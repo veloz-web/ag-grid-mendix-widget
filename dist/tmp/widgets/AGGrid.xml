@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<widget id="mendix.aggrid.AGGrid" pluginWidget="true" needsEntityContext="true" offlineCapable="false"
+        supportedPlatform="Web"
+        xmlns="http://www.mendix.com/widget/1.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.mendix.com/widget/1.0/ ../node_modules/mendix/custom_widget.xsd">
+    <name>AG Grid</name>
+    <description>Advanced data grid using AG Grid</description>
+    <icon/>
+    <properties>
+        <propertyGroup caption="Data Source">
+            <property key="dataSource" type="datasource" isList="true" required="true">
+                <caption>Data source</caption>
+                <description>The data source for the grid</description>
+            </property>
+        </propertyGroup>
+        <propertyGroup caption="Columns">
+            <property key="columns" type="object" isList="true" required="true">
+                <caption>Columns</caption>
+                <description>Define the columns to display</description>
+                <properties>
+                    <propertyGroup caption="Column">
+                        <property key="header" type="textTemplate" required="true">
+                            <caption>Header</caption>
+                            <description>Column header text</description>
+                        </property>
+                        <property key="attribute" type="attribute" dataSource="dataSource" required="true">
+                            <caption>Attribute</caption>
+                            <description>Attribute to display</description>
+                            <attributeTypes>
+                                <attributeType name="String"/>
+                                <attributeType name="Integer"/>
+                                <attributeType name="Long"/>
+                                <attributeType name="Decimal"/>
+                                <attributeType name="Boolean"/>
+                                <attributeType name="DateTime"/>
+                                <attributeType name="Enum"/>
+                            </attributeTypes>
+                        </property>
+                        <property key="width" type="integer" defaultValue="150">
+                            <caption>Width</caption>
+                            <description>Column width in pixels</description>
+                        </property>
+                        <property key="sortable" type="boolean" defaultValue="true">
+                            <caption>Sortable</caption>
+                            <description>Enable sorting for this column</description>
+                        </property>
+                        <property key="filter" type="boolean" defaultValue="true">
+                            <caption>Filter</caption>
+                            <description>Enable filtering for this column</description>
+                        </property>
+                        <property key="resizable" type="boolean" defaultValue="true">
+                            <caption>Resizable</caption>
+                            <description>Enable column resizing</description>
+                        </property>
+                    </propertyGroup>
+                </properties>
+            </property>
+        </propertyGroup>
+        <propertyGroup caption="Grid Options">
+            <property key="pagination" type="boolean" defaultValue="true">
+                <caption>Enable Pagination</caption>
+                <description>Enable pagination for the grid</description>
+            </property>
+            <property key="pageSize" type="integer" defaultValue="20">
+                <caption>Page Size</caption>
+                <description>Number of rows per page</description>
+            </property>
+            <property key="height" type="integer" defaultValue="500">
+                <caption>Height</caption>
+                <description>Grid height in pixels</description>
+            </property>
+            <property key="theme" type="enumeration" defaultValue="alpine">
+                <caption>Theme</caption>
+                <description>AG Grid theme</description>
+                <enumerationValues>
+                    <enumerationValue key="alpine">Alpine</enumerationValue>
+                    <enumerationValue key="balham">Balham</enumerationValue>
+                    <enumerationValue key="material">Material</enumerationValue>
+                </enumerationValues>
+            </property>
+        </propertyGroup>
+        <propertyGroup caption="Events">
+            <property key="onRowClick" type="action" dataSource="dataSource">
+                <caption>On Row Click</caption>
+                <description>Action to execute when a row is clicked</description>
+            </property>
+        </propertyGroup>
+    </properties>
+</widget>

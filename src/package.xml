@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package>
+  <!-- Mendix package descriptor expected by pluggable-widgets-tools -->
+  <clientModule>
+    <widgetFiles>
+      <widgetFile path="AGGrid.xml" />
+    </widgetFiles>
+  </clientModule>
+  <id>mendix.aggrid</id>
+  <version>1.0.0</version>
+  <name>AG Grid</name>
+  <description>AG Grid integration for Mendix</description>
+</package>
