@@ -1,0 +1,32 @@
+{
+  "name": "aggrid",
+  "widgetName": "AGGrid",
+  "version": "1.0.0",
+  "description": "AG Grid integration for Mendix",
+  "license": "Apache-2.0",
+  "author": "Your Name",
+  "config": {
+    "projectPath": "../MendixProject/",
+    "mendixHost": "http://localhost:8080",
+    "developmentPort": 3000
+  },
+  "packagePath": "mendix.aggrid",
+  "scripts": {
+    "start": "pluggable-widgets-tools start:server",
+    "dev": "pluggable-widgets-tools start:web",
+    "build": "pluggable-widgets-tools build:web",
+    "format": "pluggable-widgets-tools format",
+    "lint": "pluggable-widgets-tools lint",
+    "test": "pluggable-widgets-tools test:unit:web"
+  },
+  "devDependencies": {
+    "@mendix/pluggable-widgets-tools": "^10.7.1",
+    "@types/react": "^18.0.38",
+    "@types/react-dom": "^18.0.11"
+  },
+  "dependencies": {
+    "ag-grid-community": "^31.0.0",
+    "ag-grid-react": "^31.0.0",
+    "classnames": "^2.3.2"
+  }
+}
