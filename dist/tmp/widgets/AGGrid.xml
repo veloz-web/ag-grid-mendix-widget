@@ -23,7 +23,7 @@
                             <caption>Header</caption>
                             <description>Column header text</description>
                         </property>
-                        <property key="attribute" type="attribute" dataSource="dataSource" required="true">
+                        <property key="attribute" type="attribute" dataSource="../dataSource" required="true">
                             <caption>Attribute</caption>
                             <description>Attribute to display</description>
                             <attributeTypes>

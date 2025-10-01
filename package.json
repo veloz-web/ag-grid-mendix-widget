@@ -1,3 +1,4 @@
+
 {
   "name": "aggrid",
   "widgetName": "AGGrid",
@@ -10,7 +11,7 @@
     "mendixHost": "http://localhost:8080",
     "developmentPort": 3000
   },
-  "packagePath": "mendix.aggrid",
+  "packagePath": "mendix",
   "scripts": {
     "start": "pluggable-widgets-tools start:server",
     "dev": "pluggable-widgets-tools start:web",
@@ -20,13 +21,23 @@
     "test": "pluggable-widgets-tools test:unit:web"
   },
   "devDependencies": {
-    "@mendix/pluggable-widgets-tools": "^10.7.1",
-    "@types/react": "^18.0.38",
-    "@types/react-dom": "^18.0.11"
+    "@mendix/pluggable-widgets-tools": "^10.7.1"
   },
   "dependencies": {
     "ag-grid-community": "^31.0.0",
     "ag-grid-react": "^31.0.0",
     "classnames": "^2.3.2"
+  },
+  "overrides": {
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "@types/react": "18.2.0",
+    "@types/react-dom": "18.2.0"
+  },
+  "resolutions": {
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "@types/react": "18.2.0",
+    "@types/react-dom": "18.2.0"
   }
 }
