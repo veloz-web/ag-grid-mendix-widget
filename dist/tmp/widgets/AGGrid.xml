@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<widget id="mendix.aggrid.AGGrid" pluginWidget="true" needsEntityContext="true" offlineCapable="false"
+<widget id="mendix.aggrid.AGGrid" pluginWidget="true" needsEntityContext="false" offlineCapable="false"
         supportedPlatform="Web"
         xmlns="http://www.mendix.com/widget/1.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.mendix.com/widget/1.0/ ../node_modules/mendix/custom_widget.xsd">
@@ -36,13 +36,47 @@
                                 <attributeType name="Enum"/>
                             </attributeTypes>
                         </property>
+                        <property key="widthType" type="enumeration" defaultValue="fixed">
+                            <caption>Width Type</caption>
+                            <description>How to size this column</description>
+                            <enumerationValues>
+                                <enumerationValue key="fixed">Fixed (pixels)</enumerationValue>
+                                <enumerationValue key="flex">Flexible (fr units)</enumerationValue>
+                                <enumerationValue key="auto">Auto (fit content)</enumerationValue>
+                            </enumerationValues>
+                        </property>
                         <property key="width" type="integer" defaultValue="150">
-                            <caption>Width</caption>
-                            <description>Column width in pixels</description>
+                            <caption>Fixed Width (px)</caption>
+                            <description>Column width in pixels (only used when Width Type is "Fixed")</description>
+                        </property>
+                        <property key="flex" type="integer" defaultValue="1">
+                            <caption>Flex Value</caption>
+                            <description>Flex ratio for flexible columns (like CSS 1fr, 2fr, etc. - only used when Width Type is "Flexible")</description>
+                        </property>
+                        <property key="minWidth" type="integer" defaultValue="50">
+                            <caption>Minimum Width (px)</caption>
+                            <description>Minimum width for flexible and auto columns</description>
+                        </property>
+                        <property key="maxWidth" type="integer" defaultValue="0">
+                            <caption>Maximum Width (px)</caption>
+                            <description>Maximum width for flexible and auto columns (0 = no limit)</description>
                         </property>
                         <property key="sortable" type="boolean" defaultValue="true">
                             <caption>Sortable</caption>
                             <description>Enable sorting for this column</description>
+                        </property>
+                        <property key="defaultSort" type="enumeration" defaultValue="none">
+                            <caption>Default Sort</caption>
+                            <description>Set initial sort direction for this column when grid loads</description>
+                            <enumerationValues>
+                                <enumerationValue key="none">None</enumerationValue>
+                                <enumerationValue key="asc">Ascending</enumerationValue>
+                                <enumerationValue key="desc">Descending</enumerationValue>
+                            </enumerationValues>
+                        </property>
+                        <property key="sortIndex" type="integer" defaultValue="999">
+                            <caption>Sort Priority</caption>
+                            <description>Order for multi-column sorting (0 = first, 1 = second, etc.). Use high number like 999 if not using multi-sort.</description>
                         </property>
                         <property key="filter" type="boolean" defaultValue="true">
                             <caption>Filter</caption>
@@ -52,11 +86,118 @@
                             <caption>Resizable</caption>
                             <description>Enable column resizing</description>
                         </property>
+                        <property key="alignment" type="enumeration" defaultValue="auto">
+                            <caption>Text Alignment</caption>
+                            <description>Horizontal alignment of cell content. Auto uses smart defaults: numbers/dates right-aligned, text left-aligned, links/badges centered.</description>
+                            <enumerationValues>
+                                <enumerationValue key="auto">Auto (smart default)</enumerationValue>
+                                <enumerationValue key="left">Left</enumerationValue>
+                                <enumerationValue key="center">Center</enumerationValue>
+                                <enumerationValue key="right">Right</enumerationValue>
+                            </enumerationValues>
+                        </property>
+                        <property key="includeInCardView" type="boolean" defaultValue="true">
+                            <caption>Show in Card View</caption>
+                            <description>Include this column when displaying in card view</description>
+                        </property>
+                        <property key="includeInSort" type="boolean" defaultValue="true">
+                            <caption>Include in Sort Options</caption>
+                            <description>Make this column available in the sort dropdown</description>
+                        </property>
+                        <property key="includeInFilters" type="boolean" defaultValue="false">
+                            <caption>Include in Filters</caption>
+                            <description>Make this column available in the filter drawer</description>
+                        </property>
+                        <property key="formatter" type="enumeration" defaultValue="none">
+                            <caption>Formatter</caption>
+                            <description>Format the cell value display</description>
+                            <enumerationValues>
+                                <enumerationValue key="none">None</enumerationValue>
+                                <enumerationValue key="currency">Currency (USD)</enumerationValue>
+                                <enumerationValue key="currencyEUR">Currency (EUR)</enumerationValue>
+                                <enumerationValue key="currencyGBP">Currency (GBP)</enumerationValue>
+                                <enumerationValue key="percentage">Percentage</enumerationValue>
+                                <enumerationValue key="number">Number (with commas)</enumerationValue>
+                                <enumerationValue key="decimal2">Decimal (2 places)</enumerationValue>
+                                <enumerationValue key="dateShort">Date - Short (MM/DD/YYYY)</enumerationValue>
+                                <enumerationValue key="dateLong">Date - Long (Month DD, YYYY)</enumerationValue>
+                                <enumerationValue key="dateISO">Date - ISO (YYYY-MM-DD)</enumerationValue>
+                                <enumerationValue key="dateDMY">Date - European (DD/MM/YYYY)</enumerationValue>
+                                <enumerationValue key="dateMDY">Date - US (MM/DD/YYYY)</enumerationValue>
+                                <enumerationValue key="dateYMD">Date - Asian (YYYY/MM/DD)</enumerationValue>
+                                <enumerationValue key="dateTime">Date &amp; Time</enumerationValue>
+                                <enumerationValue key="time">Time Only</enumerationValue>
+                                <enumerationValue key="yesNo">Yes/No</enumerationValue>
+                                <enumerationValue key="trueFalse">True/False</enumerationValue>
+                                <enumerationValue key="uppercase">Uppercase</enumerationValue>
+                                <enumerationValue key="lowercase">Lowercase</enumerationValue>
+                                <enumerationValue key="capitalize">Capitalize</enumerationValue>
+                                <enumerationValue key="customPrefix">Custom Prefix/Suffix</enumerationValue>
+                                <enumerationValue key="link">Link (with URL pattern)</enumerationValue>
+                                <enumerationValue key="statusBadge">Status Badge (Custom)</enumerationValue>
+                            </enumerationValues>
+                        </property>
+                        <property key="customPrefix" type="string" required="false">
+                            <caption>Custom Prefix</caption>
+                            <description>Text to prepend to the value (e.g., "VAF ", "ID-", "#")</description>
+                        </property>
+                        <property key="customSuffix" type="string" required="false">
+                            <caption>Custom Suffix</caption>
+                            <description>Text to append to the value (e.g., " kg", " units", "%")</description>
+                        </property>
+                        <property key="linkAction" type="action" required="false">
+                            <caption>Link Action</caption>
+                            <description>Action to execute when link is clicked (Show Page, Microflow, Nanoflow, etc.). The context object will be the row's data object.</description>
+                        </property>
+                        <property key="linkUrlPattern" type="string" required="false">
+                            <caption>Link URL Pattern (Legacy)</caption>
+                            <description>LEGACY: URL pattern with ${value} placeholder. Prefer using Link Action for proper Mendix navigation.</description>
+                        </property>
+                        <property key="linkText" type="string" required="false">
+                            <caption>Link Text (optional)</caption>
+                            <description>Custom text for the link. Leave empty to use the cell value. Supports ${value} placeholder.</description>
+                        </property>
+                        <property key="statusMapping" type="string" required="false" multiline="true">
+                            <caption>Status Mapping (JSON)</caption>
+                            <description>JSON array for status badge mapping. Example: [{"value":1,"label":"Approved","className":"badge-success"},{"value":2,"label":"Denied","className":"badge-danger"}]</description>
+                        </property>
                     </propertyGroup>
                 </properties>
             </property>
         </propertyGroup>
+        <propertyGroup caption="View Options">
+            <property key="enableViewSelector" type="boolean" defaultValue="true">
+                <caption>Enable View Selector</caption>
+                <description>Show grid/list/card view selector</description>
+            </property>
+            <property key="defaultView" type="enumeration" defaultValue="grid">
+                <caption>Default View (Desktop)</caption>
+                <description>Default view mode on desktop screens</description>
+                <enumerationValues>
+                    <enumerationValue key="grid">Grid</enumerationValue>
+                    <enumerationValue key="cards">Cards</enumerationValue>
+                    <enumerationValue key="list">List</enumerationValue>
+                </enumerationValues>
+            </property>
+            <property key="mobileDefaultView" type="enumeration" defaultValue="cards">
+                <caption>Default View (Mobile)</caption>
+                <description>Default view mode on mobile screens</description>
+                <enumerationValues>
+                    <enumerationValue key="grid">Grid</enumerationValue>
+                    <enumerationValue key="cards">Cards</enumerationValue>
+                    <enumerationValue key="list">List</enumerationValue>
+                </enumerationValues>
+            </property>
+            <property key="enableFilterDrawer" type="boolean" defaultValue="true">
+                <caption>Enable Filter Drawer</caption>
+                <description>Show a slide-out drawer for filters</description>
+            </property>
+        </propertyGroup>
         <propertyGroup caption="Grid Options">
+            <property key="licenseKey" type="string" required="false">
+                <caption>AG Grid License Key (Enterprise)</caption>
+                <description>Your AG Grid Enterprise license key. Leave empty for Community edition. This is kept secure within your Mendix app.</description>
+            </property>
             <property key="pagination" type="boolean" defaultValue="true">
                 <caption>Enable Pagination</caption>
                 <description>Enable pagination for the grid</description>
@@ -69,13 +210,14 @@
                 <caption>Height</caption>
                 <description>Grid height in pixels</description>
             </property>
-            <property key="theme" type="enumeration" defaultValue="alpine">
+            <property key="theme" type="enumeration" defaultValue="material">
                 <caption>Theme</caption>
                 <description>AG Grid theme</description>
                 <enumerationValues>
                     <enumerationValue key="alpine">Alpine</enumerationValue>
                     <enumerationValue key="balham">Balham</enumerationValue>
                     <enumerationValue key="material">Material</enumerationValue>
+                    <enumerationValue key="quartz">Quartz</enumerationValue>
                 </enumerationValues>
             </property>
         </propertyGroup>

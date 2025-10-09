@@ -4,6 +4,544 @@
     padding: 0;
 }
 
+.aggrid-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: #f5f5f5;
+    border-bottom: 1px solid #ddd;
+    gap: 12px;
+}
+
+/* View Selector Styles */
+.aggrid-view-selector {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 4px 8px;
+}
+
+.aggrid-view-selector legend {
+    font-size: 12px;
+    font-weight: 600;
+    color: #555;
+    margin-right: 4px;
+}
+
+.aggrid-view-selector .radio-group {
+    display: flex;
+    gap: 4px;
+}
+
+.view-radio-input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.view-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.2em;
+    height: 2.2em;
+    border-radius: 4px;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.view-label:hover {
+    background: #f0f0f0;
+    color: #333;
+}
+
+.view-radio-input:focus + .view-label {
+    outline: 2px solid #1976d2;
+    outline-offset: 2px;
+}
+
+.view-radio-input:checked + .view-label {
+    background: #1976d2;
+    color: white;
+}
+
+/* Filter Button Styles */
+.aggrid-filter-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    background: white;
+    cursor: pointer;
+    border-radius: 6px;
+    color: #666;
+    transition: all 0.2s ease;
+}
+
+.aggrid-filter-btn:hover {
+    background: #f0f0f0;
+    color: #333;
+    border-color: #999;
+}
+
+.filter-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: #d32f2f;
+    color: white;
+    border-radius: 10px;
+    padding: 2px 6px;
+    font-size: 11px;
+    font-weight: bold;
+    min-width: 18px;
+    text-align: center;
+}
+
+/* Filter Drawer Styles */
+.aggrid-filter-drawer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+}
+
+.filter-drawer-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    animation: fadeIn 0.3s ease;
+}
+
+.filter-drawer-content {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 320px;
+    max-width: 90vw;
+    background: white;
+    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    animation: slideInRight 0.3s ease;
+}
+
+.filter-drawer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #ddd;
+    background: #f9f9f9;
+}
+
+.filter-drawer-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    color: #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: background 0.2s ease;
+}
+
+.close-btn:hover {
+    background: #e0e0e0;
+}
+
+.filter-drawer-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.filter-section {
+    margin-bottom: 24px;
+}
+
+.filter-section:last-child {
+    margin-bottom: 0;
+}
+
+.filter-section-title {
+    display: flex;
+    align-items: center;
+    margin: 0 0 16px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.filter-item {
+    margin-bottom: 20px;
+}
+
+.filter-item label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    font-size: 14px;
+    color: #333;
+}
+
+.filter-item input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+}
+
+.filter-item input:focus {
+    outline: none;
+    border-color: #1976d2;
+}
+
+/* Filter Select Dropdown Styles */
+.filter-select-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.filter-select {
+    width: 100%;
+    padding: 10px 40px 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    background: white;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 12 12' fill='%23666' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+}
+
+.filter-select:hover {
+    border-color: #999;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: #1976d2;
+    box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
+}
+
+.filter-select option {
+    padding: 8px;
+}
+
+.clear-filter-btn {
+    position: absolute;
+    right: 32px;
+    background: #e0e0e0;
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0;
+}
+
+.clear-filter-btn:hover {
+    background: #d32f2f;
+    color: white;
+}
+
+.clear-filter-btn svg {
+    display: block;
+}
+
+/* Global Search Styles */
+.global-search {
+    position: relative;
+    margin-bottom: 0;
+}
+
+.global-search-input {
+    width: 100%;
+    padding: 12px 40px 12px 12px;
+    border: 2px solid #1976d2;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 400;
+    transition: all 0.2s ease;
+    background: #f8f9fa;
+}
+
+.global-search-input:focus {
+    outline: none;
+    border-color: #1565c0;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+}
+
+.global-search-input::placeholder {
+    color: #999;
+    font-weight: 400;
+}
+
+.clear-search-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #e0e0e0;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0;
+}
+
+.clear-search-btn:hover {
+    background: #d32f2f;
+    color: white;
+}
+
+.clear-search-btn svg {
+    display: block;
+}
+
+/* Sort Styles */
+.sort-item {
+    margin-bottom: 20px;
+}
+
+.sort-direction-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.sort-direction-btn {
+    padding: 10px 12px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    background: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    transition: all 0.2s ease;
+}
+
+.sort-direction-btn:hover {
+    border-color: #1976d2;
+    background: #f8f9fa;
+}
+
+.sort-direction-btn.active {
+    border-color: #1976d2;
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.sort-direction-btn svg {
+    flex-shrink: 0;
+}
+
+.sort-direction-btn span {
+    font-size: 13px;
+}
+
+.no-filters {
+    text-align: center;
+    color: #999;
+    padding: 40px 20px;
+    font-size: 14px;
+}
+
+.filter-drawer-footer {
+    padding: 16px 20px;
+    border-top: 1px solid #ddd;
+    background: #f9f9f9;
+    display: flex;
+    gap: 12px;
+}
+
+.clear-filters-btn {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #d32f2f;
+    background: white;
+    color: #d32f2f;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.clear-filters-btn:hover {
+    background: #d32f2f;
+    color: white;
+}
+
+.apply-filters-btn {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #1976d2;
+    background: #1976d2;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.apply-filters-btn:hover {
+    background: #1565c0;
+    border-color: #1565c0;
+}
+
+/* Cards View Styles */
+.aggrid-cards-view {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+    padding: 16px;
+}
+
+.aggrid-card {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.aggrid-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.card-field {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.card-field:last-child {
+    border-bottom: none;
+}
+
+.card-label {
+    font-weight: 500;
+    color: #666;
+    font-size: 14px;
+}
+
+.card-value {
+    font-weight: 400;
+    color: #333;
+    font-size: 14px;
+    text-align: right;
+}
+
+/* List View Styles */
+.aggrid-list-view {
+    background: white;
+}
+
+.aggrid-list-item {
+    padding: 16px 20px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.aggrid-list-item:hover {
+    background: #f9f9f9;
+}
+
+.list-item-primary {
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.list-item-secondary {
+    font-size: 14px;
+    color: #666;
+}
+
+.no-data {
+    text-align: center;
+    padding: 40px;
+    color: #999;
+    font-size: 16px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .aggrid-cards-view {
+        grid-template-columns: 1fr;
+    }
+    
+    .aggrid-toolbar {
+        padding: 8px;
+    }
+}
+
 .aggrid-loading {
     display: flex;
     justify-content: center;
@@ -16,11 +554,215 @@
 /* Custom styling for AG Grid in Mendix */
 .ag-theme-alpine,
 .ag-theme-balham,
-.ag-theme-material {
+.ag-theme-material,
+.ag-theme-quartz {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 /* Ensure grid respects container width */
 .ag-root-wrapper {
     width: 100% !important;
+}
+
+.ag-header-cell-text {
+    font-weight: 600;
+    font-size: 20px;
+    background-size: 200% auto;
+}
+.ag-header-cell-label {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+/* Header Alignment Classes */
+.ag-header-cell-left .ag-header-cell-label {
+    justify-content: flex-start;
+    text-align: left;
+}
+
+.ag-header-cell-center .ag-header-cell-label {
+    justify-content: center;
+    text-align: center;
+}
+
+.ag-header-cell-right .ag-header-cell-label {
+    justify-content: flex-end;
+    text-align: right;
+}
+
+/* Link Styles */
+.aggrid-link {
+    color: #1976d2;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+    cursor: pointer;
+}
+
+.aggrid-link:hover {
+    color: #1565c0;
+    text-decoration: underline;
+}
+
+.aggrid-link:visited {
+    color: #7b1fa2;
+}
+
+.aggrid-link:active {
+    color: #0d47a1;
+}
+
+/* Link Action Button (for Mendix navigation) */
+.aggrid-link-action,
+.aggrid-link-button {
+    color: #1976d2;
+    font-size: 16px;
+    transition: color 0.2s ease, transform 0.2s ease;
+    outline-offset: 2px;
+}
+
+.aggrid-link-action:hover,
+.aggrid-link-button:hover {
+    color: #1565c0;
+    transform: scale(1.1);
+}
+
+.aggrid-link-action:active,
+.aggrid-link-button:active {
+    color: #0d47a1;
+}
+
+.aggrid-link-action:focus,
+.aggrid-link-button:focus {
+    outline: 2px solid #1976d2;
+    outline-offset: 2px;
+}
+
+.aggrid-link-action:focus:not(:focus-visible),
+.aggrid-link-button:focus:not(:focus-visible) {
+    outline: none;
+}
+
+/* Status Badge Styles */
+.aggrid-status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    border-radius: 2em;
+    width: fit-content;
+}
+
+.ag-header-cell-text {
+    font-size: 14px;
+}
+
+.aggrid-status-icon {
+    margin-right: 4px;
+    font-size: 14px;
+}
+
+/* Predefined badge color classes */
+.badge-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.aggrid-status-badge:hover {
+    z-index: 999;
+    width: fit-content;
+    text-transform: uppercase;
+    position: absolute;
+}
+
+.badge-denied {
+    color: white;
+    background-color: rgb(168, 59, 54);
+    border-radius: 2em;
+}
+
+.badge-denied::before {
+    content: "\f00d";
+    font-size: 20px;
+    padding-right: 15px;
+    padding-left: 2px;
+    font-family: 'Font Awesome 6 Pro';
+}
+
+.badge-pending {
+    color: white;
+    background-color: rgb(224, 116, 0);
+    border-radius: 2em;
+}
+
+.badge-pending::before {
+    content: "\e1d4";
+    font-size: 20px;
+    padding-right: 15px;
+    padding-left: 2px;
+    font-family: 'Font Awesome 6 Pro';
+}
+
+.badge-open {
+    color: white;
+    background-color: rgb(51, 122, 183);
+    border-radius: 2em;
+}
+
+.badge-open::before {
+    content: "\+";
+    font-size: 20px;
+    padding-right: 15px;
+    padding-left: 2px;
+    font-family: 'Font Awesome 6 Pro';
+}
+
+.badge-approved {
+    color: white;
+    background-color: rgb(93, 175, 93);
+    border-radius: 2em;
+}
+
+.badge-approved::before {
+    content: "\f560";
+    font-size: 20px;
+    padding-right: 15px;
+    padding-left: 2px;
+    font-family: 'Font Awesome 6 Pro';
+}
+
+.badge-info {
+    
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+.badge-primary {
+    background-color: #cce5ff;
+    color: #004085;
+    border: 1px solid #b8daff;
+}
+
+.badge-secondary {
+    background-color: #e2e3e5;
+    color: #383d41;
+    border: 1px solid #d6d8db;
+}
+
+.badge-dark {
+    background-color: #d6d8d9;
+    color: #1b1e21;
+    border: 1px solid #c6c8ca;
+}
+
+.badge-light {
+    background-color: #fefefe;
+    color: #818182;
+    border: 1px solid #fdfdfe;
 }

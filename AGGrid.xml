@@ -76,6 +76,7 @@
                     <enumerationValue key="alpine">Alpine</enumerationValue>
                     <enumerationValue key="balham">Balham</enumerationValue>
                     <enumerationValue key="material">Material</enumerationValue>
+                    <enumerationValue key="quartz">Quartz</enumerationValue>
                 </enumerationValues>
             </property>
         </propertyGroup>

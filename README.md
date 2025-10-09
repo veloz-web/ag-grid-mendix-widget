@@ -1,10 +1,36 @@
 # AG Grid Widget for Mendix
 
-A powerful Mendix pluggable widget that integrates AG Grid into your Mendix applications, providing advanced data grid capabilities with sorting, filtering, pagination, and more.
+A powerful Mendix pluggable widget that integrates AG Grid into your Mendix applications, providing advanced data grid capabilities with multiple view modes, responsive design, filtering, and comprehensive formatting options.
+
+## ✨ Key Features
+
+- **AG Grid Enterprise Support**: Configure your Enterprise license through widget properties
+- **Multiple View Modes**: Switch between Grid, Cards, and List views
+- **Responsive Design**: Automatic view switching based on device (desktop/mobile)
+- **Filter Drawer**: Slide-out filter panel with Apply Changes button for staged updates
+- **Rich Formatters**: 16+ built-in formatters including status badges with JSON mapping
+- **AG Grid Core**: Full power of AG Grid (Community or Enterprise) with sorting, filtering, pagination
+- **Theme Support**: 4 modern themes (Alpine, Balham, Material, Quartz)
+- **Design-Time Preview**: See your grid in Mendix Studio Pro without running the app
+- **Touch-Friendly**: Optimized for both desktop and mobile interactions
+
+## 🔑 AG Grid Enterprise License
+
+This widget supports both **AG Grid Community** (free) and **AG Grid Enterprise** (paid license).
+
+**To use Enterprise features:**
+1. Configure your license key in the widget properties (Grid Options section)
+2. See [QUICK_LICENSE_SETUP.md](./QUICK_LICENSE_SETUP.md) for 2-minute setup guide
+3. Full details: [LICENSE_KEY_SETUP.md](./LICENSE_KEY_SETUP.md)
+
+**Using Community Edition:**
+- No configuration needed
+- Leave license key empty
+- All basic features work perfectly
 
 ## Prerequisites
 
-- Mendix 10.18.7 or higher
+- Mendix 10.18.6 or higher
 - Node.js 18 LTS (recommended)
 - npm or yarn
 
@@ -20,9 +46,9 @@ A powerful Mendix pluggable widget that integrates AG Grid into your Mendix appl
    ```
 4. Build the widget:
    ```bash
-   npm run build
+   npm run release
    ```
-5. The compiled widget will be in `dist/mendix.aggrid.AGGrid.mpk`
+5. The compiled widget will be in `dist/1.0.0/mendix.aggrid.AGGrid.mpk`
 6. Import the `.mpk` file into your Mendix project
 
 ### Development Mode
@@ -31,6 +57,53 @@ To run in development mode with hot reloading:
 ```bash
 npm start
 ```
+
+## Quick Start
+
+### Basic Configuration
+
+```xml
+<AGGrid 
+    dataSource="YourEntityList"
+    enableViewSelector="true"
+    defaultView="grid"
+    mobileDefaultView="cards"
+    theme="material"
+    height="600">
+    
+    <columns>
+        <column 
+            header="Name"
+            attribute="Name"
+            includeInCardView="true"
+            includeInFilters="true" />
+        
+        <column 
+            header="Status"
+            attribute="Status"
+            formatter="statusBadge"
+            includeInCardView="true"
+            includeInFilters="true"
+            statusMapping='[
+                {"value":1,"label":"Active","className":"badge-success"},
+                {"value":2,"label":"Inactive","className":"badge-secondary"}
+            ]' />
+    </columns>
+</AGGrid>
+```
+
+## View Modes
+
+### Grid View
+Traditional table layout with full AG Grid features - best for desktop and data-heavy applications.
+
+### Cards View
+Responsive card grid perfect for mobile devices - shows fields marked with `includeInCardView="true"`.
+
+### List View
+Compact list format ideal for master-detail patterns and simple data browsing.
+
+**See [UI_REFERENCE.md](./UI_REFERENCE.md) for visual examples and [CONFIGURATION_EXAMPLES.md](./CONFIGURATION_EXAMPLES.md) for detailed configurations.**
 
 ## How the Data Source Works
 
@@ -165,7 +238,7 @@ For each column, you need to configure:
 | **Enable Pagination** | Show pagination controls | true |
 | **Page Size** | Number of rows per page | 20 |
 | **Height** | Grid height in pixels | 500 |
-| **Theme** | Visual theme (Alpine/Balham/Material) | Alpine |
+| **Theme** | Visual theme (Alpine/Balham/Material/Quartz) | Alpine |
 
 ### 4. Events
 
