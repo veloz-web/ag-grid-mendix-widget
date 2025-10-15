@@ -12,6 +12,7 @@ import { HardenCardView } from "./components/HardenCardView";
 import { ListView } from "./components/ListView";
 import { ViewSelector } from "./components/ViewSelector";
 import { FilterDrawer } from "./components/FilterDrawer";
+import { HiddenDrawer } from "./components/HiddenDrawer";
 
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
@@ -32,6 +33,7 @@ interface AGGridState {
     sortModel: Array<{ colId: string; sort: "asc" | "desc" | null }>;
     columnVisibility: Record<string, boolean>;
     isColumnVisibilityOpen: boolean;
+    columnOrder: string[];
 }
 
 interface PersistedGridState {
@@ -40,6 +42,7 @@ interface PersistedGridState {
     globalSearch: string;
     sortModel: Array<{ colId: string; sort: "asc" | "desc" | null }>;
     columnVisibility: Record<string, boolean>;
+    columnOrder?: string[];
 }
 
 export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
@@ -68,6 +71,7 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
         const initialSort = persisted ? persisted.sortModel : this.getDefaultSortModel();
         const initialColumnVisibility =
             persisted?.columnVisibility ?? this.getDefaultColumnVisibility();
+        const initialColumnOrder = persisted?.columnOrder ?? this.getDefaultColumnOrder();
 
         this.state = {
             currentView: initialView,
@@ -77,7 +81,8 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
             globalSearch: initialSearch,
             sortModel: initialSort,
             columnVisibility: initialColumnVisibility,
-            isColumnVisibilityOpen: false
+            isColumnVisibilityOpen: false,
+            columnOrder: initialColumnOrder
         };
 
         this.persistedState = this.shouldPersist
@@ -86,7 +91,8 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
                   activeFilters: initialFilters,
                   globalSearch: initialSearch,
                   sortModel: initialSort,
-                  columnVisibility: initialColumnVisibility
+                  columnVisibility: initialColumnVisibility,
+                  columnOrder: initialColumnOrder
               }
             : null;
     }
@@ -145,6 +151,12 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
             }
         });
         return visibility;
+    };
+
+    private getDefaultColumnOrder = (): string[] => {
+        return this.props.columns
+            .filter((col) => col.attribute?.id)
+            .map((col) => col.attribute!.id);
     };
 
     private toggleView = (view: ViewMode) => {
@@ -250,6 +262,25 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
             }
             this.savePersistedState({ globalSearch: searchValue });
         });
+    };
+
+    private onColumnMoved = () => {
+        if (!this.columnApi || !this.shouldPersist) {
+            return;
+        }
+
+        try {
+            const columnState = this.columnApi.getColumnState();
+            const columnOrder = columnState
+                .filter((col: any) => col.colId)
+                .map((col: any) => col.colId);
+
+            this.setState({ columnOrder }, () => {
+                this.savePersistedState({ columnOrder });
+            });
+        } catch (error) {
+            console.error("[AGGrid] Error handling column moved:", error);
+        }
     };
 
     private onSortChanged = () => {
@@ -401,7 +432,18 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
                     ? (parsed.columnVisibility as Record<string, boolean>)
                     : this.getDefaultColumnVisibility();
 
-            return { viewMode, activeFilters, globalSearch, sortModel, columnVisibility };
+            const columnOrder = Array.isArray(parsed.columnOrder)
+                ? parsed.columnOrder.filter((id: any) => typeof id === "string")
+                : this.getDefaultColumnOrder();
+
+            return {
+                viewMode,
+                activeFilters,
+                globalSearch,
+                sortModel,
+                columnVisibility,
+                columnOrder
+            };
         } catch {
             return null;
         }
@@ -415,6 +457,7 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
         const resolvedFilters = partial.activeFilters ?? this.state.activeFilters;
         const resolvedSorts = partial.sortModel ?? this.state.sortModel;
         const resolvedVisibility = partial.columnVisibility ?? this.state.columnVisibility;
+        const resolvedColumnOrder = partial.columnOrder ?? this.state.columnOrder;
 
         const nextState: PersistedGridState = {
             viewMode: partial.viewMode ?? this.state.currentView,
@@ -424,7 +467,8 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
                 colId: sort.colId,
                 sort: sort.sort === "asc" || sort.sort === "desc" ? sort.sort : null
             })),
-            columnVisibility: { ...resolvedVisibility }
+            columnVisibility: { ...resolvedVisibility },
+            columnOrder: [...resolvedColumnOrder]
         };
 
         this.persistedState = nextState;
@@ -435,6 +479,45 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
             // Ignore storage write errors (e.g., quota exceeded or disabled storage)
         }
     }
+
+    private resetSettings = () => {
+        if (!this.shouldPersist || typeof window === "undefined") {
+            return;
+        }
+
+        try {
+            window.localStorage.removeItem(this.storageKey);
+        } catch {
+            // Ignore storage errors
+        }
+
+        // Reset to default state
+        const defaultView = this.getInitialView();
+        const defaultFilters = {};
+        const defaultSearch = "";
+        const defaultSort = this.getDefaultSortModel();
+        const defaultColumnVisibility = this.getDefaultColumnVisibility();
+        const defaultColumnOrder = this.getDefaultColumnOrder();
+
+        this.setState({
+            currentView: defaultView,
+            activeFilters: defaultFilters,
+            globalSearch: defaultSearch,
+            sortModel: defaultSort,
+            columnVisibility: defaultColumnVisibility,
+            columnOrder: defaultColumnOrder
+        });
+
+        // Clear persisted state
+        this.persistedState = null;
+
+        // Apply defaults to grid
+        this.applyFiltersToGrid(defaultFilters, defaultSearch);
+        this.applyGridSortModel(defaultSort);
+
+        // Close the filter drawer
+        this.closeFilterDrawer();
+    };
 
     private applyFiltersToGrid(filters: Record<string, any>, globalSearch: string) {
         if (!this.gridApi) {
@@ -739,7 +822,26 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
     private onGridReady = (params: GridReadyEvent) => {
         this.gridApi = params.api;
         this.columnApi = (params as any).columnApi || null;
-        const { sortModel, activeFilters, globalSearch } = this.state;
+        const { sortModel, activeFilters, globalSearch, columnOrder } = this.state;
+
+        // Apply saved column order if available
+        if (columnOrder && columnOrder.length > 0 && this.columnApi) {
+            try {
+                const columnState = columnOrder.map((colId, index) => ({
+                    colId,
+                    sort: null,
+                    sortIndex: null,
+                    aggFunc: null,
+                    pivotIndex: null,
+                    pinned: null,
+                    width: null,
+                    hide: false
+                }));
+                this.columnApi.applyColumnState({ state: columnState, applyOrder: true });
+            } catch (error) {
+                console.error("[AGGrid] Error applying saved column order:", error);
+            }
+        }
 
         if (sortModel.length > 0) {
             this.applyGridSortModel(sortModel);
@@ -1206,7 +1308,9 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
                             onRowClicked={this.onRowClicked}
                             onSortChanged={this.onSortChanged}
                             onFilterChanged={this.onFilterChanged}
+                            onColumnMoved={this.onColumnMoved}
                             columnVisibility={columnVisibility}
+                            columnOrder={this.state.columnOrder}
                             renderStatusBadge={this.renderStatusBadge}
                             renderLink={this.renderLink}
                             applyFormatter={this.applyFormatter}
@@ -1238,6 +1342,7 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
                             rowData={filteredData}
                             columns={columns}
                             onRowClick={onRowClick}
+                            applyFormatter={this.applyFormatter}
                         />
                     )}
 
@@ -1252,51 +1357,17 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
                         onClose={this.closeFilterDrawerAndFocus}
                         onApplyFilters={this.applyFiltersFromDrawer}
                         onClearFilters={this.clearFilters}
+                        useLocalStorage={this.shouldPersist}
+                        onResetSettings={this.resetSettings}
                     />
 
-                    {isColumnVisibilityOpen && (
-                        <div className="column-visibility-popover">
-                            <div className="column-visibility-header">
-                                <h4>Column Visibility</h4>
-                                <button
-                                    type="button"
-                                    className="close-button"
-                                    onClick={this.toggleColumnVisibility}
-                                    aria-label="Close column visibility"
-                                >
-                                    ×
-                                </button>
-                            </div>
-                            <div className="column-visibility-content">
-                                {columns
-                                    .filter((col) => col.attribute?.id)
-                                    .map((col) => {
-                                        const columnId = col.attribute!.id;
-                                        const isVisible = columnVisibility[columnId] !== false;
-                                        return (
-                                            <label
-                                                key={columnId}
-                                                className="column-visibility-item"
-                                            >
-                                                <input
-                                                    type="checkbox"
-                                                    checked={isVisible}
-                                                    onChange={(e) =>
-                                                        this.toggleColumnVisibilityItem(
-                                                            columnId,
-                                                            e.target.checked
-                                                        )
-                                                    }
-                                                />
-                                                <span className="column-label">
-                                                    {col.header?.value || columnId}
-                                                </span>
-                                            </label>
-                                        );
-                                    })}
-                            </div>
-                        </div>
-                    )}
+                    <HiddenDrawer
+                        isOpen={isColumnVisibilityOpen}
+                        columns={columns}
+                        columnVisibility={columnVisibility}
+                        onClose={this.toggleColumnVisibility}
+                        onToggleColumn={this.toggleColumnVisibilityItem}
+                    />
                 </div>
             );
         } catch (error) {

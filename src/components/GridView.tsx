@@ -15,7 +15,9 @@ interface GridViewProps {
     onRowClicked: (event: any) => void;
     onSortChanged?: () => void;
     onFilterChanged?: () => void;
+    onColumnMoved?: () => void;
     columnVisibility?: Record<string, boolean>;
+    columnOrder?: string[];
     renderStatusBadge: (value: any, mappingString: string | undefined) => string;
     renderLink: (
         value: any,
@@ -43,7 +45,9 @@ export function GridView(props: GridViewProps): ReactElement {
         onRowClicked,
         onSortChanged,
         onFilterChanged,
+        onColumnMoved,
         columnVisibility,
+        columnOrder,
         renderStatusBadge,
         renderLink,
         applyFormatter
@@ -102,6 +106,19 @@ export function GridView(props: GridViewProps): ReactElement {
             if (!col.attribute?.id) return true; // Show columns without attributes
             return columnVisibility?.[col.attribute.id] !== false;
         });
+
+        // Apply column order if provided
+        let orderedColumns = visibleColumns;
+        if (columnOrder && columnOrder.length > 0) {
+            const orderMap = new Map(columnOrder.map((id, index) => [id, index]));
+            orderedColumns = visibleColumns.sort((a, b) => {
+                const aId = a.attribute?.id || "";
+                const bId = b.attribute?.id || "";
+                const aIndex = orderMap.get(aId) ?? 999;
+                const bIndex = orderMap.get(bId) ?? 999;
+                return aIndex - bIndex;
+            });
+        }
 
         const colDefs = visibleColumns.map((col) => {
             const colDef: ColDef = {
@@ -277,6 +294,7 @@ export function GridView(props: GridViewProps): ReactElement {
                 onRowClicked={onRowClicked}
                 onSortChanged={onSortChanged}
                 onFilterChanged={onFilterChanged}
+                onColumnMoved={onColumnMoved}
                 animateRows={true}
                 suppressCellFocus={false}
                 enableCellTextSelection={true}

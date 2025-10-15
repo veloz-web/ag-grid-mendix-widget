@@ -611,6 +611,13 @@
     padding: 16px;
 }
 
+.aggrid-hardened-cards-view {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+    padding: 16px;
+}
+
 .aggrid-card {
     background: white;
     border: 1px solid #ddd;
@@ -699,7 +706,8 @@
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-    .aggrid-cards-view {
+    .aggrid-cards-view,
+    .aggrid-hardened-cards-view {
         grid-template-columns: 1fr;
     }
     
@@ -856,15 +864,6 @@
     top: 4px;
 }
 
-.badge-denied {
-    color: white;
-    background-color: rgb(168, 59, 54);
-}
-
-.badge-denied::before {
-    content: "\f00d";
-}
-
 .aggrid-status-badge::before {
     color:white;
     font-weight: 900;
@@ -873,21 +872,31 @@
     min-width: 32px;
 }
 
+
+.badge-denied {
+    color: white;
+    background-color: rgb(168, 59, 54);
+}
+
+.badge-denied:not(.callouttype-null)::before {
+    content: "\f00d";
+}
+
 .badge-pending {
     color: white;
     background-color: rgb(224, 116, 0);
 }
 
-.badge-pending::before {
+.badge-pending:not(.callouttype-null)::before {
     content: "\e1d4";
 }
 
 .badge-open {
     color: white;
-    background-color: rgb(51, 122, 183);
+    background-color: rgb(51, 122, 183) !important; /*important needed because widget.scss has different blue for some reason;*/
 }
 
-.badge-open::before {
+.badge-open:not(.callouttype-null)::before {
     content: "\+";
 }
 
@@ -896,7 +905,7 @@
     background-color: rgb(93, 175, 93);
 }
 
-.badge-approved::before {
+.badge-approved:not(.callouttype-null)::before {
     content: "\f560";
 }
 
@@ -996,17 +1005,72 @@
     accent-color: #3b82f6;
 }
 
-.column-label {
+.filter-drawer-footer-secondary {
+    padding: 12px 16px;
+    border-top: 1px solid #e5e7eb;
+    background: #f9fafb;
+    display: flex;
+    justify-content: center;
+}
+
+.reset-settings-btn {
+    background: #dc2626;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
     font-size: 14px;
-    color: #374151;
-    flex: 1;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.reset-settings-btn:hover {
+    background: #b91c1c;
+}
+
+.reset-settings-btn:active {
+    background: #991b1b;
 }
 
 /* SR Framework Classes - Empty rulesets to be populated from external framework */
+.sr-list .sr-list-content {
+  margin: 0 auto;
+  padding: 8px;
+}
+.sr-list-content {
+  max-width: 1536px;
+}
 .sr-list-item { /* placeholder */ }
 .sr-li-card { /* placeholder */ }
-.sr-card { /* placeholder */ }
-.sr-callout { /* placeholder */ }
+
+.sr-callout { 
+  position: absolute;
+  display: flex;
+  flex-flow: column nowrap;
+  overflow: hidden;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 100%;
+  max-height: 52px;
+  max-width: 52px;
+  border-radius: 0 4px 0 100%;
+  padding: 0;
+  z-index: 2;
+  transition: max-height 0.2s linear, max-width 0.2s linear, padding 0.2s linear;
+}
+.sr-card-footer-actions { /* placeholder */
+  flex: row-reverse !important;
+}
+
+.sr-card .sr-card-footer-btn:hover,
+.sr-card .sr-card-footer-btn:focus {
+    color: var(--app-on-primary, #FFFFFF);
+    border-color: var(--app-primary, #002147);
+    background-color: var(--app-primary, #002147);
+}
+
 .sr-callout-preview { /* placeholder */ }
 .sr-callout-icon { /* placeholder */ }
 .sr-callout-full { /* placeholder */ }
@@ -1023,6 +1087,7 @@
 .sr-card-focus { /* placeholder */ }
 .sr-card-focus-cell-full { /* placeholder */ }
 .sr-py-1 { /* placeholder */ }
+.src-card-footer
 .sr-card-label { /* placeholder */ }
 .sr-card-value { /* placeholder */ }
 .sr-card-body { /* placeholder */ }
@@ -1033,3 +1098,20 @@
 .sr-card-footer-actions { /* placeholder */ }
 .sr-card-footer-btn { /* placeholder */ }
 
+
+/* Status-based callout colors */
+.sr-callout.badge-approved {
+    background-color: #10b981; /* green-500 */
+}
+
+.sr-callout.badge-denied {
+    background-color: #ef4444; /* red-500 */
+}
+
+.sr-callout.badge-pending {
+    background-color: #f59e0b; /* amber-500 */
+}
+
+.sr-callout.badge-open {
+    background-color: #3b82f6; /* blue-500 */
+}

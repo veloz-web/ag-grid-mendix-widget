@@ -16,6 +16,8 @@ interface FilterDrawerProps {
         sort: Array<{ colId: string; sort: "asc" | "desc" | null }>
     ) => void;
     onClearFilters: () => void;
+    useLocalStorage?: boolean;
+    onResetSettings?: () => void;
 }
 
 export function FilterDrawer(props: FilterDrawerProps): ReactElement | null {
@@ -29,7 +31,9 @@ export function FilterDrawer(props: FilterDrawerProps): ReactElement | null {
         getDistinctValues,
         onClose,
         onApplyFilters,
-        onClearFilters
+        onClearFilters,
+        useLocalStorage = false,
+        onResetSettings
     } = props;
 
     // Local state for pending changes
@@ -328,6 +332,13 @@ export function FilterDrawer(props: FilterDrawerProps): ReactElement | null {
                         Apply Changes
                     </button>
                 </div>
+                {useLocalStorage && onResetSettings && (
+                    <div className="filter-drawer-footer-secondary">
+                        <button className="reset-settings-btn" onClick={onResetSettings}>
+                            Reset System Grid Settings
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );
