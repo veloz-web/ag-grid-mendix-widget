@@ -1,4 +1,4 @@
-import { Component, ReactNode } from "react";
+import { ChangeEvent, Component, ReactNode, createRef } from "react";
 import { GridReadyEvent } from "ag-grid-community";
 // Note: ag-grid-enterprise is imported but only activated with a license key
 // The bundle includes Enterprise code, but features are only enabled when licensed
@@ -8,6 +8,7 @@ import { ValueStatus } from "mendix";
 
 import { GridView } from "./components/GridView";
 import { CardView } from "./components/CardView";
+import { HardenCardView } from "./components/HardenCardView";
 import { ListView } from "./components/ListView";
 import { ViewSelector } from "./components/ViewSelector";
 import { FilterDrawer } from "./components/FilterDrawer";
@@ -20,7 +21,7 @@ import "ag-grid-community/styles/ag-theme-quartz.css";
 
 import "./ui/AGGrid.css";
 
-type ViewMode = "grid" | "cards" | "list";
+type ViewMode = "grid" | "cards" | "list" | "harden";
 
 interface AGGridState {
     currentView: ViewMode;
@@ -29,6 +30,8 @@ interface AGGridState {
     activeFilters: Record<string, any>;
     globalSearch: string;
     sortModel: Array<{ colId: string; sort: "asc" | "desc" | null }>;
+    columnVisibility: Record<string, boolean>;
+    isColumnVisibilityOpen: boolean;
 }
 
 interface PersistedGridState {
@@ -36,29 +39,35 @@ interface PersistedGridState {
     activeFilters: Record<string, any>;
     globalSearch: string;
     sortModel: Array<{ colId: string; sort: "asc" | "desc" | null }>;
+    columnVisibility: Record<string, boolean>;
 }
 
 export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
     private gridApi: any = null;
     private columnApi: any = null;
+    private filterButtonRef = createRef<HTMLButtonElement>();
     private isSettingSortProgrammatically = false;
     private readonly storageKey: string;
+    private readonly shouldPersist: boolean;
     private persistedState: PersistedGridState | null = null;
 
     constructor(props: AGGridContainerProps) {
         super(props);
 
         this.storageKey = `aggrid:${props.name || "default"}`;
+        this.shouldPersist = props.useLocalStorage !== false;
 
         if (props.licenseKey && props.licenseKey.trim() !== "") {
             LicenseManager.setLicenseKey(props.licenseKey);
         }
 
-        const persisted = this.loadPersistedState();
+        const persisted = this.shouldPersist ? this.loadPersistedState() : null;
         const initialView = persisted?.viewMode ?? this.getInitialView();
         const initialFilters = persisted?.activeFilters ?? {};
         const initialSearch = persisted?.globalSearch ?? "";
         const initialSort = persisted ? persisted.sortModel : this.getDefaultSortModel();
+        const initialColumnVisibility =
+            persisted?.columnVisibility ?? this.getDefaultColumnVisibility();
 
         this.state = {
             currentView: initialView,
@@ -66,15 +75,20 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
             isMobile: this.checkIsMobile(),
             activeFilters: initialFilters,
             globalSearch: initialSearch,
-            sortModel: initialSort
+            sortModel: initialSort,
+            columnVisibility: initialColumnVisibility,
+            isColumnVisibilityOpen: false
         };
 
-        this.persistedState = {
-            viewMode: initialView,
-            activeFilters: initialFilters,
-            globalSearch: initialSearch,
-            sortModel: initialSort
-        };
+        this.persistedState = this.shouldPersist
+            ? {
+                  viewMode: initialView,
+                  activeFilters: initialFilters,
+                  globalSearch: initialSearch,
+                  sortModel: initialSort,
+                  columnVisibility: initialColumnVisibility
+              }
+            : null;
     }
 
     componentDidMount() {
@@ -123,25 +137,74 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
         return sortedColumns.map(({ colId, sort }) => ({ colId, sort }));
     };
 
+    private getDefaultColumnVisibility = (): Record<string, boolean> => {
+        const visibility: Record<string, boolean> = {};
+        this.props.columns.forEach((col) => {
+            if (col.attribute?.id) {
+                visibility[col.attribute.id] = !col.hidden; // Default to visible unless explicitly hidden
+            }
+        });
+        return visibility;
+    };
+
     private toggleView = (view: ViewMode) => {
         this.setState({ currentView: view }, () => {
             this.savePersistedState({ viewMode: view });
         });
     };
 
-    private toggleFilterDrawer = () => {
-        // If opening the drawer, sync state with current grid state
-        if (!this.state.isFilterDrawerOpen && this.gridApi) {
+    private openFilterDrawer = () => {
+        if (this.gridApi) {
             try {
                 const currentSortModel = this.getGridSortModel();
                 this.setState({ sortModel: currentSortModel, isFilterDrawerOpen: true });
             } catch (error) {
                 console.error("[AGGrid] Error syncing sort model:", error);
-                // Fallback: just open drawer without syncing
                 this.setState({ isFilterDrawerOpen: true });
             }
         } else {
-            this.setState({ isFilterDrawerOpen: !this.state.isFilterDrawerOpen });
+            this.setState({ isFilterDrawerOpen: true });
+        }
+    };
+
+    private closeFilterDrawer = (returnFocus = false) => {
+        const restoreFocus = () => {
+            if (returnFocus && this.filterButtonRef.current) {
+                this.filterButtonRef.current.focus();
+            }
+        };
+
+        if (!this.state.isFilterDrawerOpen) {
+            restoreFocus();
+            return;
+        }
+
+        this.setState({ isFilterDrawerOpen: false }, restoreFocus);
+    };
+
+    private closeFilterDrawerAndFocus = () => {
+        this.closeFilterDrawer(true);
+    };
+
+    private toggleColumnVisibility = () => {
+        this.setState((prevState) => ({
+            isColumnVisibilityOpen: !prevState.isColumnVisibilityOpen
+        }));
+    };
+
+    private toggleColumnVisibilityItem = (columnId: string, visible: boolean) => {
+        this.setState((prevState) => {
+            const newVisibility = { ...prevState.columnVisibility, [columnId]: visible };
+            this.savePersistedState({ columnVisibility: newVisibility });
+            return { columnVisibility: newVisibility };
+        });
+    };
+
+    private toggleFilterDrawer = () => {
+        if (this.state.isFilterDrawerOpen) {
+            this.closeFilterDrawer();
+        } else {
+            this.openFilterDrawer();
         }
     };
 
@@ -251,8 +314,42 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
         }
     };
 
+    private handleToolbarSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
+        this.applyGlobalSearch(event.target.value);
+    };
+
+    private clearToolbarSearch = () => {
+        this.applyGlobalSearch("");
+    };
+
+    private handleToolbarSortChange = (event: ChangeEvent<HTMLSelectElement>) => {
+        const columnId = event.target.value;
+        const currentDirection = this.state.sortModel[0]?.sort ?? "asc";
+        const nextSortModel = columnId
+            ? [{ colId: columnId, sort: currentDirection || "asc" }]
+            : [];
+
+        this.applyGridSortModel(nextSortModel);
+        this.setState({ sortModel: nextSortModel }, () => {
+            this.savePersistedState({ sortModel: nextSortModel });
+        });
+    };
+
+    private handleToolbarSortDirectionChange = (direction: "asc" | "desc") => {
+        const currentSort = this.state.sortModel[0];
+        if (!currentSort || currentSort.sort === direction) {
+            return;
+        }
+
+        const nextSortModel = [{ colId: currentSort.colId, sort: direction }];
+        this.applyGridSortModel(nextSortModel);
+        this.setState({ sortModel: nextSortModel }, () => {
+            this.savePersistedState({ sortModel: nextSortModel });
+        });
+    };
+
     private loadPersistedState(): PersistedGridState | null {
-        if (typeof window === "undefined") {
+        if (!this.shouldPersist || typeof window === "undefined") {
             return null;
         }
 
@@ -269,7 +366,10 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
 
             const viewCandidate = parsed.viewMode;
             const viewMode: ViewMode =
-                viewCandidate === "grid" || viewCandidate === "cards" || viewCandidate === "list"
+                viewCandidate === "grid" ||
+                viewCandidate === "cards" ||
+                viewCandidate === "list" ||
+                viewCandidate === "harden"
                     ? viewCandidate
                     : this.getInitialView();
 
@@ -296,19 +396,25 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
                       }))
                 : [];
 
-            return { viewMode, activeFilters, globalSearch, sortModel };
+            const columnVisibility =
+                parsed.columnVisibility && typeof parsed.columnVisibility === "object"
+                    ? (parsed.columnVisibility as Record<string, boolean>)
+                    : this.getDefaultColumnVisibility();
+
+            return { viewMode, activeFilters, globalSearch, sortModel, columnVisibility };
         } catch {
             return null;
         }
     }
 
     private savePersistedState(partial: Partial<PersistedGridState>) {
-        if (typeof window === "undefined") {
+        if (!this.shouldPersist || typeof window === "undefined") {
             return;
         }
 
         const resolvedFilters = partial.activeFilters ?? this.state.activeFilters;
         const resolvedSorts = partial.sortModel ?? this.state.sortModel;
+        const resolvedVisibility = partial.columnVisibility ?? this.state.columnVisibility;
 
         const nextState: PersistedGridState = {
             viewMode: partial.viewMode ?? this.state.currentView,
@@ -317,7 +423,8 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
             sortModel: (resolvedSorts || []).map((sort) => ({
                 colId: sort.colId,
                 sort: sort.sort === "asc" || sort.sort === "desc" ? sort.sort : null
-            }))
+            })),
+            columnVisibility: { ...resolvedVisibility }
         };
 
         this.persistedState = nextState;
@@ -454,7 +561,7 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
             }
 
             // Return HTML anchor tag
-            return `<a href="${url}" class="aggrid-link" onclick="event.stopPropagation();">${displayText}</a>`;
+            return `<a href="${url}" class="aggrid-link"><span class="fa fa-eye"></span> <span class="sr-only">${displayText}</span></a>`;
         } catch (e) {
             console.error("Error in renderLink:", e);
             console.error("URL pattern was:", urlPattern);
@@ -589,6 +696,36 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
         }
     }
 
+    private compareValuesForSort(a: any, b: any): number {
+        if (a === b) {
+            return 0;
+        }
+
+        if (a === null || a === undefined) {
+            return 1;
+        }
+
+        if (b === null || b === undefined) {
+            return -1;
+        }
+
+        if (a instanceof Date && b instanceof Date) {
+            return a.getTime() - b.getTime();
+        }
+
+        const aNumber = typeof a === "number" ? a : Number(a);
+        const bNumber = typeof b === "number" ? b : Number(b);
+
+        if (!isNaN(aNumber) && !isNaN(bNumber)) {
+            return aNumber - bNumber;
+        }
+
+        return String(a).localeCompare(String(b), undefined, {
+            numeric: true,
+            sensitivity: "base"
+        });
+    }
+
     private getRowData(): any[] {
         const { dataSource } = this.props;
 
@@ -683,8 +820,25 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
     };
 
     private getFilterableColumns() {
-        const filterable = this.props.columns.filter((col) => col.includeInFilters);
-        return filterable;
+        const { activeFilters } = this.state;
+
+        return this.props.columns
+            .filter((col) => col.includeInFilters)
+            .slice()
+            .sort((a, b) => {
+                const aId = a.attribute?.id;
+                const bId = b.attribute?.id;
+                const aActive = aId ? activeFilters[aId] !== undefined : false;
+                const bActive = bId ? activeFilters[bId] !== undefined : false;
+
+                if (aActive !== bActive) {
+                    return aActive ? -1 : 1;
+                }
+
+                const aLabel = a.header?.value || "";
+                const bLabel = b.header?.value || "";
+                return aLabel.localeCompare(bLabel);
+            });
     }
 
     private getDistinctValuesForColumn(columnId: string): string[] {
@@ -726,48 +880,89 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
 
     private getFilteredData(): any[] {
         const rowData = this.getRowData();
-        const { activeFilters, globalSearch } = this.state;
+        const { activeFilters, globalSearch, sortModel } = this.state;
         const { columns } = this.props;
 
-        // If no active filters or global search, return all data
-        if (Object.keys(activeFilters).length === 0 && !globalSearch) {
-            return rowData;
-        }
+        const hasGlobalSearch = Boolean(globalSearch && globalSearch.trim() !== "");
+        const hasActiveFilters = Object.keys(activeFilters).some((key) => {
+            const value = activeFilters[key];
+            return value !== undefined && value !== null && value !== "";
+        });
 
-        // Filter the data based on active filters and global search
-        return rowData.filter((item) => {
-            // First check global search across all columns
-            if (globalSearch && globalSearch.trim() !== "") {
-                const searchLower = globalSearch.toLowerCase();
-                const matchesGlobalSearch = columns.some((col) => {
-                    if (!col.attribute) return false;
+        let filteredData = rowData;
 
-                    const value = col.attribute.get(item);
+        if (hasGlobalSearch || hasActiveFilters) {
+            filteredData = rowData.filter((item) => {
+                if (hasGlobalSearch) {
+                    const searchLower = globalSearch.toLowerCase();
+                    const matchesGlobalSearch = columns.some((col) => {
+                        if (!col.attribute) return false;
+
+                        const value = col.attribute.get(item);
+                        if (value.status !== ValueStatus.Available) return false;
+
+                        const itemValue = String(value.value || "").toLowerCase();
+                        return itemValue.includes(searchLower);
+                    });
+
+                    if (!matchesGlobalSearch) return false;
+                }
+
+                return Object.entries(activeFilters).every(([columnId, filterValue]) => {
+                    if (!filterValue || filterValue === "") return true;
+
+                    const column = columns.find((col) => col.attribute?.id === columnId);
+                    if (!column || !column.attribute) return true;
+
+                    const value = column.attribute.get(item);
                     if (value.status !== ValueStatus.Available) return false;
 
-                    const itemValue = String(value.value || "").toLowerCase();
-                    return itemValue.includes(searchLower);
-                });
+                    const itemValue = String(value.value || "");
+                    const filter = String(filterValue);
 
-                if (!matchesGlobalSearch) return false;
+                    return itemValue === filter;
+                });
+            });
+        }
+
+        if (!sortModel || sortModel.length === 0) {
+            return filteredData;
+        }
+
+        const currentSort = sortModel[0];
+        if (!currentSort || !currentSort.colId || !currentSort.sort) {
+            return filteredData;
+        }
+
+        const sortColumn = columns.find((col) => col.attribute?.id === currentSort.colId);
+        if (!sortColumn || !sortColumn.attribute) {
+            return filteredData;
+        }
+
+        const directionMultiplier = currentSort.sort === "desc" ? -1 : 1;
+
+        return [...filteredData].sort((a, b) => {
+            const aValue = sortColumn.attribute!.get(a);
+            const bValue = sortColumn.attribute!.get(b);
+
+            const aComparable =
+                aValue && aValue.status === ValueStatus.Available ? aValue.value : null;
+            const bComparable =
+                bValue && bValue.status === ValueStatus.Available ? bValue.value : null;
+
+            if (aComparable === null && bComparable === null) {
+                return 0;
             }
 
-            // Then check column-specific filters
-            return Object.entries(activeFilters).every(([columnId, filterValue]) => {
-                if (!filterValue || filterValue === "") return true;
+            if (aComparable === null) {
+                return 1;
+            }
 
-                const column = columns.find((col) => col.attribute?.id === columnId);
-                if (!column || !column.attribute) return true;
+            if (bComparable === null) {
+                return -1;
+            }
 
-                const value = column.attribute.get(item);
-                if (value.status !== ValueStatus.Available) return false;
-
-                // Use exact match for dropdown filters
-                const itemValue = String(value.value || "");
-                const filter = String(filterValue);
-
-                return itemValue === filter;
-            });
+            return this.compareValuesForSort(aComparable, bComparable) * directionMultiplier;
         });
     }
 
@@ -784,8 +979,23 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
                 pagination,
                 pageSize
             } = this.props;
-            const { currentView, isFilterDrawerOpen, activeFilters, globalSearch, sortModel } =
-                this.state;
+            const {
+                currentView,
+                isFilterDrawerOpen,
+                activeFilters,
+                globalSearch,
+                sortModel,
+                columnVisibility,
+                isColumnVisibilityOpen
+            } = this.state;
+            const sortableColumns = columns.filter((col) => col.sortable);
+            const hasSortApplied = Boolean(
+                sortModel && sortModel.length > 0 && sortModel[0]?.colId
+            );
+            const currentSortColumnId = hasSortApplied ? sortModel[0].colId : "";
+            const currentSortDirection = sortModel[0]?.sort ?? "asc";
+            const showSortControls = currentView !== "grid" && sortableColumns.length > 0;
+            const showToolbarSearch = this.props.showToolbarSearch !== false;
 
             if (!dataSource || dataSource.status === ValueStatus.Loading) {
                 return <div className="aggrid-loading">Loading...</div>;
@@ -807,27 +1017,181 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
             return (
                 <div className="aggrid-container">
                     <div className="aggrid-toolbar">
-                        {enableViewSelector && (
-                            <ViewSelector
-                                currentView={currentView}
-                                onViewChange={this.toggleView}
-                                groupId={this.storageKey}
-                            />
-                        )}
-                        {enableFilterDrawer && (
+                        <div className="aggrid-toolbar-left">
+                            {enableViewSelector && (
+                                <ViewSelector
+                                    currentView={currentView}
+                                    onViewChange={this.toggleView}
+                                    groupId={this.storageKey}
+                                />
+                            )}
+                        </div>
+                        <div className="aggrid-toolbar-right">
+                            {showSortControls && (
+                                <div
+                                    className="aggrid-toolbar-sort"
+                                    role="group"
+                                    aria-label="Current sort"
+                                >
+                                    {hasSortApplied ? (
+                                        <>
+                                            <label
+                                                className="toolbar-label"
+                                                htmlFor={`${this.storageKey}-toolbar-sort`}
+                                            >
+                                                Sorted by
+                                            </label>
+                                            <select
+                                                id={`${this.storageKey}-toolbar-sort`}
+                                                className="toolbar-select"
+                                                value={currentSortColumnId}
+                                                onChange={this.handleToolbarSortChange}
+                                            >
+                                                {sortableColumns.map((col, idx) => (
+                                                    <option
+                                                        key={idx}
+                                                        value={col.attribute?.id || ""}
+                                                    >
+                                                        {col.header?.value || "Field"}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <div
+                                                className="toolbar-sort-direction"
+                                                role="group"
+                                                aria-label="Sort direction"
+                                            >
+                                                <button
+                                                    type="button"
+                                                    className={`toolbar-sort-button ${
+                                                        currentSortDirection === "asc"
+                                                            ? "active"
+                                                            : ""
+                                                    }`}
+                                                    onClick={() =>
+                                                        this.handleToolbarSortDirectionChange("asc")
+                                                    }
+                                                    aria-pressed={currentSortDirection === "asc"}
+                                                    aria-label="Sort ascending"
+                                                >
+                                                    <svg
+                                                        width="14"
+                                                        height="14"
+                                                        viewBox="0 0 24 24"
+                                                        fill="currentColor"
+                                                    >
+                                                        <path d="M7 14l5-5 5 5z" />
+                                                    </svg>
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className={`toolbar-sort-button ${
+                                                        currentSortDirection === "desc"
+                                                            ? "active"
+                                                            : ""
+                                                    }`}
+                                                    onClick={() =>
+                                                        this.handleToolbarSortDirectionChange(
+                                                            "desc"
+                                                        )
+                                                    }
+                                                    aria-pressed={currentSortDirection === "desc"}
+                                                    aria-label="Sort descending"
+                                                >
+                                                    <svg
+                                                        width="14"
+                                                        height="14"
+                                                        viewBox="0 0 24 24"
+                                                        fill="currentColor"
+                                                    >
+                                                        <path d="M7 10l5 5 5-5z" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="toolbar-sort-placeholder">
+                                            No sort applied (configure in Filters)
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {showToolbarSearch && (
+                                <div className="aggrid-toolbar-search">
+                                    <label
+                                        className="toolbar-label"
+                                        htmlFor={`${this.storageKey}-toolbar-search`}
+                                    >
+                                        Contains
+                                    </label>
+                                    <div className="toolbar-search-wrapper">
+                                        <input
+                                            id={`${this.storageKey}-toolbar-search`}
+                                            type="search"
+                                            className="toolbar-search-input"
+                                            placeholder="Search..."
+                                            value={globalSearch}
+                                            onChange={this.handleToolbarSearchChange}
+                                        />
+                                        {globalSearch && (
+                                            <button
+                                                type="button"
+                                                className="toolbar-search-clear"
+                                                onClick={this.clearToolbarSearch}
+                                                aria-label="Clear contains search"
+                                            >
+                                                <svg
+                                                    width="12"
+                                                    height="12"
+                                                    viewBox="0 0 24 24"
+                                                    fill="currentColor"
+                                                >
+                                                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                                                </svg>
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                            {enableFilterDrawer && (
+                                <button
+                                    ref={this.filterButtonRef}
+                                    type="button"
+                                    className="aggrid-filter-btn"
+                                    onClick={this.toggleFilterDrawer}
+                                    aria-haspopup="dialog"
+                                    aria-expanded={isFilterDrawerOpen}
+                                    title="Filters"
+                                >
+                                    <svg
+                                        width="20"
+                                        height="20"
+                                        viewBox="0 0 24 24"
+                                        fill="currentColor"
+                                    >
+                                        <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" />
+                                    </svg>
+                                    {activeFilterCount > 0 && (
+                                        <span className="filter-badge">{activeFilterCount}</span>
+                                    )}
+                                </button>
+                            )}
+
                             <button
-                                className="aggrid-filter-btn"
-                                onClick={this.toggleFilterDrawer}
-                                title="Filters"
+                                type="button"
+                                className="aggrid-column-visibility-btn"
+                                onClick={this.toggleColumnVisibility}
+                                aria-haspopup="dialog"
+                                aria-expanded={isColumnVisibilityOpen}
+                                title="Column Visibility"
                             >
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" />
+                                    <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
                                 </svg>
-                                {activeFilterCount > 0 && (
-                                    <span className="filter-badge">{activeFilterCount}</span>
-                                )}
                             </button>
-                        )}
+                        </div>
                     </div>
 
                     {currentView === "grid" && (
@@ -842,6 +1206,7 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
                             onRowClicked={this.onRowClicked}
                             onSortChanged={this.onSortChanged}
                             onFilterChanged={this.onFilterChanged}
+                            columnVisibility={columnVisibility}
                             renderStatusBadge={this.renderStatusBadge}
                             renderLink={this.renderLink}
                             applyFormatter={this.applyFormatter}
@@ -868,18 +1233,70 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
                         />
                     )}
 
+                    {currentView === "harden" && (
+                        <HardenCardView
+                            rowData={filteredData}
+                            columns={columns}
+                            onRowClick={onRowClick}
+                        />
+                    )}
+
                     <FilterDrawer
                         isOpen={isFilterDrawerOpen}
                         filterableColumns={filterableColumns}
-                        sortableColumns={columns.filter((col) => col.sortable)}
+                        sortableColumns={sortableColumns}
                         activeFilters={activeFilters}
                         globalSearch={globalSearch}
                         sortModel={sortModel}
                         getDistinctValues={this.getDistinctValuesForColumn}
-                        onClose={this.toggleFilterDrawer}
+                        onClose={this.closeFilterDrawerAndFocus}
                         onApplyFilters={this.applyFiltersFromDrawer}
                         onClearFilters={this.clearFilters}
                     />
+
+                    {isColumnVisibilityOpen && (
+                        <div className="column-visibility-popover">
+                            <div className="column-visibility-header">
+                                <h4>Column Visibility</h4>
+                                <button
+                                    type="button"
+                                    className="close-button"
+                                    onClick={this.toggleColumnVisibility}
+                                    aria-label="Close column visibility"
+                                >
+                                    ×
+                                </button>
+                            </div>
+                            <div className="column-visibility-content">
+                                {columns
+                                    .filter((col) => col.attribute?.id)
+                                    .map((col) => {
+                                        const columnId = col.attribute!.id;
+                                        const isVisible = columnVisibility[columnId] !== false;
+                                        return (
+                                            <label
+                                                key={columnId}
+                                                className="column-visibility-item"
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isVisible}
+                                                    onChange={(e) =>
+                                                        this.toggleColumnVisibilityItem(
+                                                            columnId,
+                                                            e.target.checked
+                                                        )
+                                                    }
+                                                />
+                                                <span className="column-label">
+                                                    {col.header?.value || columnId}
+                                                </span>
+                                            </label>
+                                        );
+                                    })}
+                            </div>
+                        </div>
+                    )}
                 </div>
             );
         } catch (error) {

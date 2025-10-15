@@ -44,6 +44,24 @@ export function FilterDrawer(props: FilterDrawerProps): ReactElement | null {
         setLocalSort(sortModel);
     }, [isOpen, activeFilters, globalSearch, sortModel]);
 
+    useEffect(() => {
+        if (!isOpen) {
+            return;
+        }
+
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === "Escape") {
+                event.preventDefault();
+                onClose();
+            }
+        };
+
+        document.addEventListener("keydown", handleKeyDown);
+        return () => {
+            document.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [isOpen, onClose]);
+
     const handleApply = () => {
         onApplyFilters(localFilters, localSearch, localSort);
         onClose();
@@ -61,7 +79,12 @@ export function FilterDrawer(props: FilterDrawerProps): ReactElement | null {
     return (
         <div className="aggrid-filter-drawer">
             <div className="filter-drawer-overlay" onClick={onClose}></div>
-            <div className="filter-drawer-content">
+            <div
+                className="filter-drawer-content"
+                role="dialog"
+                aria-modal="true"
+                aria-label="Filters"
+            >
                 <div className="filter-drawer-header">
                     <h3>Filters</h3>
                     <button className="close-btn" onClick={onClose}>
@@ -71,6 +94,74 @@ export function FilterDrawer(props: FilterDrawerProps): ReactElement | null {
                     </button>
                 </div>
                 <div className="filter-drawer-body">
+                    {/* Column-specific Filters */}
+                    {filterableColumns.length > 0 && (
+                        <div className="filter-section">
+                            <h4 className="filter-section-title">
+                                <svg
+                                    width="18"
+                                    height="18"
+                                    viewBox="0 0 24 24"
+                                    fill="currentColor"
+                                    style={{ marginRight: "8px", verticalAlign: "middle" }}
+                                >
+                                    <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" />
+                                </svg>
+                                Column Filters
+                            </h4>
+                            {filterableColumns.map((col, idx) => {
+                                const columnId = col.attribute?.id || "";
+                                const distinctValues = getDistinctValues(columnId);
+                                const currentValue = localFilters[columnId] || "";
+
+                                return (
+                                    <div key={idx} className="filter-item">
+                                        <label>{col.header?.value || "Field"}</label>
+                                        <div className="filter-select-wrapper">
+                                            <select
+                                                className="filter-select"
+                                                value={currentValue}
+                                                onChange={(e) =>
+                                                    setLocalFilters({
+                                                        ...localFilters,
+                                                        [columnId]: e.target.value
+                                                    })
+                                                }
+                                            >
+                                                <option value="">All values</option>
+                                                {distinctValues.map((value, vidx) => (
+                                                    <option key={vidx} value={value}>
+                                                        {value}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            {currentValue && (
+                                                <button
+                                                    className="clear-filter-btn"
+                                                    onClick={() => {
+                                                        const newFilters = { ...localFilters };
+                                                        delete newFilters[columnId];
+                                                        setLocalFilters(newFilters);
+                                                    }}
+                                                    title="Clear filter"
+                                                >
+                                                    <svg
+                                                        width="14"
+                                                        height="14"
+                                                        viewBox="0 0 24 24"
+                                                        fill="currentColor"
+                                                    >
+                                                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                                                    </svg>
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+
                     {/* Global Search */}
                     <div className="filter-section">
                         <h4 className="filter-section-title">
@@ -222,74 +313,6 @@ export function FilterDrawer(props: FilterDrawerProps): ReactElement | null {
                                     </div>
                                 </div>
                             )}
-                        </div>
-                    )}
-
-                    {/* Column-specific Filters */}
-                    {filterableColumns.length > 0 && (
-                        <div className="filter-section">
-                            <h4 className="filter-section-title">
-                                <svg
-                                    width="18"
-                                    height="18"
-                                    viewBox="0 0 24 24"
-                                    fill="currentColor"
-                                    style={{ marginRight: "8px", verticalAlign: "middle" }}
-                                >
-                                    <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" />
-                                </svg>
-                                Column Filters
-                            </h4>
-                            {filterableColumns.map((col, idx) => {
-                                const columnId = col.attribute?.id || "";
-                                const distinctValues = getDistinctValues(columnId);
-                                const currentValue = localFilters[columnId] || "";
-
-                                return (
-                                    <div key={idx} className="filter-item">
-                                        <label>{col.header?.value || "Field"}</label>
-                                        <div className="filter-select-wrapper">
-                                            <select
-                                                className="filter-select"
-                                                value={currentValue}
-                                                onChange={(e) =>
-                                                    setLocalFilters({
-                                                        ...localFilters,
-                                                        [columnId]: e.target.value
-                                                    })
-                                                }
-                                            >
-                                                <option value="">All values</option>
-                                                {distinctValues.map((value, vidx) => (
-                                                    <option key={vidx} value={value}>
-                                                        {value}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                            {currentValue && (
-                                                <button
-                                                    className="clear-filter-btn"
-                                                    onClick={() => {
-                                                        const newFilters = { ...localFilters };
-                                                        delete newFilters[columnId];
-                                                        setLocalFilters(newFilters);
-                                                    }}
-                                                    title="Clear filter"
-                                                >
-                                                    <svg
-                                                        width="14"
-                                                        height="14"
-                                                        viewBox="0 0 24 24"
-                                                        fill="currentColor"
-                                                    >
-                                                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
-                                                    </svg>
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-                                );
-                            })}
                         </div>
                     )}
 

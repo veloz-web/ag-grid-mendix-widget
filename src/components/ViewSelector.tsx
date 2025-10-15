@@ -1,6 +1,6 @@
 import { ChangeEvent, ReactElement } from "react";
 
-type ViewMode = "grid" | "cards" | "list";
+type ViewMode = "grid" | "cards" | "list" | "harden";
 
 interface ViewSelectorProps {
     currentView: ViewMode;
@@ -18,8 +18,8 @@ export function ViewSelector(props: ViewSelectorProps): ReactElement {
 
     return (
         <fieldset className="aggrid-view-selector">
-            <legend>Views: </legend>
-            <div className="radio-group">
+            <legend className="view-selector-legend">Views:</legend>
+            <div className="view-toggle">
                 <input
                     type="radio"
                     id={`${baseId}-cards`}
@@ -48,6 +48,21 @@ export function ViewSelector(props: ViewSelectorProps): ReactElement {
                     htmlFor={`${baseId}-list`}
                     className="view-label fas fa-list"
                     title="List View"
+                ></label>
+
+                <input
+                    type="radio"
+                    id={`${baseId}-harden`}
+                    name={baseId}
+                    value="harden"
+                    checked={currentView === "harden"}
+                    onChange={handleViewChange}
+                    className="view-radio-input"
+                />
+                <label
+                    htmlFor={`${baseId}-harden`}
+                    className="view-label fas fa-credit-card"
+                    title="Harden Card View"
                 ></label>
 
                 <input

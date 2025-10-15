@@ -4,7 +4,7 @@
  * @author Mendix Widgets Framework Team
  */
 import { CSSProperties } from "react";
-import { ActionValue, DynamicValue, ListValue, ListActionValue, ListAttributeValue } from "mendix";
+import { DynamicValue, ListValue, ListActionValue, ListAttributeValue } from "mendix";
 import { Big } from "big.js";
 
 export type WidthTypeEnum = "fixed" | "flex" | "auto";
@@ -32,10 +32,12 @@ export interface ColumnsType {
     includeInCardView: boolean;
     includeInSort: boolean;
     includeInFilters: boolean;
+    hidden: boolean;
     formatter: FormatterEnum;
     customPrefix: string;
     customSuffix: string;
-    linkAction?: ActionValue;
+    template: string;
+    linkAction?: ListActionValue;
     linkUrlPattern: string;
     linkText: string;
     statusMapping: string;
@@ -64,9 +66,11 @@ export interface ColumnsPreviewType {
     includeInCardView: boolean;
     includeInSort: boolean;
     includeInFilters: boolean;
+    hidden: boolean;
     formatter: FormatterEnum;
     customPrefix: string;
     customSuffix: string;
+    template: string;
     linkAction: {} | null;
     linkUrlPattern: string;
     linkText: string;
@@ -85,6 +89,8 @@ export interface AGGridContainerProps {
     mobileDefaultView: MobileDefaultViewEnum;
     enableFilterDrawer: boolean;
     licenseKey: string;
+    useLocalStorage: boolean;
+    showToolbarSearch: boolean;
     pagination: boolean;
     pageSize: number;
     height: number;
@@ -110,6 +116,8 @@ export interface AGGridPreviewProps {
     mobileDefaultView: MobileDefaultViewEnum;
     enableFilterDrawer: boolean;
     licenseKey: string;
+    useLocalStorage: boolean;
+    showToolbarSearch: boolean;
     pagination: boolean;
     pageSize: number | null;
     height: number | null;

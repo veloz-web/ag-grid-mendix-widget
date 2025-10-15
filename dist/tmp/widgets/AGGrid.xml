@@ -108,6 +108,10 @@
                             <caption>Include in Filters</caption>
                             <description>Make this column available in the filter drawer</description>
                         </property>
+                        <property key="hidden" type="boolean" defaultValue="false">
+                            <caption>Hidden Column</caption>
+                            <description>Keep this column hidden in the grid UI while still allowing it to participate in filters, sorts, or templates.</description>
+                        </property>
                         <property key="formatter" type="enumeration" defaultValue="none">
                             <caption>Formatter</caption>
                             <description>Format the cell value display</description>
@@ -145,7 +149,11 @@
                             <caption>Custom Suffix</caption>
                             <description>Text to append to the value (e.g., " kg", " units", "%")</description>
                         </property>
-                        <property key="linkAction" type="action" required="false">
+                        <property key="template" type="string" required="false" multiline="true">
+                            <caption>Template</caption>
+                            <description>Optional template to display instead of the raw value. Use ${attributeId} placeholders referencing column attributes (including hidden ones).</description>
+                        </property>
+                        <property key="linkAction" type="action" required="false" dataSource="../dataSource">
                             <caption>Link Action</caption>
                             <description>Action to execute when link is clicked (Show Page, Microflow, Nanoflow, etc.). The context object will be the row's data object.</description>
                         </property>
@@ -195,8 +203,16 @@
         </propertyGroup>
         <propertyGroup caption="Grid Options">
             <property key="licenseKey" type="string" required="false">
-                <caption>AG Grid License Key (Enterprise)</caption>
-                <description>Your AG Grid Enterprise license key. Leave empty for Community edition. This is kept secure within your Mendix app.</description>
+                <caption>Enterprise Key</caption>
+                <description>Your AG Grid Enterprise license key. Leave empty for Community edition. This value is masked in Studio.</description>
+            </property>
+            <property key="useLocalStorage" type="boolean" defaultValue="true">
+                <caption>Use Local Storage</caption>
+                <description>Persist view, filters, search, and sort per user in the browser. Disable to fall back to widget defaults each time.</description>
+            </property>
+            <property key="showToolbarSearch" type="boolean" defaultValue="true">
+                <caption>Contains in Toolbar</caption>
+                <description>Show the "Contains" search field in the toolbar for quick filtering.</description>
             </property>
             <property key="pagination" type="boolean" defaultValue="true">
                 <caption>Enable Pagination</caption>

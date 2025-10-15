@@ -15,6 +15,7 @@ interface GridViewProps {
     onRowClicked: (event: any) => void;
     onSortChanged?: () => void;
     onFilterChanged?: () => void;
+    columnVisibility?: Record<string, boolean>;
     renderStatusBadge: (value: any, mappingString: string | undefined) => string;
     renderLink: (
         value: any,
@@ -42,10 +43,21 @@ export function GridView(props: GridViewProps): ReactElement {
         onRowClicked,
         onSortChanged,
         onFilterChanged,
+        columnVisibility,
         renderStatusBadge,
         renderLink,
         applyFormatter
     } = props;
+
+    // Helper function to evaluate template strings
+    const evaluateTemplate = (template: string, item: any, columns: ColumnsType[]): string => {
+        return template.replace(/\$\{([^}]+)\}/g, (match, attrId) => {
+            const col = columns.find((c) => c.attribute?.id === attrId);
+            if (!col || !col.attribute) return match; // keep placeholder if not found
+            const value = col.attribute.get(item);
+            return value.status === ValueStatus.Available ? String(value.value ?? "") : "";
+        });
+    };
 
     // Helper function to determine cell alignment
     const getCellAlignment = (col: ColumnsType): string => {
@@ -86,7 +98,12 @@ export function GridView(props: GridViewProps): ReactElement {
     };
 
     const getColumnDefs = (): ColDef[] => {
-        const colDefs = columns.map((col) => {
+        const visibleColumns = columns.filter((col) => {
+            if (!col.attribute?.id) return true; // Show columns without attributes
+            return columnVisibility?.[col.attribute.id] !== false;
+        });
+
+        const colDefs = visibleColumns.map((col) => {
             const colDef: ColDef = {
                 headerName: col.header?.value || "",
                 field: col.attribute?.id || "",
@@ -96,11 +113,15 @@ export function GridView(props: GridViewProps): ReactElement {
                 valueGetter: (params) => {
                     try {
                         const item = params.data;
-                        if (!item || !col.attribute) return "";
+                        if (!item) return "";
 
+                        if (col.template) {
+                            return evaluateTemplate(col.template, item, columns);
+                        }
+
+                        if (!col.attribute) return "";
                         const value = col.attribute.get(item);
                         if (value.status !== ValueStatus.Available) return "";
-
                         return value.value;
                     } catch (e) {
                         console.error("Error in valueGetter:", e);
@@ -135,6 +156,17 @@ export function GridView(props: GridViewProps): ReactElement {
             // Also align the header
             colDef.headerClass = `ag-header-cell-${alignment}`;
 
+            // Handle hidden columns
+            if (col.hidden) {
+                colDef.hide = true;
+            }
+
+            // Handle template columns (virtual concatenated)
+            if (col.template) {
+                colDef.sortable = false;
+                colDef.filter = false;
+            }
+
             // Use cellRenderer for statusBadge and link, valueFormatter for others
             if (col.formatter === "statusBadge") {
                 colDef.cellRenderer = (params: any) => {
@@ -154,31 +186,38 @@ export function GridView(props: GridViewProps): ReactElement {
             } else if (col.formatter === "link") {
                 colDef.cellRenderer = (params: any) => {
                     try {
-                        // If there's a linkAction, create an accessible button
-                        if (col.linkAction && col.linkAction.canExecute && params.data) {
-                            return createElement("button", {
-                                className: "fas fa-eye aggrid-link-action",
-                                onClick: (e: any) => {
-                                    e.stopPropagation();
-                                    col.linkAction!.execute();
-                                },
-                                onKeyDown: (e: any) => {
-                                    if (e.key === "Enter" || e.key === " ") {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        col.linkAction!.execute();
-                                    }
-                                },
-                                tabIndex: 0,
-                                "aria-label": "View details",
-                                style: {
-                                    background: "none",
-                                    border: "none",
-                                    cursor: "pointer",
-                                    padding: "4px",
-                                    color: "inherit"
-                                }
-                            });
+                        // If there's a linkAction, create an accessible button with per-row context
+                        if (col.linkAction && params.data) {
+                            const rowAction = col.linkAction.get(params.data);
+
+                            if (rowAction && rowAction.canExecute) {
+                                const rawValue = params.value;
+                                const displayText = col.linkText
+                                    ? col.linkText.replace(/\$\{value\}/g, String(rawValue ?? ""))
+                                    : String(rawValue ?? "");
+
+                                return createElement(
+                                    "button",
+                                    {
+                                        type: "button",
+                                        className: "aggrid-link-button",
+                                        onClick: (e: any) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            rowAction.execute();
+                                        },
+                                        onKeyDown: (e: any) => {
+                                            if (e.key === "Enter" || e.key === " ") {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                rowAction.execute();
+                                            }
+                                        }
+                                    },
+                                    displayText ||
+                                        createElement("span", { className: "fas fa-eye" })
+                                );
+                            }
                         }
 
                         // Fallback to legacy URL pattern - create accessible button that triggers row click

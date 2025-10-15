@@ -19,6 +19,7 @@ module.exports = {
             { argsIgnorePattern: "^_", varsIgnorePattern: "^_", ignoreRestSiblings: true }
         ],
         "no-unused-vars": "off",
-        "no-undef": "off"
+        "no-undef": "off",
+        "no-empty-source": "off"
     }
 };
