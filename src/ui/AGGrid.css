@@ -1060,8 +1060,9 @@
   z-index: 2;
   transition: max-height 0.2s linear, max-width 0.2s linear, padding 0.2s linear;
 }
-.sr-card-footer-actions { /* placeholder */
-  flex: row-reverse !important;
+.sr-card .sr-card-footer {
+    flex-flow: row-reverse;
+    background-color: inherit;
 }
 
 .sr-card .sr-card-footer-btn:hover,
@@ -1099,19 +1100,118 @@
 .sr-card-footer-btn { /* placeholder */ }
 
 
-/* Status-based callout colors */
-.sr-callout.badge-approved {
-    background-color: #10b981; /* green-500 */
+.sr-callout:hover {
+    pointer-events: none;
 }
 
-.sr-callout.badge-denied {
-    background-color: #ef4444; /* red-500 */
+/* Harden List View Styles */
+.aggrid-hardened-list-view {
+    width: 100%;
 }
 
-.sr-callout.badge-pending {
-    background-color: #f59e0b; /* amber-500 */
+.aggrid-hardened-cards-view .sr-list-item {
+    margin: 1em 0;
 }
 
-.sr-callout.badge-open {
-    background-color: #3b82f6; /* blue-500 */
+.aggrid-hardened-cards-view .sr-li-selectable:focus-within {
+    box-shadow: 0 0 6px rgba(18, 18, 18, 0.4), 4px 4px 6px rgba(18, 18, 18, 0.2);
+}
+
+.sr-li-selectable {
+    /* placeholder */
+}
+
+.sr-long-header {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.sr-callout-simple {
+    /* placeholder */
+}
+
+.callouttype-null {
+    /* placeholder */
+}
+
+.sr-callout-grow {
+    /* placeholder */
+}
+
+.sr-long-header-title {
+    flex: 1;
+    margin-left: 12px;
+}
+
+.sr-long-header-primary {
+    font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.sr-long-header-actions {
+    margin-left: auto;
+}
+
+.sr-list-actions-row {
+    display: flex;
+    gap: 8px;
+}
+
+.sr-list-action-btn {
+    /* placeholder */
+}
+
+.sr-long-banners {
+    /* placeholder */
+}
+
+.sr-banner-contact-security {
+    background-color: #fee2e2;
+    color: #dc2626;
+    padding: 8px 12px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.sr-long-body {
+    padding: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.sr-long-body-cell {
+    display: flex;
+    flex-direction: column;
+    min-width: 150px;
+}
+
+.sr-long-body-cell.focus-cell {
+    flex: 1;
+}
+
+.sr-long-body-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+}
+
+.sr-long-body-value {
+    font-size: 14px;
+    color: #111827;
+    word-break: break-word;
+}
+
+.sr-long-body-cell .value-container {
+    margin-bottom: 8px;
+}
+
+.sr-long-body-cell .value-container:last-child {
+    margin-bottom: 0;
 }

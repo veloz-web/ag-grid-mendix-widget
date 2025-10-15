@@ -1,6 +1,6 @@
 import { ChangeEvent, ReactElement } from "react";
 
-type ViewMode = "grid" | "cards" | "list" | "harden";
+type ViewMode = "grid" | "cards" | "list" | "harden" | "hardenlist";
 
 interface ViewSelectorProps {
     currentView: ViewMode;
@@ -31,23 +31,8 @@ export function ViewSelector(props: ViewSelectorProps): ReactElement {
                 />
                 <label
                     htmlFor={`${baseId}-cards`}
-                    className="view-label fas fa-grid"
+                    className="view-label fas fa-credit-card"
                     title="Card View"
-                ></label>
-
-                <input
-                    type="radio"
-                    id={`${baseId}-list`}
-                    name={baseId}
-                    value="list"
-                    checked={currentView === "list"}
-                    onChange={handleViewChange}
-                    className="view-radio-input"
-                />
-                <label
-                    htmlFor={`${baseId}-list`}
-                    className="view-label fas fa-list"
-                    title="List View"
                 ></label>
 
                 <input
@@ -61,8 +46,23 @@ export function ViewSelector(props: ViewSelectorProps): ReactElement {
                 />
                 <label
                     htmlFor={`${baseId}-harden`}
-                    className="view-label fas fa-credit-card"
+                    className="view-label fas fa-grid"
                     title="Harden Card View"
+                ></label>
+
+                <input
+                    type="radio"
+                    id={`${baseId}-hardenlist`}
+                    name={baseId}
+                    value="hardenlist"
+                    checked={currentView === "hardenlist"}
+                    onChange={handleViewChange}
+                    className="view-radio-input"
+                />
+                <label
+                    htmlFor={`${baseId}-hardenlist`}
+
+                    title="List View"
                 ></label>
 
                 <input
