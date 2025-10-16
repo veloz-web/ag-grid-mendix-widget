@@ -191,40 +191,42 @@ export function ListView(props: ListViewProps): ReactElement {
 
                             <div className="sr-long-body-cell">
                                 <span className="sr-long-body-label">Point of Contact</span>
-                                <div className="d-flex value-container sr-tooltip row-left">
-                                    <span className="value-icon fas fa-user">&nbsp;</span>
-                                    <span className="sr-long-body-value">
-                                        {getValue(item, "Point of Contact")}
-                                    </span>
-                                    <div className="sr-tip-l">
-                                        <span>Point of Contact</span>
+                                <div>
+                                    <div className="d-flex value-container sr-tooltip row-left">
+                                        <span className="value-icon fas fa-user">&nbsp;</span>
+                                        <span className="sr-long-body-value">
+                                            {getValue(item, "Point of Contact")}
+                                        </span>
+                                        <div className="sr-tip-l">
+                                            <span>Point of Contact</span>
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="d-flex value-container sr-tooltip row-left">
-                                    <span className="value-icon fas fa-envelope">&nbsp;</span>
-                                    <span className="sr-long-body-value">
-                                        {getValue(item, "Email")}
-                                    </span>
-                                    <div className="sr-tip-l">
-                                        <span>Email</span>
+                                    <div className="d-flex value-container sr-tooltip row-left">
+                                        <span className="value-icon fas fa-envelope">&nbsp;</span>
+                                        <span className="sr-long-body-value">
+                                            {getValue(item, "Email")}
+                                        </span>
+                                        <div className="sr-tip-l">
+                                            <span>Email</span>
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="d-flex value-container sr-tooltip row-left">
-                                    <span className="value-icon fas fa-phone-office">&nbsp;</span>
-                                    <span className="sr-long-body-value">
-                                        {getValue(item, "OfficePhone")}
-                                    </span>
-                                    <div className="sr-tip-l">
-                                        <span>Office Phone</span>
+                                    <div className="d-flex value-container sr-tooltip row-left">
+                                        <span className="value-icon fas fa-phone-office">&nbsp;</span>
+                                        <span className="sr-long-body-value">
+                                            {getValue(item, "OfficePhone")}
+                                        </span>
+                                        <div className="sr-tip-l">
+                                            <span>Office Phone</span>
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="d-flex value-container sr-tooltip row-left">
-                                    <span className="value-icon fas fa-mobile-screen">&nbsp;</span>
-                                    <span className="sr-long-body-value">
-                                        {getValue(item, "MobilePhone")}
-                                    </span>
-                                    <div className="sr-tip-l">
-                                        <span>Mobile Phone</span>
+                                    <div className="d-flex value-container sr-tooltip row-left">
+                                        <span className="value-icon fas fa-mobile-screen">&nbsp;</span>
+                                        <span className="sr-long-body-value">
+                                            {getValue(item, "MobilePhone")}
+                                        </span>
+                                        <div className="sr-tip-l">
+                                            <span>Mobile Phone</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

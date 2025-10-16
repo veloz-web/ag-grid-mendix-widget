@@ -894,6 +894,15 @@
     content: "\f00d";
 }
 
+.aggrid-list-view .badge-denied:not(.callouttype-null)::before {
+    content: "\f00d";
+    font-family: 'Font Awesome 6 Pro';
+    width: 100%;
+    text-align: center;
+    font-size: 24px;
+}
+
+
 .badge-pending {
     color: white;
     background-color: rgb(224, 116, 0) !important; /*important needed because widget.scss has different green for some reason;*/
@@ -901,6 +910,14 @@
 
 .badge-pending:not(.callouttype-null)::before {
     content: "\e1d4";
+}
+
+.aggrid-list-view .badge-pending:not(.callouttype-null)::before {
+    content: "\e1d4";    
+    font-family: 'Font Awesome 6 Pro';
+    width: 100%;
+    text-align: center;
+    font-size: 24px;
 }
 
 .badge-open {
@@ -912,6 +929,14 @@
     content: "\+";
 }
 
+.aggrid-list-view .badge-open:not(.callouttype-null)::before {
+    content: "\+";
+    font-family: 'Font Awesome 6 Pro';
+    width: 100%;
+    text-align: center;
+    font-size: 24px;
+}
+
 .badge-approved {
     color: white;
     background-color: rgb(93, 175, 93) !important; /*important needed because widget.scss has different green for some reason;*/
@@ -921,6 +946,13 @@
     content: "\f560";
 }
 
+.aggrid-list-view .badge-approved:not(.callouttype-null)::before {
+    content: "\f560";
+    font-family: 'Font Awesome 6 Pro';
+    width: 100%;
+    text-align: center;
+    font-size: 24px;
+}
 /* Column Visibility */
 .aggrid-column-visibility-btn {
     display: flex;

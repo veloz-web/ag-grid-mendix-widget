@@ -1353,7 +1353,7 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
                         activeFilters={activeFilters}
                         globalSearch={globalSearch}
                         sortModel={sortModel}
-                        getDistinctValues={this.getDistinctValuesForColumn}
+                        getDistinctValues={(columnId) => this.getDistinctValuesForColumn(columnId)}
                         onClose={this.closeFilterDrawerAndFocus}
                         onApplyFilters={this.applyFiltersFromDrawer}
                         onClearFilters={this.clearFilters}
