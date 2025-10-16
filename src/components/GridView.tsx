@@ -120,7 +120,7 @@ export function GridView(props: GridViewProps): ReactElement {
             });
         }
 
-        const colDefs = visibleColumns.map((col) => {
+        const colDefs = orderedColumns.map((col) => {
             const colDef: ColDef = {
                 headerName: col.header?.value || "",
                 field: col.attribute?.id || "",

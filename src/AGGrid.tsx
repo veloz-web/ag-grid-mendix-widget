@@ -9,7 +9,6 @@ import { ValueStatus } from "mendix";
 import { GridView } from "./components/GridView";
 import { CardView } from "./components/CardView";
 import { HardenCardView } from "./components/HardenCardView";
-import { HardenListView } from "./components/HardenListView";
 import { ListView } from "./components/ListView";
 import { ViewSelector } from "./components/ViewSelector";
 import { FilterDrawer } from "./components/FilterDrawer";
@@ -23,7 +22,7 @@ import "ag-grid-community/styles/ag-theme-quartz.css";
 
 import "./ui/AGGrid.css";
 
-type ViewMode = "grid" | "cards" | "list" | "harden" | "hardenlist";
+type ViewMode = "grid" | "cards" | "list" | "harden";
 
 interface AGGridState {
     currentView: ViewMode;
@@ -828,7 +827,7 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
         // Apply saved column order if available
         if (columnOrder && columnOrder.length > 0 && this.columnApi) {
             try {
-                const columnState = columnOrder.map((colId, index) => ({
+                const columnState = columnOrder.map((colId, _index) => ({
                     colId,
                     sort: null,
                     sortIndex: null,
@@ -1340,15 +1339,6 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
 
                     {currentView === "harden" && (
                         <HardenCardView
-                            rowData={filteredData}
-                            columns={columns}
-                            onRowClick={onRowClick}
-                            applyFormatter={this.applyFormatter}
-                        />
-                    )}
-
-                    {currentView === "hardenlist" && (
-                        <HardenListView
                             rowData={filteredData}
                             columns={columns}
                             onRowClick={onRowClick}

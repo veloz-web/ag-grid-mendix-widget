@@ -1,6 +1,6 @@
 import { ChangeEvent, ReactElement } from "react";
 
-type ViewMode = "grid" | "cards" | "list" | "harden" | "hardenlist";
+type ViewMode = "grid" | "cards" | "list" | "harden";
 
 interface ViewSelectorProps {
     currentView: ViewMode;
@@ -52,16 +52,16 @@ export function ViewSelector(props: ViewSelectorProps): ReactElement {
 
                 <input
                     type="radio"
-                    id={`${baseId}-hardenlist`}
+                    id={`${baseId}-list`}
                     name={baseId}
-                    value="hardenlist"
-                    checked={currentView === "hardenlist"}
+                    value="list"
+                    checked={currentView === "list"}
                     onChange={handleViewChange}
                     className="view-radio-input"
                 />
                 <label
-                    htmlFor={`${baseId}-hardenlist`}
-
+                    htmlFor={`${baseId}-list`}
+                    className="view-label fas fa-list"
                     title="List View"
                 ></label>
 

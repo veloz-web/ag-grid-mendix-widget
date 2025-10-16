@@ -109,9 +109,7 @@ export function HardenCardView(props: HardenCardViewProps): ReactElement {
                             </div>
                             <div className="sr-callout-full">
                                 <span className="sr-callout-title">Status</span>
-                                <span className="sr-callout-value">
-                                    {getValue(item, "Status")}
-                                </span>
+                                <span className="sr-callout-value">{getValue(item, "Status")}</span>
                                 <span className="sr-callout-title">Date Submitted</span>
                                 <span className="sr-callout-value">
                                     {getValue(item, "Submitted")}
@@ -123,10 +121,7 @@ export function HardenCardView(props: HardenCardViewProps): ReactElement {
                         <div className="sr-card-container sr-li-selectable">
                             {/* Main Blocker */}
                             <span className="sr-card-callout-shield"></span>
-                            <div
-                                className="sr-card-main"
-                                onClick={() => handleCardClick(item)}
-                            >
+                            <div className="sr-card-main" onClick={() => handleCardClick(item)}>
                                 {/* Card Header */}
                                 <div className="sr-card-header">
                                     <span className="sr-card-header-primary">
@@ -153,9 +148,7 @@ export function HardenCardView(props: HardenCardViewProps): ReactElement {
                                         </span>
                                     </div>
                                     <div className="sr-card-focus-cell-full sr-py-1">
-                                        <span className="sr-card-label">
-                                            Reason for Visit
-                                        </span>
+                                        <span className="sr-card-label">Reason for Visit</span>
                                         <span className="sr-card-value">
                                             {getValue(item, "Purpose")}
                                         </span>
@@ -166,9 +159,7 @@ export function HardenCardView(props: HardenCardViewProps): ReactElement {
                                 <div className="sr-card-body">
                                     <div className="sr-card-body-cell-full">
                                         <div>
-                                            <span className="sr-card-label">
-                                                Point of Contact
-                                            </span>
+                                            <span className="sr-card-label">Point of Contact</span>
                                             <div>
                                                 <div className="value-container sr-tooltip row-left">
                                                     <span className="value-icon fas fa-user">

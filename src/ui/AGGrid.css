@@ -660,7 +660,8 @@
 
 /* List View Styles */
 .aggrid-list-view {
-    background: white;
+    display: grid;
+    gap: 1em;
 }
 
 .aggrid-list-item {
@@ -864,6 +865,14 @@
     top: 4px;
 }
 
+.sr-callout-simple {
+    border-radius: 18px;
+}
+
+.sr-callout-simple .sr-callout-grow {
+    background-color: inherit;
+}
+
 .aggrid-status-badge::before {
     color:white;
     font-weight: 900;
@@ -872,10 +881,13 @@
     min-width: 32px;
 }
 
+.sr-callout-icon {
+    font-family: 'Font Awesome 6 Pro';
+}
 
 .badge-denied {
     color: white;
-    background-color: rgb(168, 59, 54);
+    background-color: rgb(168, 59, 54) !important; /*important needed because widget.scss has different green for some reason;*/
 }
 
 .badge-denied:not(.callouttype-null)::before {
@@ -884,7 +896,7 @@
 
 .badge-pending {
     color: white;
-    background-color: rgb(224, 116, 0);
+    background-color: rgb(224, 116, 0) !important; /*important needed because widget.scss has different green for some reason;*/
 }
 
 .badge-pending:not(.callouttype-null)::before {
@@ -902,7 +914,7 @@
 
 .badge-approved {
     color: white;
-    background-color: rgb(93, 175, 93);
+    background-color: rgb(93, 175, 93) !important; /*important needed because widget.scss has different green for some reason;*/
 }
 
 .badge-approved:not(.callouttype-null)::before {
@@ -1060,8 +1072,8 @@
   z-index: 2;
   transition: max-height 0.2s linear, max-width 0.2s linear, padding 0.2s linear;
 }
-.sr-card .sr-card-footer {
-    flex-flow: row-reverse;
+ .sr-card-footer-actions {
+    flex-flow: row-reverse nowrap !important;
     background-color: inherit;
 }
 
@@ -1072,7 +1084,16 @@
     background-color: var(--app-primary, #002147);
 }
 
-.sr-callout-preview { /* placeholder */ }
+.sr-callout-simple .sr-callout-preview, .sr-callout-simple .sr-callout-full {
+    background-color: inherit !important;
+}
+
+.sr-callout-simple .sr-callout-preview {
+    font-size: 20px;
+    margin: auto;
+    color: white;
+}
+
 .sr-callout-icon { /* placeholder */ }
 .sr-callout-full { /* placeholder */ }
 .sr-callout-title { /* placeholder */ }
@@ -1100,8 +1121,8 @@
 .sr-card-footer-btn { /* placeholder */ }
 
 
-.sr-callout:hover {
-    pointer-events: none;
+.sr-card .sr-card-footer-btn:last-child {
+    margin-right: .25em !important;
 }
 
 /* Harden List View Styles */
@@ -1214,4 +1235,49 @@
 
 .sr-long-body-cell .value-container:last-child {
     margin-bottom: 0;
+}
+
+/* Column Visibility Drawer Styles */
+.column-visibility-content {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 8px 0;
+}
+
+.column-visibility-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    margin: 2px 0;
+    border-radius: 6px;
+    transition: background-color 0.15s ease;
+    cursor: pointer;
+    user-select: none;
+}
+
+.column-visibility-item:hover {
+    background-color: #f3f4f6;
+}
+
+.column-visibility-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 0 12px 0 0;
+    accent-color: #3b82f6;
+    cursor: pointer;
+}
+
+.column-visibility-item .column-label {
+    font-size: 14px;
+    color: #374151;
+    font-weight: 500;
+    flex: 1;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.column-visibility-item:focus-within {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+    background-color: #eff6ff;
 }
