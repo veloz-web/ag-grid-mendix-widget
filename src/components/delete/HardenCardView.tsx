@@ -1,22 +1,16 @@
 import { ReactElement } from "react";
 import { ValueStatus } from "mendix";
-import { ColumnsType } from "../../typings/AGGridProps";
+import { ColumnsType } from "../../../typings/AGGridProps";
+import { applyFormatter } from "../../utils/formatters";
 
 interface HardenCardViewProps {
     rowData: any[];
     columns: ColumnsType[];
     onRowClick?: any;
-    applyFormatter?: (
-        value: any,
-        formatter: string,
-        attributeType: string,
-        customPrefix?: string,
-        customSuffix?: string
-    ) => string;
 }
 
 export function HardenCardView(props: HardenCardViewProps): ReactElement {
-    const { rowData, columns, onRowClick, applyFormatter } = props;
+    const { rowData, columns, onRowClick } = props;
 
     const handleCardClick = (item: any) => {
         if (!onRowClick) {
@@ -28,7 +22,10 @@ export function HardenCardView(props: HardenCardViewProps): ReactElement {
 
         // Check if the action can be executed and execute it
         if (action && action.canExecute) {
-            action.execute();
+            // Defer execution to next tick for React-only mode compatibility
+            setTimeout(() => {
+                action.execute();
+            }, 0);
         }
     };
 
@@ -81,7 +78,7 @@ export function HardenCardView(props: HardenCardViewProps): ReactElement {
 
         // Apply date formatting for date fields
         if (headerName.toLowerCase().includes("submitted") && applyFormatter) {
-            return applyFormatter(rawValue, "dateMDY", col.attribute.type || "DateTime");
+            return applyFormatter(rawValue, "dateMDY", (col.attribute.type || "DateTime") as any);
         }
 
         return String(rawValue);

@@ -1,22 +1,16 @@
 import { ReactElement } from "react";
 import { ValueStatus } from "mendix";
-import { ColumnsType } from "../../typings/AGGridProps";
+import { ColumnsType } from "../../../typings/AGGridProps";
+import { applyFormatter } from "../../utils/formatters";
 
 interface ListViewProps {
     rowData: any[];
     columns: ColumnsType[];
     onRowClick?: any;
-    applyFormatter?: (
-        value: any,
-        formatter: string,
-        attributeType: string,
-        customPrefix?: string,
-        customSuffix?: string
-    ) => string;
 }
 
 export function ListView(props: ListViewProps): ReactElement {
-    const { rowData, columns, onRowClick, applyFormatter } = props;
+    const { rowData, columns, onRowClick } = props;
 
     const handleListClick = (item: any) => {
         if (!onRowClick) {
@@ -28,7 +22,10 @@ export function ListView(props: ListViewProps): ReactElement {
 
         // Check if the action can be executed and execute it
         if (action && action.canExecute) {
-            action.execute();
+            // Defer execution to next tick for React-only mode compatibility
+            setTimeout(() => {
+                action.execute();
+            }, 0);
         }
     };
 
@@ -80,7 +77,7 @@ export function ListView(props: ListViewProps): ReactElement {
 
         // Apply date formatting for date fields
         if (headerName.toLowerCase().includes("submitted") && applyFormatter) {
-            return applyFormatter(rawValue, "dateMDY", col.attribute.type || "DateTime");
+            return applyFormatter(rawValue, "dateMDY", (col.attribute.type || "DateTime") as any);
         }
 
         return String(rawValue);
@@ -211,7 +208,9 @@ export function ListView(props: ListViewProps): ReactElement {
                                         </div>
                                     </div>
                                     <div className="d-flex value-container sr-tooltip row-left">
-                                        <span className="value-icon fas fa-phone-office">&nbsp;</span>
+                                        <span className="value-icon fas fa-phone-office">
+                                            &nbsp;
+                                        </span>
                                         <span className="sr-long-body-value">
                                             {getValue(item, "OfficePhone")}
                                         </span>
@@ -220,7 +219,9 @@ export function ListView(props: ListViewProps): ReactElement {
                                         </div>
                                     </div>
                                     <div className="d-flex value-container sr-tooltip row-left">
-                                        <span className="value-icon fas fa-mobile-screen">&nbsp;</span>
+                                        <span className="value-icon fas fa-mobile-screen">
+                                            &nbsp;
+                                        </span>
                                         <span className="sr-long-body-value">
                                             {getValue(item, "MobilePhone")}
                                         </span>

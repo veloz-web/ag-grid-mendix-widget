@@ -1,4 +1,4 @@
-import { ReactElement } from "react";
+import { ReactElement, useEffect, useRef } from "react";
 import { ColumnsType } from "../../typings/AGGridProps";
 
 interface HiddenDrawerProps {
@@ -12,14 +12,34 @@ interface HiddenDrawerProps {
 export function HiddenDrawer(props: HiddenDrawerProps): ReactElement | null {
     const { isOpen, columns, columnVisibility, onClose, onToggleColumn } = props;
 
-    if (!isOpen) return null;
+    const drawerRef = useRef<HTMLDivElement>(null);
 
-    const handleKeyDown = (event: React.KeyboardEvent) => {
-        if (event.key === "Escape") {
-            event.preventDefault();
-            onClose();
+    // Focus management
+    useEffect(() => {
+        if (isOpen && drawerRef.current) {
+            drawerRef.current.focus();
         }
-    };
+    }, [isOpen]);
+
+    useEffect(() => {
+        if (!isOpen) {
+            return;
+        }
+
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === "Escape") {
+                event.preventDefault();
+                onClose();
+            }
+        };
+
+        document.addEventListener("keydown", handleKeyDown);
+        return () => {
+            document.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [isOpen, onClose]);
+
+    if (!isOpen) return null;
 
     const visibleColumns = columns.filter((col) => col.attribute?.id);
     const visibleCount = visibleColumns.filter(
@@ -31,11 +51,12 @@ export function HiddenDrawer(props: HiddenDrawerProps): ReactElement | null {
         <div className="aggrid-filter-drawer">
             <div className="filter-drawer-overlay" onClick={onClose} aria-hidden="true"></div>
             <div
+                ref={drawerRef}
                 className="filter-drawer-content"
                 role="dialog"
                 aria-modal="true"
                 aria-label={`Column Visibility - ${visibleCount} of ${totalCount} columns visible`}
-                onKeyDown={handleKeyDown}
+                tabIndex={-1}
             >
                 <div className="filter-drawer-header">
                     <h3>Column Visibility</h3>

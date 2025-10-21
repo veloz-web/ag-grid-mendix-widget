@@ -196,6 +196,14 @@
                     <enumerationValue key="list">List</enumerationValue>
                 </enumerationValues>
             </property>
+            <property key="customCardTemplate" type="string" defaultValue="" multiline="true" required="false">
+                <caption>Custom Card Template (HTML)</caption>
+                <description>HTML template for custom card view. Use {{FieldName}} placeholders for dynamic data. FieldName must match column headers exactly. Leave empty to use default HardenCardView.</description>
+            </property>
+            <property key="customListTemplate" type="string" defaultValue="" multiline="true" required="false">
+                <caption>Custom List Template (HTML)</caption>
+                <description>HTML template for custom list view. Use {{FieldName}} placeholders for dynamic data. FieldName must match column headers exactly. Leave empty to use default HardenListView.</description>
+            </property>
             <property key="enableFilterDrawer" type="boolean" defaultValue="true">
                 <caption>Enable Filter Drawer</caption>
                 <description>Show a slide-out drawer for filters</description>

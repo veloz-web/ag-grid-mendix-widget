@@ -2,15 +2,29 @@ import { ReactElement } from "react";
 import { AGGridPreviewProps } from "../typings/AGGridProps";
 
 export function preview(props: AGGridPreviewProps): ReactElement {
-    const { columns, pagination, pageSize, height, theme, enableViewSelector, enableFilterDrawer } =
-        props;
+    const {
+        columns,
+        pagination,
+        pageSize,
+        height,
+        theme,
+        enableViewSelector,
+        enableFilterDrawer,
+        customCardTemplate,
+        customListTemplate
+    } = props;
 
     const themeClass = `ag-theme-${theme}`;
+
+    // Check if templates are available
+    const hasCardTemplate = !!(customCardTemplate && customCardTemplate.trim());
+    const hasListTemplate = !!(customListTemplate && customListTemplate.trim());
+    const showViewSelector = enableViewSelector && (hasCardTemplate || hasListTemplate);
 
     return (
         <div className="aggrid-preview-container" style={{ padding: "10px" }}>
             {/* Toolbar */}
-            {(enableViewSelector || enableFilterDrawer) && (
+            {(showViewSelector || enableFilterDrawer) && (
                 <div
                     style={{
                         display: "flex",
@@ -23,7 +37,7 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                         marginBottom: "1px"
                     }}
                 >
-                    {enableViewSelector && (
+                    {showViewSelector && (
                         <div
                             style={{
                                 display: "flex",
@@ -34,8 +48,32 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                                 padding: "4px"
                             }}
                         >
-                            <div style={{ padding: "8px 12px", color: "#666" }}>Cards</div>
-                            <div style={{ padding: "8px 12px", color: "#666" }}>List</div>
+                            {hasCardTemplate && (
+                                <div
+                                    style={{
+                                        padding: "8px 12px",
+                                        color: "#666",
+                                        borderRadius: "4px",
+                                        border: "1px solid transparent"
+                                    }}
+                                    title="Cards view available (custom template configured)"
+                                >
+                                    <i className="fas fa-grid"></i> Cards
+                                </div>
+                            )}
+                            {hasListTemplate && (
+                                <div
+                                    style={{
+                                        padding: "8px 12px",
+                                        color: "#666",
+                                        borderRadius: "4px",
+                                        border: "1px solid transparent"
+                                    }}
+                                    title="List view available (custom template configured)"
+                                >
+                                    <i className="fas fa-list"></i> List
+                                </div>
+                            )}
                             <div
                                 style={{
                                     padding: "8px 12px",
@@ -43,8 +81,9 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                                     color: "white",
                                     borderRadius: "4px"
                                 }}
+                                title="Grid view (default - always available)"
                             >
-                                Grid
+                                <i className="fas fa-table"></i> Grid
                             </div>
                         </div>
                     )}
@@ -189,6 +228,48 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                 <strong>Preview Mode:</strong> This is a mockup of the AG Grid. Run your app to see
                 the actual grid with real data.
             </div>
+
+            {/* Template status info */}
+            {enableViewSelector && (
+                <div
+                    style={{
+                        marginTop: "8px",
+                        padding: "8px 12px",
+                        backgroundColor: hasCardTemplate || hasListTemplate ? "#e8f5e9" : "#fff3e0",
+                        border: `1px solid ${
+                            hasCardTemplate || hasListTemplate ? "#81c784" : "#ffb74d"
+                        }`,
+                        borderRadius: "4px",
+                        fontSize: "12px",
+                        color: hasCardTemplate || hasListTemplate ? "#2e7d32" : "#e65100"
+                    }}
+                >
+                    <strong>View Selector Status:</strong>
+                    <ul style={{ margin: "4px 0 0 0", paddingLeft: "20px" }}>
+                        <li>
+                            <strong>Grid View:</strong> ✓ Always available
+                        </li>
+                        <li>
+                            <strong>Cards View:</strong>{" "}
+                            {hasCardTemplate
+                                ? "✓ Available (custom template configured)"
+                                : "✗ Hidden (no custom template)"}
+                        </li>
+                        <li>
+                            <strong>List View:</strong>{" "}
+                            {hasListTemplate
+                                ? "✓ Available (custom template configured)"
+                                : "✗ Hidden (no custom template)"}
+                        </li>
+                    </ul>
+                    {!hasCardTemplate && !hasListTemplate && (
+                        <div style={{ marginTop: "8px", fontStyle: "italic" }}>
+                            💡 Tip: Add HTML templates in the &quot;View Options&quot; tab to enable
+                            Cards/List views
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 }

@@ -1,4 +1,4 @@
-import { ReactElement, useState, useEffect } from "react";
+import { ReactElement, useState, useEffect, useRef } from "react";
 import { ColumnsType } from "../../typings/AGGridProps";
 
 interface FilterDrawerProps {
@@ -40,6 +40,7 @@ export function FilterDrawer(props: FilterDrawerProps): ReactElement | null {
     const [localFilters, setLocalFilters] = useState(activeFilters);
     const [localSearch, setLocalSearch] = useState(globalSearch);
     const [localSort, setLocalSort] = useState(sortModel);
+    const drawerRef = useRef<HTMLDivElement>(null);
 
     // Sync with props when drawer opens or props change
     useEffect(() => {
@@ -47,6 +48,13 @@ export function FilterDrawer(props: FilterDrawerProps): ReactElement | null {
         setLocalSearch(globalSearch);
         setLocalSort(sortModel);
     }, [isOpen, activeFilters, globalSearch, sortModel]);
+
+    // Focus management
+    useEffect(() => {
+        if (isOpen && drawerRef.current) {
+            drawerRef.current.focus();
+        }
+    }, [isOpen]);
 
     useEffect(() => {
         if (!isOpen) {
@@ -78,10 +86,22 @@ export function FilterDrawer(props: FilterDrawerProps): ReactElement | null {
         onClearFilters();
     };
 
+    const handleKeyDown = (event: React.KeyboardEvent) => {
+        if (event.key === "Escape") {
+            event.preventDefault();
+            onClose();
+        }
+    };
+
     if (!isOpen) return null;
 
     return (
-        <div className="aggrid-filter-drawer">
+        <div
+            ref={drawerRef}
+            className="aggrid-filter-drawer"
+            onKeyDown={handleKeyDown}
+            tabIndex={-1}
+        >
             <div className="filter-drawer-overlay" onClick={onClose}></div>
             <div
                 className="filter-drawer-content"

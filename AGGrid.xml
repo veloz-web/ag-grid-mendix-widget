@@ -57,6 +57,10 @@
             </property>
         </propertyGroup>
         <propertyGroup caption="Grid Options">
+            <property key="licenseKey" type="string" required="true">
+                <caption>AG Grid Enterprise License Key</caption>
+                <description>AG Grid Enterprise license key for full functionality</description>
+            </property>
             <property key="pagination" type="boolean" defaultValue="true">
                 <caption>Enable Pagination</caption>
                 <description>Enable pagination for the grid</description>

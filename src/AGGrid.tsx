@@ -1,24 +1,49 @@
 import { ChangeEvent, Component, ReactNode, createRef } from "react";
-import { GridReadyEvent } from "ag-grid-community";
-// Note: ag-grid-enterprise is imported but only activated with a license key
-// The bundle includes Enterprise code, but features are only enabled when licensed
-import { LicenseManager } from "ag-grid-enterprise";
+import {
+    ClientSideRowModelModule,
+    GridReadyEvent,
+    ModuleRegistry,
+    QuickFilterModule,
+    themeAlpine,
+    themeBalham,
+    themeMaterial,
+    themeQuartz
+} from "ag-grid-community";
+import {
+    CellStyleModule,
+    ClientSideRowModelApiModule,
+    ColumnsToolPanelModule,
+    LicenseManager,
+    MenuModule,
+    PaginationModule,
+    ServerSideRowModelModule,
+    SetFilterModule
+} from "ag-grid-enterprise";
 import { AGGridContainerProps } from "../typings/AGGridProps";
 import { ValueStatus } from "mendix";
 
+// Register only the modules we need for optimal bundle size
+ModuleRegistry.registerModules([
+    ClientSideRowModelModule, // Required for rowData prop
+    ClientSideRowModelApiModule, // Enterprise: API methods like setQuickFilter
+    ServerSideRowModelModule, // Enterprise: Server-side row model
+    QuickFilterModule, // Community: Quick filter feature
+    PaginationModule, // Enterprise: Pagination features
+    SetFilterModule, // Enterprise: Set filtering
+    CellStyleModule, // Enterprise: Cell styling
+    ColumnsToolPanelModule, // Enterprise: Column visibility/reordering
+    MenuModule // Enterprise: Context menus
+]);
+
 import { GridView } from "./components/GridView";
-import { CardView } from "./components/CardView";
-import { HardenCardView } from "./components/HardenCardView";
-import { ListView } from "./components/ListView";
-import { ViewSelector } from "./components/ViewSelector";
+import { DynamicView } from "./components/CardView";
+import { HardenCardView } from "./components/delete/HardenCardView";
+import { ListView } from "./components/delete/ListView";
+import { CustomTemplateView } from "./components/CustomTemplateView";
 import { FilterDrawer } from "./components/FilterDrawer";
 import { HiddenDrawer } from "./components/HiddenDrawer";
-
-import "ag-grid-community/styles/ag-grid.css";
-import "ag-grid-community/styles/ag-theme-alpine.css";
-import "ag-grid-community/styles/ag-theme-balham.css";
-import "ag-grid-community/styles/ag-theme-material.css";
-import "ag-grid-community/styles/ag-theme-quartz.css";
+import { Toolbar } from "./components/Toolbar";
+import { compareValuesForSort } from "./utils/formatters";
 
 import "./ui/AGGrid.css";
 
@@ -57,12 +82,13 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
     constructor(props: AGGridContainerProps) {
         super(props);
 
-        this.storageKey = `aggrid:${props.name || "default"}`;
-        this.shouldPersist = props.useLocalStorage !== false;
-
-        if (props.licenseKey && props.licenseKey.trim() !== "") {
+        // Set the AG Grid Enterprise license key (required for Enterprise features)
+        if (props.licenseKey) {
             LicenseManager.setLicenseKey(props.licenseKey);
         }
+
+        this.storageKey = `aggrid:${props.name || "default"}`;
+        this.shouldPersist = props.useLocalStorage !== false;
 
         const persisted = this.shouldPersist ? this.loadPersistedState() : null;
         const initialView = persisted?.viewMode ?? this.getInitialView();
@@ -104,6 +130,23 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
     componentWillUnmount() {
         window.removeEventListener("resize", this.handleResize);
     }
+
+    // Map theme name to AG Grid v34 theme object
+    private getThemeObject = () => {
+        const themeName = this.props.theme || "material";
+        switch (themeName) {
+            case "alpine":
+                return themeAlpine;
+            case "balham":
+                return themeBalham;
+            case "material":
+                return themeMaterial;
+            case "quartz":
+                return themeQuartz;
+            default:
+                return themeMaterial;
+        }
+    };
 
     private checkIsMobile = (): boolean => {
         return window.innerWidth < 768;
@@ -258,7 +301,8 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
     private applyGlobalSearch = (searchValue: string) => {
         this.setState({ globalSearch: searchValue }, () => {
             if (this.gridApi) {
-                this.gridApi.setQuickFilter(searchValue || "");
+                // ✅ Replace deprecated setQuickFilter with setGridOption
+                this.gridApi.setGridOption("quickFilterText", searchValue || "");
             }
             this.savePersistedState({ globalSearch: searchValue });
         });
@@ -396,13 +440,29 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
             }
 
             const viewCandidate = parsed.viewMode;
-            const viewMode: ViewMode =
-                viewCandidate === "grid" ||
-                viewCandidate === "cards" ||
-                viewCandidate === "list" ||
-                viewCandidate === "harden"
-                    ? viewCandidate
-                    : this.getInitialView();
+
+            // Check if templates are available
+            const hasCardTemplate = !!(
+                this.props.customCardTemplate && this.props.customCardTemplate.trim()
+            );
+            const hasListTemplate = !!(
+                this.props.customListTemplate && this.props.customListTemplate.trim()
+            );
+
+            // Validate viewMode - reset to grid if the persisted view isn't available
+            let viewMode: ViewMode;
+            if (viewCandidate === "grid") {
+                viewMode = "grid";
+            } else if (viewCandidate === "cards" && hasCardTemplate) {
+                viewMode = "cards";
+            } else if (viewCandidate === "list" && hasListTemplate) {
+                viewMode = "list";
+            } else if (viewCandidate === "harden" && hasCardTemplate) {
+                viewMode = "harden";
+            } else {
+                // Invalid or unavailable view - reset to grid
+                viewMode = "grid";
+            }
 
             const activeFilters =
                 parsed.activeFilters && typeof parsed.activeFilters === "object"
@@ -534,279 +594,8 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
             {}
         );
 
-        if (Object.keys(filterModel).length > 0) {
-            this.gridApi.setFilterModel(filterModel);
-        } else {
-            this.gridApi.setFilterModel(null);
-        }
-
-        this.gridApi.setQuickFilter(globalSearch || "");
-    }
-
-    private renderStatusBadge = (value: any, mappingString: string | undefined): string => {
-        try {
-            // Handle empty or undefined mapping - return default badge
-            if (
-                !mappingString ||
-                typeof mappingString !== "string" ||
-                mappingString.trim() === ""
-            ) {
-                return `<span class="aggrid-status-badge badge-secondary">${String(
-                    value || ""
-                )}</span>`;
-            }
-            const mappings = JSON.parse(mappingString);
-
-            if (!Array.isArray(mappings)) {
-                console.warn("Status mapping is not an array:", mappings);
-                return `<span class="aggrid-status-badge badge-secondary">${String(
-                    value || ""
-                )}</span>`;
-            }
-
-            // Normalize the value for comparison (handle both integers and strings)
-            const normalizedValue = value !== null && value !== undefined ? value : "";
-
-            // Find matching mapping - support both numeric and string values
-            const mapping = mappings.find((m: any) => {
-                if (m.value === undefined || m.value === null) return false;
-
-                // Try exact match first
-                if (m.value === normalizedValue) return true;
-
-                // Try string comparison
-                if (String(m.value) === String(normalizedValue)) return true;
-
-                // Try numeric comparison if both can be numbers
-                const numValue = Number(normalizedValue);
-                const numMapping = Number(m.value);
-                if (!isNaN(numValue) && !isNaN(numMapping) && numValue === numMapping) return true;
-
-                return false;
-            });
-
-            if (!mapping) {
-                // No mapping found, return default badge with the raw value
-                return `<span class="aggrid-status-badge badge-secondary">${String(
-                    value || ""
-                )}</span>`;
-            }
-
-            // Return HTML string with badge
-            const className = `aggrid-status-badge ${
-                mapping.className || "badge-secondary"
-            }`.trim();
-            const style = mapping.style ? ` style="${mapping.style}"` : "";
-            const labelText =
-                mapping.label !== undefined && mapping.label !== null
-                    ? String(mapping.label)
-                    : String(value || "");
-
-            return `<span class="${className}"${style}>${labelText}</span>`;
-        } catch (e) {
-            // If anything fails, log error and return default badge
-            console.error("Error in renderStatusBadge:", e);
-            console.error("Mapping string was:", mappingString);
-            console.error("Value was:", value);
-            return `<span class="aggrid-status-badge badge-secondary">${String(
-                value || ""
-            )}</span>`;
-        }
-    };
-
-    private renderLink = (
-        value: any,
-        urlPattern: string | undefined,
-        linkTextPattern: string | undefined
-    ): string => {
-        try {
-            // Handle empty or undefined URL pattern
-            if (!urlPattern || typeof urlPattern !== "string" || urlPattern.trim() === "") {
-                console.warn("Link URL pattern is empty or invalid, returning plain value:", value);
-                return String(value || "");
-            }
-
-            // Replace ${value} placeholder with actual value
-            const url = urlPattern.replace(/\$\{value\}/g, String(value || ""));
-
-            // Determine link text
-            let displayText: string;
-            if (
-                linkTextPattern &&
-                typeof linkTextPattern === "string" &&
-                linkTextPattern.trim() !== ""
-            ) {
-                // Replace ${value} in link text pattern
-                displayText = linkTextPattern.replace(/\$\{value\}/g, String(value || ""));
-            } else {
-                // Use the value as display text
-                displayText = String(value || "");
-            }
-
-            // Return HTML anchor tag
-            return `<a href="${url}" class="aggrid-link"><span class="fa fa-eye"></span> <span class="sr-only">${displayText}</span></a>`;
-        } catch (e) {
-            console.error("Error in renderLink:", e);
-            console.error("URL pattern was:", urlPattern);
-            console.error("Value was:", value);
-            return String(value || "");
-        }
-    };
-
-    private applyFormatter = (
-        value: any,
-        formatter: string,
-        attributeType: string,
-        customPrefix?: string,
-        customSuffix?: string
-    ): string => {
-        if (value === null || value === undefined) return "";
-
-        try {
-            switch (formatter) {
-                case "customPrefix":
-                    const prefix = customPrefix || "";
-                    const suffix = customSuffix || "";
-                    return `${prefix}${String(value)}${suffix}`;
-                case "currency":
-                    return this.formatCurrency(value, "USD");
-                case "currencyEUR":
-                    return this.formatCurrency(value, "EUR");
-                case "currencyGBP":
-                    return this.formatCurrency(value, "GBP");
-                case "percentage":
-                    const numVal = Number(value);
-                    return isNaN(numVal) ? String(value) : `${numVal.toFixed(2)}%`;
-                case "number":
-                    const num = Number(value);
-                    return isNaN(num) ? String(value) : num.toLocaleString();
-                case "decimal2":
-                    const dec = Number(value);
-                    return isNaN(dec) ? String(value) : dec.toFixed(2);
-                case "dateShort":
-                case "dateMDY":
-                    return this.formatDate(value, "MM/DD/YYYY");
-                case "dateLong":
-                    return this.formatDate(value, "long");
-                case "dateISO":
-                case "dateYMD":
-                    return this.formatDate(value, "YYYY-MM-DD");
-                case "dateDMY":
-                    return this.formatDate(value, "DD/MM/YYYY");
-                case "dateTime":
-                    return this.formatDate(value, "datetime");
-                case "time":
-                    return this.formatDate(value, "time");
-                case "yesNo":
-                    return value ? "Yes" : "No";
-                case "trueFalse":
-                    return value ? "True" : "False";
-                case "uppercase":
-                    return String(value).toUpperCase();
-                case "lowercase":
-                    return String(value).toLowerCase();
-                case "capitalize":
-                    const str = String(value);
-                    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-                case "none":
-                default:
-                    return this.formatValue(value, attributeType);
-            }
-        } catch (e) {
-            console.error("Error applying formatter:", formatter, "Error:", e);
-            return String(value);
-        }
-    };
-
-    private formatCurrency(value: any, currency: string): string {
-        const numValue = Number(value);
-        if (isNaN(numValue)) return String(value);
-
-        return new Intl.NumberFormat("en-US", {
-            style: "currency",
-            currency: currency,
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        }).format(numValue);
-    }
-
-    private formatDate(value: any, format: string): string {
-        const date = value instanceof Date ? value : new Date(value);
-        if (isNaN(date.getTime())) return String(value);
-
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, "0");
-        const day = String(date.getDate()).padStart(2, "0");
-
-        switch (format) {
-            case "MM/DD/YYYY":
-                return `${month}/${day}/${year}`;
-            case "DD/MM/YYYY":
-                return `${day}/${month}/${year}`;
-            case "YYYY-MM-DD":
-                return `${year}-${month}-${day}`;
-            case "YYYY/MM/DD":
-                return `${year}/${month}/${day}`;
-            case "long":
-                return date.toLocaleDateString(undefined, {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric"
-                });
-            case "datetime":
-                return date.toLocaleString();
-            case "time":
-                return date.toLocaleTimeString();
-            default:
-                return date.toLocaleDateString();
-        }
-    }
-
-    private formatValue(value: any, type: string): string {
-        if (value === null || value === undefined) return "";
-
-        switch (type) {
-            case "Boolean":
-                return value ? "Yes" : "No";
-            case "DateTime":
-                return value instanceof Date ? value.toLocaleString() : String(value);
-            case "Decimal":
-            case "Long":
-            case "Integer":
-                return String(value);
-            default:
-                return String(value);
-        }
-    }
-
-    private compareValuesForSort(a: any, b: any): number {
-        if (a === b) {
-            return 0;
-        }
-
-        if (a === null || a === undefined) {
-            return 1;
-        }
-
-        if (b === null || b === undefined) {
-            return -1;
-        }
-
-        if (a instanceof Date && b instanceof Date) {
-            return a.getTime() - b.getTime();
-        }
-
-        const aNumber = typeof a === "number" ? a : Number(a);
-        const bNumber = typeof b === "number" ? b : Number(b);
-
-        if (!isNaN(aNumber) && !isNaN(bNumber)) {
-            return aNumber - bNumber;
-        }
-
-        return String(a).localeCompare(String(b), undefined, {
-            numeric: true,
-            sensitivity: "base"
-        });
+        this.gridApi.setFilterModel(Object.keys(filterModel).length > 0 ? filterModel : null);
+        this.gridApi.setGridOption("quickFilterText", globalSearch || "");
     }
 
     private getRowData(): any[] {
@@ -917,7 +706,10 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
 
         // Check if the action can be executed and execute it
         if (action && action.canExecute) {
-            action.execute();
+            // Defer execution to next tick to ensure proper reactive context in React-only mode
+            setTimeout(() => {
+                action.execute();
+            }, 0);
         }
     };
 
@@ -1064,7 +856,7 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
                 return -1;
             }
 
-            return this.compareValuesForSort(aComparable, bComparable) * directionMultiplier;
+            return compareValuesForSort(aComparable, bComparable) * directionMultiplier;
         });
     }
 
@@ -1110,6 +902,17 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
             const filteredData = this.getFilteredData();
             const filterableColumns = this.getFilterableColumns();
 
+            // Check if templates are available
+            const hasCardTemplate = !!(
+                this.props.customCardTemplate && this.props.customCardTemplate.trim()
+            );
+            const hasListTemplate = !!(
+                this.props.customListTemplate && this.props.customListTemplate.trim()
+            );
+
+            // Only show view selector if there are templates available
+            const showViewSelector = enableViewSelector && (hasCardTemplate || hasListTemplate);
+
             // Count active filters (column filters + global search if present)
             const columnFilterCount = Object.keys(activeFilters).filter(
                 (key) => activeFilters[key]
@@ -1118,189 +921,38 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
 
             return (
                 <div className="aggrid-container">
-                    <div className="aggrid-toolbar">
-                        <div className="aggrid-toolbar-left">
-                            {enableViewSelector && (
-                                <ViewSelector
-                                    currentView={currentView}
-                                    onViewChange={this.toggleView}
-                                    groupId={this.storageKey}
-                                />
-                            )}
-                        </div>
-                        <div className="aggrid-toolbar-right">
-                            {showSortControls && (
-                                <div
-                                    className="aggrid-toolbar-sort"
-                                    role="group"
-                                    aria-label="Current sort"
-                                >
-                                    {hasSortApplied ? (
-                                        <>
-                                            <label
-                                                className="toolbar-label"
-                                                htmlFor={`${this.storageKey}-toolbar-sort`}
-                                            >
-                                                Sorted by
-                                            </label>
-                                            <select
-                                                id={`${this.storageKey}-toolbar-sort`}
-                                                className="toolbar-select"
-                                                value={currentSortColumnId}
-                                                onChange={this.handleToolbarSortChange}
-                                            >
-                                                {sortableColumns.map((col, idx) => (
-                                                    <option
-                                                        key={idx}
-                                                        value={col.attribute?.id || ""}
-                                                    >
-                                                        {col.header?.value || "Field"}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                            <div
-                                                className="toolbar-sort-direction"
-                                                role="group"
-                                                aria-label="Sort direction"
-                                            >
-                                                <button
-                                                    type="button"
-                                                    className={`toolbar-sort-button ${
-                                                        currentSortDirection === "asc"
-                                                            ? "active"
-                                                            : ""
-                                                    }`}
-                                                    onClick={() =>
-                                                        this.handleToolbarSortDirectionChange("asc")
-                                                    }
-                                                    aria-pressed={currentSortDirection === "asc"}
-                                                    aria-label="Sort ascending"
-                                                >
-                                                    <svg
-                                                        width="14"
-                                                        height="14"
-                                                        viewBox="0 0 24 24"
-                                                        fill="currentColor"
-                                                    >
-                                                        <path d="M7 14l5-5 5 5z" />
-                                                    </svg>
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    className={`toolbar-sort-button ${
-                                                        currentSortDirection === "desc"
-                                                            ? "active"
-                                                            : ""
-                                                    }`}
-                                                    onClick={() =>
-                                                        this.handleToolbarSortDirectionChange(
-                                                            "desc"
-                                                        )
-                                                    }
-                                                    aria-pressed={currentSortDirection === "desc"}
-                                                    aria-label="Sort descending"
-                                                >
-                                                    <svg
-                                                        width="14"
-                                                        height="14"
-                                                        viewBox="0 0 24 24"
-                                                        fill="currentColor"
-                                                    >
-                                                        <path d="M7 10l5 5 5-5z" />
-                                                    </svg>
-                                                </button>
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <div className="toolbar-sort-placeholder">
-                                            No sort applied (configure in Filters)
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                            {showToolbarSearch && (
-                                <div className="aggrid-toolbar-search">
-                                    <label
-                                        className="toolbar-label"
-                                        htmlFor={`${this.storageKey}-toolbar-search`}
-                                    >
-                                        Contains
-                                    </label>
-                                    <div className="toolbar-search-wrapper">
-                                        <input
-                                            id={`${this.storageKey}-toolbar-search`}
-                                            type="search"
-                                            className="toolbar-search-input"
-                                            placeholder="Search..."
-                                            value={globalSearch}
-                                            onChange={this.handleToolbarSearchChange}
-                                        />
-                                        {globalSearch && (
-                                            <button
-                                                type="button"
-                                                className="toolbar-search-clear"
-                                                onClick={this.clearToolbarSearch}
-                                                aria-label="Clear contains search"
-                                            >
-                                                <svg
-                                                    width="12"
-                                                    height="12"
-                                                    viewBox="0 0 24 24"
-                                                    fill="currentColor"
-                                                >
-                                                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
-                                                </svg>
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-
-                            {enableFilterDrawer && (
-                                <button
-                                    ref={this.filterButtonRef}
-                                    type="button"
-                                    className="aggrid-filter-btn"
-                                    onClick={this.toggleFilterDrawer}
-                                    aria-haspopup="dialog"
-                                    aria-expanded={isFilterDrawerOpen}
-                                    title="Filters"
-                                >
-                                    <svg
-                                        width="20"
-                                        height="20"
-                                        viewBox="0 0 24 24"
-                                        fill="currentColor"
-                                    >
-                                        <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" />
-                                    </svg>
-                                    {activeFilterCount > 0 && (
-                                        <span className="filter-badge">{activeFilterCount}</span>
-                                    )}
-                                </button>
-                            )}
-
-                            <button
-                                type="button"
-                                className="aggrid-column-visibility-btn"
-                                onClick={this.toggleColumnVisibility}
-                                aria-haspopup="dialog"
-                                aria-expanded={isColumnVisibilityOpen}
-                                title="Column Visibility"
-                            >
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
+                    <Toolbar
+                        enableViewSelector={showViewSelector}
+                        currentView={currentView}
+                        storageKey={this.storageKey}
+                        onViewChange={this.toggleView}
+                        hasCardTemplate={hasCardTemplate}
+                        hasListTemplate={hasListTemplate}
+                        showSortControls={showSortControls}
+                        hasSortApplied={hasSortApplied}
+                        currentSortColumnId={currentSortColumnId}
+                        currentSortDirection={currentSortDirection}
+                        sortableColumns={sortableColumns}
+                        onSortChange={this.handleToolbarSortChange}
+                        onSortDirectionChange={this.handleToolbarSortDirectionChange}
+                        showToolbarSearch={showToolbarSearch}
+                        globalSearch={globalSearch}
+                        onSearchChange={this.handleToolbarSearchChange}
+                        onClearSearch={this.clearToolbarSearch}
+                        enableFilterDrawer={enableFilterDrawer}
+                        isFilterDrawerOpen={isFilterDrawerOpen}
+                        activeFilterCount={activeFilterCount}
+                        filterButtonRef={this.filterButtonRef}
+                        onToggleFilterDrawer={this.toggleFilterDrawer}
+                        isColumnVisibilityOpen={isColumnVisibilityOpen}
+                        onToggleColumnVisibility={this.toggleColumnVisibility}
+                    />
 
                     {currentView === "grid" && (
                         <GridView
                             rowData={filteredData}
                             columns={columns}
-                            theme={theme}
+                            theme={this.getThemeObject()}
                             height={height}
                             pagination={pagination}
                             pageSize={pageSize}
@@ -1311,38 +963,48 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
                             onColumnMoved={this.onColumnMoved}
                             columnVisibility={columnVisibility}
                             columnOrder={this.state.columnOrder}
-                            renderStatusBadge={this.renderStatusBadge}
-                            renderLink={this.renderLink}
-                            applyFormatter={this.applyFormatter}
                         />
                     )}
 
-                    {currentView === "cards" && (
-                        <CardView
-                            rowData={filteredData}
-                            columns={columns}
-                            onRowClick={onRowClick}
-                            renderStatusBadge={this.renderStatusBadge}
-                            renderLink={this.renderLink}
-                            applyFormatter={this.applyFormatter}
-                        />
-                    )}
+                    {currentView === "cards" &&
+                        (this.props.customCardTemplate ? (
+                            <CustomTemplateView
+                                rowData={filteredData}
+                                columns={columns}
+                                template={this.props.customCardTemplate}
+                                onRowClick={onRowClick}
+                                className="aggrid-card-view"
+                            />
+                        ) : (
+                            <DynamicView
+                                rowData={filteredData}
+                                columns={columns}
+                                onRowClick={onRowClick}
+                            />
+                        ))}
 
-                    {currentView === "list" && (
-                        <ListView
-                            rowData={filteredData}
-                            columns={columns}
-                            onRowClick={onRowClick}
-                            applyFormatter={this.applyFormatter}
-                        />
-                    )}
+                    {currentView === "list" &&
+                        (this.props.customListTemplate ? (
+                            <CustomTemplateView
+                                rowData={filteredData}
+                                columns={columns}
+                                template={this.props.customListTemplate}
+                                onRowClick={onRowClick}
+                                className="aggrid-list-view"
+                            />
+                        ) : (
+                            <ListView
+                                rowData={filteredData}
+                                columns={columns}
+                                onRowClick={onRowClick}
+                            />
+                        ))}
 
                     {currentView === "harden" && (
                         <HardenCardView
                             rowData={filteredData}
                             columns={columns}
                             onRowClick={onRowClick}
-                            applyFormatter={this.applyFormatter}
                         />
                     )}
 

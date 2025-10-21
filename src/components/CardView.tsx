@@ -1,39 +1,17 @@
 import { ReactElement, createElement } from "react";
 import { ValueStatus } from "mendix";
 import { ColumnsType } from "../../typings/AGGridProps";
+import { formatCardFieldValue, evaluateTemplate } from "../utils/renderers";
 
-interface CardViewProps {
+interface DynamicViewProps {
     rowData: any[];
     columns: ColumnsType[];
     onRowClick?: any;
-    renderStatusBadge: (value: any, mappingString: string | undefined) => string;
-    renderLink: (
-        value: any,
-        urlPattern: string | undefined,
-        linkText: string | undefined
-    ) => string;
-    applyFormatter: (
-        value: any,
-        formatter: string,
-        attributeType: string,
-        customPrefix?: string,
-        customSuffix?: string
-    ) => string;
 }
 
-export function CardView(props: CardViewProps): ReactElement {
-    const { rowData, columns, onRowClick, renderStatusBadge, renderLink, applyFormatter } = props;
+export function DynamicView(props: DynamicViewProps): ReactElement {
+    const { rowData, columns, onRowClick } = props;
     const cardColumns = columns.filter((col) => col.includeInCardView && !col.hidden);
-
-    // Helper function to evaluate template strings
-    const evaluateTemplate = (template: string, item: any, columns: ColumnsType[]): string => {
-        return template.replace(/\$\{([^}]+)\}/g, (match, attrId) => {
-            const col = columns.find((c) => c.attribute?.id === attrId);
-            if (!col || !col.attribute) return match; // keep placeholder if not found
-            const value = col.attribute.get(item);
-            return value.status === ValueStatus.Available ? String(value.value ?? "") : "";
-        });
-    };
 
     const handleCardClick = (item: any) => {
         if (!onRowClick) {
@@ -45,103 +23,72 @@ export function CardView(props: CardViewProps): ReactElement {
 
         // Check if the action can be executed and execute it
         if (action && action.canExecute) {
-            action.execute();
+            // Defer execution to next tick for React-only mode compatibility
+            setTimeout(() => {
+                action.execute();
+            }, 0);
         }
     };
 
     return (
         <div className="aggrid-cards-view">
-            {rowData.map((item, idx) => (
-                <div key={idx} className="aggrid-card" onClick={() => handleCardClick(item)}>
-                    {cardColumns.map((col, colIdx) => {
-                        let rawValue: any;
-                        let attributeType: string;
+            {rowData.map((item, idx) => {
+                // Filter columns to only include those with available values for this item
+                const availableColumns = cardColumns.filter((col) => {
+                    if (col.template) {
+                        return true; // Templates are always available
+                    }
+                    const value = col.attribute?.get(item);
+                    return value && value.status === ValueStatus.Available;
+                });
 
-                        if (col.template) {
-                            rawValue = evaluateTemplate(col.template, item, columns);
-                            attributeType = "String"; // Templates are always strings
-                        } else {
-                            const value = col.attribute?.get(item);
-                            if (!value || value.status !== ValueStatus.Available) return null;
-                            rawValue = value.value;
-                            attributeType = col.attribute?.type || "String";
-                        }
+                return (
+                    <div key={idx} className="aggrid-card" onClick={() => handleCardClick(item)}>
+                        {availableColumns.map((col, colIdx) => {
+                            let rawValue: any;
+                            let attributeType: string;
 
-                        let formattedValue: string | ReactElement;
-                        let isHtml = false;
-
-                        if (col.formatter === "statusBadge") {
-                            formattedValue = renderStatusBadge(rawValue, col.statusMapping);
-                            isHtml = true;
-                        } else if (col.formatter === "link") {
-                            // If there's a linkAction, use that (proper Mendix navigation)
-                            if (col.linkAction) {
-                                const action = col.linkAction.get(item);
-
-                                if (action && action.canExecute) {
-                                    const displayText = col.linkText
-                                        ? col.linkText.replace(
-                                              /\$\{value\}/g,
-                                              String(rawValue ?? "")
-                                          )
-                                        : String(rawValue ?? "");
-
-                                    formattedValue = createElement(
-                                        "button",
-                                        {
-                                            type: "button",
-                                            className: "aggrid-link-button",
-                                            onClick: (e: any) => {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                action.execute();
-                                            }
-                                        },
-                                        displayText ||
-                                            createElement("span", { className: "fas fa-eye" })
-                                    );
-                                } else {
-                                    formattedValue = renderLink(
-                                        rawValue,
-                                        col.linkUrlPattern,
-                                        col.linkText
-                                    );
-                                    isHtml = true;
-                                }
+                            if (col.template) {
+                                rawValue = evaluateTemplate(col.template, item, columns);
+                                attributeType = "String"; // Templates are always strings
                             } else {
-                                // Fallback to legacy URL pattern
-                                formattedValue = renderLink(
-                                    rawValue,
-                                    col.linkUrlPattern,
-                                    col.linkText
-                                );
-                                isHtml = true;
+                                const value = col.attribute?.get(item);
+                                // We already filtered for available values, so this should always be available
+                                rawValue = value!.value;
+                                attributeType = col.attribute?.type || "String";
                             }
-                        } else {
-                            formattedValue = applyFormatter(
-                                rawValue,
-                                col.formatter || "none",
-                                attributeType,
-                                col.customPrefix,
-                                col.customSuffix
-                            );
-                        }
 
-                        return (
-                            <div key={colIdx} className="card-field">
-                                <span className="card-label">{col.header?.value}:</span>
-                                <span className="card-value">
-                                    {typeof formattedValue === "string" && isHtml
-                                        ? createElement("span", {
-                                              dangerouslySetInnerHTML: { __html: formattedValue }
-                                          })
-                                        : formattedValue}
-                                </span>
-                            </div>
-                        );
-                    })}
-                </div>
-            ))}
+                            let isHtml = false;
+
+                            const formatResult = formatCardFieldValue(
+                                col,
+                                rawValue,
+                                attributeType as any,
+                                item,
+                                columns
+                            );
+                            const formattedValue: string | ReactElement =
+                                formatResult.formattedValue;
+                            isHtml = formatResult.isHtml;
+
+                            return (
+                                <div key={colIdx} className="card-field">
+                                    <span className="card-label">{col.header?.value}:</span>
+                                    <span className="card-value">
+                                        {typeof formattedValue === "string" && isHtml
+                                            ? createElement("span", {
+                                                  dangerouslySetInnerHTML: {
+                                                      __html: formattedValue
+                                                  }
+                                              })
+                                            : formattedValue}
+                                    </span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                );
+            })}
             {rowData.length === 0 && <div className="no-data">No records found</div>}
         </div>
     );

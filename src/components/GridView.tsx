@@ -1,13 +1,15 @@
 import { ReactElement, createElement } from "react";
 import { AgGridReact } from "ag-grid-react";
-import { ColDef, GridReadyEvent } from "ag-grid-community";
+import type { ColDef, GridReadyEvent, Theme } from "ag-grid-community";
 import { ValueStatus } from "mendix";
 import { ColumnsType } from "../../typings/AGGridProps";
+import { renderStatusBadge, renderLink, applyFormatter } from "../utils/formatters";
+import { evaluateTemplate } from "../utils/renderers";
 
 interface GridViewProps {
     rowData: any[];
     columns: ColumnsType[];
-    theme: string;
+    theme: Theme;
     height: number;
     pagination: boolean;
     pageSize: number;
@@ -18,19 +20,6 @@ interface GridViewProps {
     onColumnMoved?: () => void;
     columnVisibility?: Record<string, boolean>;
     columnOrder?: string[];
-    renderStatusBadge: (value: any, mappingString: string | undefined) => string;
-    renderLink: (
-        value: any,
-        urlPattern: string | undefined,
-        linkText: string | undefined
-    ) => string;
-    applyFormatter: (
-        value: any,
-        formatter: string,
-        attributeType: string,
-        customPrefix?: string,
-        customSuffix?: string
-    ) => string;
 }
 
 export function GridView(props: GridViewProps): ReactElement {
@@ -47,21 +36,8 @@ export function GridView(props: GridViewProps): ReactElement {
         onFilterChanged,
         onColumnMoved,
         columnVisibility,
-        columnOrder,
-        renderStatusBadge,
-        renderLink,
-        applyFormatter
+        columnOrder
     } = props;
-
-    // Helper function to evaluate template strings
-    const evaluateTemplate = (template: string, item: any, columns: ColumnsType[]): string => {
-        return template.replace(/\$\{([^}]+)\}/g, (match, attrId) => {
-            const col = columns.find((c) => c.attribute?.id === attrId);
-            if (!col || !col.attribute) return match; // keep placeholder if not found
-            const value = col.attribute.get(item);
-            return value.status === ValueStatus.Available ? String(value.value ?? "") : "";
-        });
-    };
 
     // Helper function to determine cell alignment
     const getCellAlignment = (col: ColumnsType): string => {
@@ -221,13 +197,19 @@ export function GridView(props: GridViewProps): ReactElement {
                                         onClick: (e: any) => {
                                             e.preventDefault();
                                             e.stopPropagation();
-                                            rowAction.execute();
+                                            // Defer execution to next tick for React-only mode compatibility
+                                            setTimeout(() => {
+                                                rowAction.execute();
+                                            }, 0);
                                         },
                                         onKeyDown: (e: any) => {
                                             if (e.key === "Enter" || e.key === " ") {
                                                 e.preventDefault();
                                                 e.stopPropagation();
-                                                rowAction.execute();
+                                                // Defer execution to next tick for React-only mode compatibility
+                                                setTimeout(() => {
+                                                    rowAction.execute();
+                                                }, 0);
                                             }
                                         }
                                     },
@@ -263,7 +245,7 @@ export function GridView(props: GridViewProps): ReactElement {
                         return applyFormatter(
                             params.value,
                             col.formatter || "none",
-                            col.attribute?.type || "String",
+                            (col.attribute?.type || "String") as any,
                             col.customPrefix,
                             col.customSuffix
                         );
@@ -280,17 +262,17 @@ export function GridView(props: GridViewProps): ReactElement {
         return colDefs;
     };
 
-    const themeClass = `ag-theme-${theme}`;
     const columnDefs = getColumnDefs();
 
     return (
-        <div className={themeClass} style={{ height: `${height}px`, width: "100%" }}>
+        <div style={{ height: `${height}px`, width: "100%" }}>
             <AgGridReact
-                columnDefs={columnDefs}
+                theme={theme}
+                columnDefs={columnDefs as any}
                 rowData={rowData}
                 pagination={pagination}
                 paginationPageSize={pageSize}
-                onGridReady={onGridReady}
+                onGridReady={onGridReady as any}
                 onRowClicked={onRowClicked}
                 onSortChanged={onSortChanged}
                 onFilterChanged={onFilterChanged}

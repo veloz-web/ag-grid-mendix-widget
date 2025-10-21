@@ -6,11 +6,14 @@ interface ViewSelectorProps {
     currentView: ViewMode;
     onViewChange: (view: ViewMode) => void;
     groupId: string;
+    hasCardTemplate: boolean;
+    hasListTemplate: boolean;
 }
 
 export function ViewSelector(props: ViewSelectorProps): ReactElement {
-    const { currentView, onViewChange, groupId } = props;
-    const baseId = groupId || "aggrid-view";
+    const { currentView, onViewChange, groupId, hasCardTemplate, hasListTemplate } = props;
+    // Sanitize groupId to be a valid CSS selector by replacing colons with hyphens
+    const baseId = (groupId || "aggrid-view").replace(/:/g, "-");
 
     const handleViewChange = (event: ChangeEvent<HTMLInputElement>) => {
         onViewChange(event.target.value as ViewMode);
@@ -20,51 +23,6 @@ export function ViewSelector(props: ViewSelectorProps): ReactElement {
         <fieldset className="aggrid-view-selector">
             <legend className="view-selector-legend">Views:</legend>
             <div className="view-toggle">
-                <input
-                    type="radio"
-                    id={`${baseId}-cards`}
-                    name={baseId}
-                    value="cards"
-                    checked={currentView === "cards"}
-                    onChange={handleViewChange}
-                    className="view-radio-input"
-                />
-                <label
-                    htmlFor={`${baseId}-cards`}
-                    className="view-label fas fa-credit-card"
-                    title="Card View"
-                ></label>
-
-                <input
-                    type="radio"
-                    id={`${baseId}-harden`}
-                    name={baseId}
-                    value="harden"
-                    checked={currentView === "harden"}
-                    onChange={handleViewChange}
-                    className="view-radio-input"
-                />
-                <label
-                    htmlFor={`${baseId}-harden`}
-                    className="view-label fas fa-grid"
-                    title="Harden Card View"
-                ></label>
-
-                <input
-                    type="radio"
-                    id={`${baseId}-list`}
-                    name={baseId}
-                    value="list"
-                    checked={currentView === "list"}
-                    onChange={handleViewChange}
-                    className="view-radio-input"
-                />
-                <label
-                    htmlFor={`${baseId}-list`}
-                    className="view-label fas fa-list"
-                    title="List View"
-                ></label>
-
                 <input
                     type="radio"
                     id={`${baseId}-grid`}
@@ -79,6 +37,44 @@ export function ViewSelector(props: ViewSelectorProps): ReactElement {
                     className="view-label fas fa-table"
                     title="Grid View"
                 ></label>
+
+                {hasCardTemplate && (
+                    <>
+                        <input
+                            type="radio"
+                            id={`${baseId}-cards`}
+                            name={baseId}
+                            value="cards"
+                            checked={currentView === "cards"}
+                            onChange={handleViewChange}
+                            className="view-radio-input"
+                        />
+                        <label
+                            htmlFor={`${baseId}-cards`}
+                            className="view-label fas fa-grid"
+                            title="Card View"
+                        ></label>
+                    </>
+                )}
+
+                {hasListTemplate && (
+                    <>
+                        <input
+                            type="radio"
+                            id={`${baseId}-list`}
+                            name={baseId}
+                            value="list"
+                            checked={currentView === "list"}
+                            onChange={handleViewChange}
+                            className="view-radio-input"
+                        />
+                        <label
+                            htmlFor={`${baseId}-list`}
+                            className="view-label fas fa-list"
+                            title="List View"
+                        ></label>
+                    </>
+                )}
             </div>
         </fieldset>
     );

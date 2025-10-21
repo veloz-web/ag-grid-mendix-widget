@@ -87,6 +87,8 @@ export interface AGGridContainerProps {
     enableViewSelector: boolean;
     defaultView: DefaultViewEnum;
     mobileDefaultView: MobileDefaultViewEnum;
+    customCardTemplate: string;
+    customListTemplate: string;
     enableFilterDrawer: boolean;
     licenseKey: string;
     useLocalStorage: boolean;
@@ -114,6 +116,8 @@ export interface AGGridPreviewProps {
     enableViewSelector: boolean;
     defaultView: DefaultViewEnum;
     mobileDefaultView: MobileDefaultViewEnum;
+    customCardTemplate: string;
+    customListTemplate: string;
     enableFilterDrawer: boolean;
     licenseKey: string;
     useLocalStorage: boolean;

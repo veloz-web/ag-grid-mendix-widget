@@ -94,14 +94,55 @@ npm start
 
 ## View Modes
 
-### Grid View
-Traditional table layout with full AG Grid features - best for desktop and data-heavy applications.
+The widget supports multiple view modes with intelligent fallback behavior:
 
-### Cards View
-Responsive card grid perfect for mobile devices - shows fields marked with `includeInCardView="true"`.
+### Grid View (Always Available)
+Traditional table layout with full AG Grid features - best for desktop and data-heavy applications. This view is always available and serves as the default fallback.
 
-### List View
+### Cards View (Conditional)
+Responsive card grid perfect for mobile devices and visual layouts. 
+
+**How it works:**
+- **With Custom Template**: Provide HTML in the `Custom Card Template (HTML)` property with `{{FieldName}}` placeholders
+- **Without Template**: Automatically shows fields marked with `includeInCardView="true"` using the built-in `DynamicView` component
+- **View Selector**: Cards option only appears if at least one of the above is configured
+
+**Example Custom Template:**
+```html
+<div class="my-card">
+  <h3>{{Name}}</h3>
+  <p>Status: {{Status}}</p>
+  <p>{{Description}}</p>
+</div>
+```
+
+### List View (Conditional)
 Compact list format ideal for master-detail patterns and simple data browsing.
+
+**How it works:**
+- **With Custom Template**: Provide HTML in the `Custom List Template (HTML)` property with `{{FieldName}}` placeholders
+- **Without Template**: Falls back to the built-in `ListView` component
+- **View Selector**: List option only appears if a custom template is provided
+
+**Example Custom Template:**
+```html
+<span class="list-item">
+  <strong>{{Name}}</strong> - {{Status}} | {{Date}}
+</span>
+```
+
+### Smart View Selector Behavior
+
+The view selector intelligently adapts based on your configuration:
+
+| Configuration | Views Shown | Notes |
+|--------------|-------------|-------|
+| No templates | Grid only | View selector hidden - only grid available |
+| Card template only | Grid, Cards | Two-option selector |
+| List template only | Grid, List | Two-option selector |
+| Both templates | Grid, Cards, List | Full three-option selector |
+
+**localStorage Safety**: If a user previously selected Cards or List view but you later remove the template, the widget automatically resets to Grid view on next load.
 
 **See [UI_REFERENCE.md](./UI_REFERENCE.md) for visual examples and [CONFIGURATION_EXAMPLES.md](./CONFIGURATION_EXAMPLES.md) for detailed configurations.**
 
