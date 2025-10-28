@@ -31,18 +31,14 @@ export const renderStatusBadge = (value: any, mappingString: string | undefined)
     try {
         // Handle empty or undefined mapping - return default badge
         if (!mappingString || typeof mappingString !== "string" || mappingString.trim() === "") {
-            return `<span class="aggrid-status-badge badge-secondary">${String(
-                value || ""
-            )}</span>`;
+            return `<span class="status-badge badge-secondary">${String(value || "")}</span>`;
         }
 
         const mappings: StatusMapping[] = JSON.parse(mappingString);
 
         if (!Array.isArray(mappings)) {
             console.warn("Status mapping is not an array:", mappings);
-            return `<span class="aggrid-status-badge badge-secondary">${String(
-                value || ""
-            )}</span>`;
+            return `<span class="status-badge badge-secondary">${String(value || "")}</span>`;
         }
 
         // Normalize the value for comparison (handle both integers and strings)
@@ -68,26 +64,24 @@ export const renderStatusBadge = (value: any, mappingString: string | undefined)
 
         if (!mapping) {
             // No mapping found, return default badge with the raw value
-            return `<span class="aggrid-status-badge badge-secondary">${String(
-                value || ""
-            )}</span>`;
+            return `<span class="status-badge badge-secondary">${String(value || "")}</span>`;
         }
 
         // Return HTML string with badge
-        const className = `aggrid-status-badge ${mapping.className || "badge-secondary"}`.trim();
+        const className = `status-badge ${mapping.className || "badge-secondary"}`.trim();
         const style = mapping.style ? ` style="${mapping.style}"` : "";
         const labelText =
             mapping.label !== undefined && mapping.label !== null
                 ? String(mapping.label)
                 : String(value || "");
 
-        return `<span class="${className}"${style}>${labelText}</span>`;
+        return `<span class="${className}" ${style} data-status="${labelText}">${labelText}</span>`;
     } catch (e) {
         // If anything fails, log error and return default badge
         console.error("Error in renderStatusBadge:", e);
         console.error("Mapping string was:", mappingString);
         console.error("Value was:", value);
-        return `<span class="aggrid-status-badge badge-secondary">${String(value || "")}</span>`;
+        return `<span class="status-badge badge-secondary">${String(value || "")}</span>`;
     }
 };
 

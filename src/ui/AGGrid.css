@@ -821,7 +821,29 @@
 }
 
 /* Status Badge Styles */
-.aggrid-status-badge {
+
+.ag-header-cell-text {
+    font-size: 14px;
+}
+
+.ag-row:hover {
+    cursor:pointer;
+}
+
+.ag-row:focus-within {
+    outline: 1px solid #1976d2;
+    background-color: #f0f8ff; 
+}
+
+.sr-callout-simple {
+    border-radius: 18px;
+}
+
+.sr-callout-simple .sr-callout-grow {
+    background-color: inherit;
+}
+
+.status-badge {
     color: transparent;
     display: inline-flex;
     align-items: center;
@@ -835,124 +857,7 @@
     line-height: 32px;
 }
 
-.ag-header-cell-text {
-    font-size: 14px;
-}
 
-.aggrid-status-icon {
-    margin-right: 4px;
-    font-size: 14px;
-}
-
-.ag-row:hover {
-    cursor:pointer;
-}
-
-.ag-row:focus-within {
-    outline: 1px solid #1976d2;
-    background-color: #f0f8ff; 
-}
-
-.ag-row:hover .aggrid-status-badge,
-.ag-row:focus-within .aggrid-status-badge {
-    z-index: 999;
-    color: white;
-    width: fit-content;
-    padding-right: 1em;
-    text-transform: uppercase;
-    position: absolute;
-    left: 16px;
-    top: 4px;
-}
-
-.sr-callout-simple {
-    border-radius: 18px;
-}
-
-.sr-callout-simple .sr-callout-grow {
-    background-color: inherit;
-}
-
-.aggrid-status-badge::before {
-    color:white;
-    font-weight: 900;
-    font-size: 16px;
-    font-family: 'Font Awesome 6 Pro';
-    min-width: 32px;
-}
-
-.sr-callout-icon {
-    font-family: 'Font Awesome 6 Pro';
-}
-
-.badge-denied {
-    color: white;
-    background-color: rgb(168, 59, 54) !important; /*important needed because widget.scss has different green for some reason;*/
-}
-
-.badge-denied:not(.callouttype-null)::before {
-    content: "\f00d";
-}
-
-.aggrid-list-view .badge-denied:not(.callouttype-null)::before {
-    content: "\f00d";
-    font-family: 'Font Awesome 6 Pro';
-    width: 100%;
-    text-align: center;
-    font-size: 24px;
-}
-
-
-.badge-pending {
-    color: white;
-    background-color: rgb(224, 116, 0) !important; /*important needed because widget.scss has different green for some reason;*/
-}
-
-.badge-pending:not(.callouttype-null)::before {
-    content: "\e1d4";
-}
-
-.aggrid-list-view .badge-pending:not(.callouttype-null)::before {
-    content: "\e1d4";    
-    font-family: 'Font Awesome 6 Pro';
-    width: 100%;
-    text-align: center;
-    font-size: 24px;
-}
-
-.badge-open {
-    color: white;
-    background-color: rgb(51, 122, 183) !important; /*important needed because widget.scss has different blue for some reason;*/
-}
-
-.badge-open:not(.callouttype-null)::before {
-    content: "\+";
-}
-
-.aggrid-list-view .badge-open:not(.callouttype-null)::before {
-    content: "\+";
-    font-family: 'Font Awesome 6 Pro';
-    width: 100%;
-    text-align: center;
-    font-size: 24px;
-}
-
-.badge-approved {
-    color: white;
-    background-color: rgb(93, 175, 93) !important; /*important needed because widget.scss has different green for some reason;*/
-}
-
-.badge-approved:not(.callouttype-null)::before {
-    content: "\f560";
-}
-
-.aggrid-list-view .badge-approved:not(.callouttype-null)::before {
-    content: "\f560";
-    font-family: 'Font Awesome 6 Pro';
-    width: 100%;
-    text-align: center;
-    font-size: 24px;
-}
 /* Column Visibility */
 .aggrid-column-visibility-btn {
     display: flex;

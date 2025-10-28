@@ -6,6 +6,7 @@ A powerful Mendix pluggable widget that integrates AG Grid into your Mendix appl
 
 - **AG Grid Enterprise Support**: Configure your Enterprise license through widget properties
 - **Multiple View Modes**: Switch between Grid, Cards, and List views
+- **Custom Formatters**: Define reusable formatters in widget config (no code changes needed!)
 - **Responsive Design**: Automatic view switching based on device (desktop/mobile)
 - **Filter Drawer**: Slide-out filter panel with Apply Changes button for staged updates
 - **Rich Formatters**: 16+ built-in formatters including status badges with JSON mapping
@@ -462,6 +463,40 @@ For optimal performance with large datasets:
 3. Limit number of columns
 4. Optimize data source (use indexes, efficient XPath)
 5. Use microflow to pre-filter data
+
+## Custom Formatters 🎨
+
+**NEW!** Define reusable custom formatters in widget configuration instead of hardcoding them. Perfect for app-specific formatting like status badges, avatars, and more.
+
+### Quick Example
+
+**Configure in Studio Pro:**
+```
+Custom Formatters > + New
+    Formatter Name: statusBadge
+    Formatter Type: JavaScript Function
+    Formatter Code: [See STATUS_BADGE_EXAMPLE.md]
+    Formatter Configuration: [JSON mapping]
+```
+
+**Use in Templates:**
+```html
+<div class="card" data-status="{{Status}}">
+    {{statusBadge("Status")}}  <!-- Formatted badge -->
+    {{dateMDY("Date")}}        <!-- Built-in formatter -->
+</div>
+```
+
+### Benefits
+- ✅ Reusable across multiple widgets/columns
+- ✅ Centralized formatting logic
+- ✅ No widget code changes needed
+- ✅ Self-documenting templates
+
+### Documentation
+- **[Custom Formatters Guide](./CUSTOM_FORMATTERS_GUIDE.md)** - Complete documentation with 5 examples
+- **[Status Badge Example](./STATUS_BADGE_EXAMPLE.md)** - Quick-start migration guide
+- **[Implementation Summary](./CUSTOM_FORMATTERS_SUMMARY.md)** - Technical details
 
 ## Feature Roadmap
 

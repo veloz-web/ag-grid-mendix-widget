@@ -11,7 +11,8 @@ export function preview(props: AGGridPreviewProps): ReactElement {
         enableViewSelector,
         enableFilterDrawer,
         customCardTemplate,
-        customListTemplate
+        customListTemplate,
+        customFormatters
     } = props;
 
     const themeClass = `ag-theme-${theme}`;
@@ -21,8 +22,64 @@ export function preview(props: AGGridPreviewProps): ReactElement {
     const hasListTemplate = !!(customListTemplate && customListTemplate.trim());
     const showViewSelector = enableViewSelector && (hasCardTemplate || hasListTemplate);
 
+    // Validate custom formatter references in columns
+    const formatterNames = new Set(
+        (customFormatters || []).map(f => f.formatterName).filter(Boolean)
+    );
+    
+    // Debug logging
+    console.log("EditorPreview - Available formatters:", Array.from(formatterNames));
+    console.log("EditorPreview - Columns:", (columns || []).map(c => ({
+        header: c.header,
+        customFormatterName: c.customFormatterName,
+        hasValue: !!c.customFormatterName && c.customFormatterName.trim().length > 0
+    })));
+    
+    const columnsWithInvalidFormatters = (columns || []).filter(col => {
+        const name = col.customFormatterName?.trim();
+        return name && name.length > 0 && !formatterNames.has(name);
+    });
+    console.log("EditorPreview - Columns with invalid formatters:", columnsWithInvalidFormatters.map(c => ({
+        header: c.header,
+        customFormatterName: c.customFormatterName
+    })));
+    
+    const hasFormatterErrors = columnsWithInvalidFormatters.length > 0;
+
     return (
         <div className="aggrid-preview-container" style={{ padding: "10px" }}>
+            {/* Custom Formatter Validation - MOVED TO TOP FOR VISIBILITY */}
+            {hasFormatterErrors && (
+                <div
+                    style={{
+                        marginBottom: "10px",
+                        padding: "12px 16px",
+                        backgroundColor: "#ffebee",
+                        border: "2px solid #ef5350",
+                        borderRadius: "4px",
+                        fontSize: "13px",
+                        color: "#c62828"
+                    }}
+                >
+                    <strong>⚠️ Custom Formatter Errors:</strong>
+                    <ul style={{ margin: "8px 0 0 0", paddingLeft: "20px" }}>
+                        {columnsWithInvalidFormatters.map((col, idx) => (
+                            <li key={idx} style={{ marginBottom: "4px" }}>
+                                Column <strong>&quot;{col.header || "Unknown"}&quot;</strong>{" "}
+                                references formatter <strong>&quot;{col.customFormatterName}&quot;</strong> which does not exist
+                            </li>
+                        ))}
+                    </ul>
+                    <div style={{ marginTop: "8px", fontStyle: "italic", fontSize: "12px" }}>
+                        💡 Tip: Check the &quot;Custom Formatters&quot; tab. Available
+                        formatters:{" "}
+                        {formatterNames.size > 0
+                            ? Array.from(formatterNames).join(", ")
+                            : "(none configured)"}
+                    </div>
+                </div>
+            )}
+
             {/* Toolbar */}
             {(showViewSelector || enableFilterDrawer) && (
                 <div
@@ -235,7 +292,8 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                     style={{
                         marginTop: "8px",
                         padding: "8px 12px",
-                        backgroundColor: hasCardTemplate || hasListTemplate ? "#e8f5e9" : "#fff3e0",
+                        backgroundColor:
+                            hasCardTemplate || hasListTemplate ? "#e8f5e9" : "#fff3e0",
                         border: `1px solid ${
                             hasCardTemplate || hasListTemplate ? "#81c784" : "#ffb74d"
                         }`,
@@ -264,8 +322,8 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                     </ul>
                     {!hasCardTemplate && !hasListTemplate && (
                         <div style={{ marginTop: "8px", fontStyle: "italic" }}>
-                            💡 Tip: Add HTML templates in the &quot;View Options&quot; tab to enable
-                            Cards/List views
+                            💡 Tip: Add HTML templates in the &quot;View Options&quot; tab
+                            to enable Cards/List views
                         </div>
                     )}
                 </div>

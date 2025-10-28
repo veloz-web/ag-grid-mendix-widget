@@ -3,6 +3,7 @@ import {
     ClientSideRowModelModule,
     GridReadyEvent,
     ModuleRegistry,
+    ColumnApiModule,
     QuickFilterModule,
     themeAlpine,
     themeBalham,
@@ -28,6 +29,7 @@ ModuleRegistry.registerModules([
     ClientSideRowModelApiModule, // Enterprise: API methods like setQuickFilter
     ServerSideRowModelModule, // Enterprise: Server-side row model
     QuickFilterModule, // Community: Quick filter feature
+    ColumnApiModule, // Community: Column API features
     PaginationModule, // Enterprise: Pagination features
     SetFilterModule, // Enterprise: Set filtering
     CellStyleModule, // Enterprise: Cell styling
@@ -44,6 +46,7 @@ import { FilterDrawer } from "./components/FilterDrawer";
 import { HiddenDrawer } from "./components/HiddenDrawer";
 import { Toolbar } from "./components/Toolbar";
 import { compareValuesForSort } from "./utils/formatters";
+import { CustomFormatterRegistry } from "./utils/customFormatters";
 
 import "./ui/AGGrid.css";
 
@@ -78,6 +81,7 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
     private readonly storageKey: string;
     private readonly shouldPersist: boolean;
     private persistedState: PersistedGridState | null = null;
+    private customFormatterRegistry: CustomFormatterRegistry = new CustomFormatterRegistry();
 
     constructor(props: AGGridContainerProps) {
         super(props);
@@ -85,6 +89,25 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
         // Set the AG Grid Enterprise license key (required for Enterprise features)
         if (props.licenseKey) {
             LicenseManager.setLicenseKey(props.licenseKey);
+        }
+
+        // Register custom formatters from widget configuration
+        console.log("[AG Grid] Debug - customFormatters prop:", props.customFormatters);
+        console.log("[AG Grid] Debug - is array?", Array.isArray(props.customFormatters));
+        console.log("[AG Grid] Debug - length?", props.customFormatters?.length);
+        
+        if (props.customFormatters && Array.isArray(props.customFormatters) && props.customFormatters.length > 0) {
+            console.log(
+                `[AG Grid] Registering ${props.customFormatters.length} custom formatter(s):`,
+                props.customFormatters.map(f => f.formatterName).join(", ")
+            );
+            this.customFormatterRegistry.registerFormatters(props.customFormatters);
+            console.log(
+                `[AG Grid] Registered formatters:`,
+                this.customFormatterRegistry.getFormatterNames()
+            );
+        } else {
+            console.log("[AG Grid] No custom formatters configured or empty array");
         }
 
         this.storageKey = `aggrid:${props.name || "default"}`;
@@ -587,7 +610,13 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
         const filterModel = Object.entries(filters || {}).reduce<Record<string, any>>(
             (acc, [colId, value]) => {
                 if (value !== undefined && value !== null && value !== "") {
-                    acc[colId] = { type: "equals", filter: value };
+                    // Use text filter with equals condition
+                    // filterType is required for AG Grid to understand which filter to use
+                    acc[colId] = {
+                        filterType: "text",
+                        type: "equals",
+                        filter: value
+                    };
                 }
                 return acc;
             },
@@ -963,6 +992,7 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
                             onColumnMoved={this.onColumnMoved}
                             columnVisibility={columnVisibility}
                             columnOrder={this.state.columnOrder}
+                            customFormatterRegistry={this.customFormatterRegistry}
                         />
                     )}
 
@@ -974,6 +1004,7 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
                                 template={this.props.customCardTemplate}
                                 onRowClick={onRowClick}
                                 className="aggrid-card-view"
+                                customFormatterRegistry={this.customFormatterRegistry}
                             />
                         ) : (
                             <DynamicView
@@ -991,6 +1022,7 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
                                 template={this.props.customListTemplate}
                                 onRowClick={onRowClick}
                                 className="aggrid-list-view"
+                                customFormatterRegistry={this.customFormatterRegistry}
                             />
                         ) : (
                             <ListView

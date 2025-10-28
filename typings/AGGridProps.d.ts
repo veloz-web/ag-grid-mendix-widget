@@ -34,6 +34,7 @@ export interface ColumnsType {
     includeInFilters: boolean;
     hidden: boolean;
     formatter: FormatterEnum;
+    customFormatterName: string;
     customPrefix: string;
     customSuffix: string;
     template: string;
@@ -46,6 +47,15 @@ export interface ColumnsType {
 export type DefaultViewEnum = "grid" | "cards" | "list";
 
 export type MobileDefaultViewEnum = "grid" | "cards" | "list";
+
+export type FormatterTypeEnum = "javascript" | "microflow";
+
+export interface CustomFormattersType {
+    formatterName: string;
+    formatterType: FormatterTypeEnum;
+    formatterCode: string;
+    formatterConfig: string;
+}
 
 export type ThemeEnum = "alpine" | "balham" | "material" | "quartz";
 
@@ -68,6 +78,7 @@ export interface ColumnsPreviewType {
     includeInFilters: boolean;
     hidden: boolean;
     formatter: FormatterEnum;
+    customFormatterName: string;
     customPrefix: string;
     customSuffix: string;
     template: string;
@@ -75,6 +86,13 @@ export interface ColumnsPreviewType {
     linkUrlPattern: string;
     linkText: string;
     statusMapping: string;
+}
+
+export interface CustomFormattersPreviewType {
+    formatterName: string;
+    formatterType: FormatterTypeEnum;
+    formatterCode: string;
+    formatterConfig: string;
 }
 
 export interface AGGridContainerProps {
@@ -90,6 +108,7 @@ export interface AGGridContainerProps {
     customCardTemplate: string;
     customListTemplate: string;
     enableFilterDrawer: boolean;
+    customFormatters: CustomFormattersType[];
     licenseKey: string;
     useLocalStorage: boolean;
     showToolbarSearch: boolean;
@@ -119,6 +138,7 @@ export interface AGGridPreviewProps {
     customCardTemplate: string;
     customListTemplate: string;
     enableFilterDrawer: boolean;
+    customFormatters: CustomFormattersPreviewType[];
     licenseKey: string;
     useLocalStorage: boolean;
     showToolbarSearch: boolean;

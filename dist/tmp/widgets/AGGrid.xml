@@ -113,8 +113,8 @@
                             <description>Keep this column hidden in the grid UI while still allowing it to participate in filters, sorts, or templates.</description>
                         </property>
                         <property key="formatter" type="enumeration" defaultValue="none">
-                            <caption>Formatter</caption>
-                            <description>Format the cell value display</description>
+                            <caption>Formatter (Built-in)</caption>
+                            <description>Format the cell value display using built-in formatters</description>
                             <enumerationValues>
                                 <enumerationValue key="none">None</enumerationValue>
                                 <enumerationValue key="currency">Currency (USD)</enumerationValue>
@@ -140,6 +140,10 @@
                                 <enumerationValue key="link">Link (with URL pattern)</enumerationValue>
                                 <enumerationValue key="statusBadge">Status Badge (Custom)</enumerationValue>
                             </enumerationValues>
+                        </property>
+                        <property key="customFormatterName" type="string" required="false">
+                            <caption>Custom Formatter Name</caption>
+                            <description>Name of a custom formatter to use (e.g., "BadgeMaker"). If specified, this overrides the built-in formatter above. Must match a formatter name from the Custom Formatters configuration.</description>
                         </property>
                         <property key="customPrefix" type="string" required="false">
                             <caption>Custom Prefix</caption>
@@ -207,6 +211,36 @@
             <property key="enableFilterDrawer" type="boolean" defaultValue="true">
                 <caption>Enable Filter Drawer</caption>
                 <description>Show a slide-out drawer for filters</description>
+            </property>
+        </propertyGroup>
+        <propertyGroup caption="Custom Formatters">
+            <property key="customFormatters" type="object" isList="true" required="false">
+                <caption>Custom Formatters</caption>
+                <description>Define reusable custom formatters that can be used in templates and columns</description>
+                <properties>
+                    <propertyGroup caption="Formatter">
+                        <property key="formatterName" type="string" required="true">
+                            <caption>Formatter Name</caption>
+                            <description>Unique name for this formatter (e.g., "statusBadge", "userAvatar"). Use this name in templates like {{formatterName("FieldName")}}</description>
+                        </property>
+                        <property key="formatterType" type="enumeration" defaultValue="javascript" required="true">
+                            <caption>Formatter Type</caption>
+                            <description>Type of formatter implementation</description>
+                            <enumerationValues>
+                                <enumerationValue key="javascript">JavaScript Function</enumerationValue>
+                                <enumerationValue key="microflow">Microflow (planned)</enumerationValue>
+                            </enumerationValues>
+                        </property>
+                        <property key="formatterCode" type="string" multiline="true" required="true">
+                            <caption>Formatter Code</caption>
+                            <description>JavaScript function body. Must return a string or HTML. Available variables: value (field value), item (row object), column (column config). Example: return `&lt;span class="badge"&gt;${value}&lt;/span&gt;`;</description>
+                        </property>
+                        <property key="formatterConfig" type="string" multiline="true" required="false">
+                            <caption>Formatter Configuration (JSON)</caption>
+                            <description>Optional JSON configuration for this formatter (e.g., color mappings, URL patterns). Accessible as 'config' variable in code.</description>
+                        </property>
+                    </propertyGroup>
+                </properties>
             </property>
         </propertyGroup>
         <propertyGroup caption="Grid Options">

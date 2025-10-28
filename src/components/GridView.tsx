@@ -5,6 +5,7 @@ import { ValueStatus } from "mendix";
 import { ColumnsType } from "../../typings/AGGridProps";
 import { renderStatusBadge, renderLink, applyFormatter } from "../utils/formatters";
 import { evaluateTemplate } from "../utils/renderers";
+import { CustomFormatterRegistry } from "../utils/customFormatters";
 
 interface GridViewProps {
     rowData: any[];
@@ -20,6 +21,7 @@ interface GridViewProps {
     onColumnMoved?: () => void;
     columnVisibility?: Record<string, boolean>;
     columnOrder?: string[];
+    customFormatterRegistry?: CustomFormatterRegistry;
 }
 
 export function GridView(props: GridViewProps): ReactElement {
@@ -36,7 +38,8 @@ export function GridView(props: GridViewProps): ReactElement {
         onFilterChanged,
         onColumnMoved,
         columnVisibility,
-        columnOrder
+        columnOrder,
+        customFormatterRegistry
     } = props;
 
     // Helper function to determine cell alignment
@@ -160,8 +163,52 @@ export function GridView(props: GridViewProps): ReactElement {
                 colDef.filter = false;
             }
 
-            // Use cellRenderer for statusBadge and link, valueFormatter for others
-            if (col.formatter === "statusBadge") {
+            // Use cellRenderer for statusBadge, link, and custom formatters; valueFormatter for others
+            const effectiveFormatter = col.customFormatterName || col.formatter;
+            const customFormatterNameTrimmed = col.customFormatterName?.trim();
+
+            if (customFormatterNameTrimmed && customFormatterNameTrimmed.length > 0) {
+                // User specified a custom formatter
+                if (customFormatterRegistry && customFormatterRegistry.has(customFormatterNameTrimmed)) {
+                    // Use custom formatter from registry
+                    colDef.cellRenderer = (params: any) => {
+                        try {
+                            const htmlString = customFormatterRegistry.execute(
+                                customFormatterNameTrimmed,
+                                {
+                                    value: params.value,
+                                    item: params.data,
+                                    column: col
+                                }
+                            );
+
+                            return createElement("span", {
+                                dangerouslySetInnerHTML: { __html: htmlString }
+                            });
+                        } catch (e) {
+                            console.error(
+                                `Error rendering custom formatter "${customFormatterNameTrimmed}":`,
+                                e
+                            );
+                            return String(params.value || "");
+                        }
+                    };
+                } else {
+                    // Custom formatter not found - show error
+                    console.error(
+                        `[AG Grid] Custom formatter "${customFormatterNameTrimmed}" not found for column "${col.header?.value}". ` +
+                        `Available formatters: ${customFormatterRegistry ? customFormatterRegistry.getFormatterNames().join(", ") : "none"}`
+                    );
+                    
+                    // Render error message in cell
+                    colDef.cellRenderer = (params: any) => {
+                        return createElement("span", {
+                            style: { color: "red", fontStyle: "italic" },
+                            title: `Custom formatter "${customFormatterNameTrimmed}" not found`
+                        }, `⚠️ Formatter not found: ${customFormatterNameTrimmed}`);
+                    };
+                }
+            } else if (effectiveFormatter === "statusBadge") {
                 colDef.cellRenderer = (params: any) => {
                     try {
                         const mappingValue = col.statusMapping || "";
@@ -176,7 +223,7 @@ export function GridView(props: GridViewProps): ReactElement {
                         return String(params.value || "");
                     }
                 };
-            } else if (col.formatter === "link") {
+            } else if (effectiveFormatter === "link") {
                 colDef.cellRenderer = (params: any) => {
                     try {
                         // If there's a linkAction, create an accessible button with per-row context
