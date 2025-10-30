@@ -18,7 +18,7 @@
                 <caption>Columns</caption>
                 <description>Define the columns to display</description>
                 <properties>
-                    <propertyGroup caption="Column">
+                    <propertyGroup caption="General">
                         <property key="header" type="textTemplate" required="true">
                             <caption>Header</caption>
                             <description>Column header text</description>
@@ -36,13 +36,29 @@
                                 <attributeType name="Enum"/>
                             </attributeTypes>
                         </property>
-                        <property key="widthType" type="enumeration" defaultValue="fixed">
+                        <property key="hidden" type="boolean" defaultValue="false">
+                            <caption>Hidden Column</caption>
+                            <description>Keep this column hidden in the grid UI while still allowing it to participate in filters, sorts, or templates.</description>
+                        </property>
+                        <property key="alignment" type="enumeration" defaultValue="auto">
+                            <caption>Text Alignment</caption>
+                            <description>Horizontal alignment of cell content. Auto uses smart defaults: numbers/dates right-aligned, text left-aligned, links/badges centered.</description>
+                            <enumerationValues>
+                                <enumerationValue key="auto">Auto (smart default)</enumerationValue>
+                                <enumerationValue key="left">Left</enumerationValue>
+                                <enumerationValue key="center">Center</enumerationValue>
+                                <enumerationValue key="right">Right</enumerationValue>
+                            </enumerationValues>
+                        </property>
+                    </propertyGroup>
+                    <propertyGroup caption="Column Sizing">
+                        <property key="widthType" type="enumeration" defaultValue="auto">
                             <caption>Width Type</caption>
                             <description>How to size this column</description>
                             <enumerationValues>
-                                <enumerationValue key="fixed">Fixed (pixels)</enumerationValue>
-                                <enumerationValue key="flex">Flexible (fr units)</enumerationValue>
                                 <enumerationValue key="auto">Auto (fit content)</enumerationValue>
+                                <enumerationValue key="flex">Flexible (fr units)</enumerationValue>
+                                <enumerationValue key="fixed">Fixed (pixels)</enumerationValue>
                             </enumerationValues>
                         </property>
                         <property key="width" type="integer" defaultValue="150">
@@ -61,6 +77,16 @@
                             <caption>Maximum Width (px)</caption>
                             <description>Maximum width for flexible and auto columns (0 = no limit)</description>
                         </property>
+                        <property key="resizable" type="boolean" defaultValue="true">
+                            <caption>Resizable</caption>
+                            <description>Enable column resizing</description>
+                        </property>
+                        <property key="draggable" type="boolean" defaultValue="true">
+                            <caption>Draggable</caption>
+                            <description>Allow this column to be reordered by dragging the column header</description>
+                        </property>
+                    </propertyGroup>
+                    <propertyGroup caption="Sorting &amp; Filtering">
                         <property key="sortable" type="boolean" defaultValue="true">
                             <caption>Sortable</caption>
                             <description>Enable sorting for this column</description>
@@ -78,40 +104,25 @@
                             <caption>Sort Priority</caption>
                             <description>Order for multi-column sorting (0 = first, 1 = second, etc.). Use high number like 999 if not using multi-sort.</description>
                         </property>
-                        <property key="filter" type="boolean" defaultValue="true">
-                            <caption>Filter</caption>
-                            <description>Enable filtering for this column</description>
-                        </property>
-                        <property key="resizable" type="boolean" defaultValue="true">
-                            <caption>Resizable</caption>
-                            <description>Enable column resizing</description>
-                        </property>
-                        <property key="alignment" type="enumeration" defaultValue="auto">
-                            <caption>Text Alignment</caption>
-                            <description>Horizontal alignment of cell content. Auto uses smart defaults: numbers/dates right-aligned, text left-aligned, links/badges centered.</description>
-                            <enumerationValues>
-                                <enumerationValue key="auto">Auto (smart default)</enumerationValue>
-                                <enumerationValue key="left">Left</enumerationValue>
-                                <enumerationValue key="center">Center</enumerationValue>
-                                <enumerationValue key="right">Right</enumerationValue>
-                            </enumerationValues>
-                        </property>
-                        <property key="includeInCardView" type="boolean" defaultValue="true">
-                            <caption>Show in Card View</caption>
-                            <description>Include this column when displaying in card view</description>
-                        </property>
                         <property key="includeInSort" type="boolean" defaultValue="true">
                             <caption>Include in Sort Options</caption>
                             <description>Make this column available in the sort dropdown</description>
                         </property>
-                        <property key="includeInFilters" type="boolean" defaultValue="false">
-                            <caption>Include in Filters</caption>
-                            <description>Make this column available in the filter drawer</description>
+                        <property key="filter" type="boolean" defaultValue="true">
+                            <caption>Filter</caption>
+                            <description>Enable filtering for this column</description>
                         </property>
-                        <property key="hidden" type="boolean" defaultValue="false">
-                            <caption>Hidden Column</caption>
-                            <description>Keep this column hidden in the grid UI while still allowing it to participate in filters, sorts, or templates.</description>
+                        <property key="filterLocation" type="enumeration" defaultValue="none">
+                            <caption>Filter Location</caption>
+                            <description>Where to display the filter for this column</description>
+                            <enumerationValues>
+                                <enumerationValue key="none">None</enumerationValue>
+                                <enumerationValue key="drawer">Filter Drawer</enumerationValue>
+                                <enumerationValue key="toolbar">Toolbar (Multi-Select)</enumerationValue>
+                            </enumerationValues>
                         </property>
+                    </propertyGroup>
+                    <propertyGroup caption="Formatting &amp; Display">
                         <property key="formatter" type="enumeration" defaultValue="none">
                             <caption>Formatter (Built-in)</caption>
                             <description>Format the cell value display using built-in formatters</description>
@@ -157,6 +168,8 @@
                             <caption>Template</caption>
                             <description>Optional template to display instead of the raw value. Use ${attributeId} placeholders referencing column attributes (including hidden ones).</description>
                         </property>
+                    </propertyGroup>
+                    <propertyGroup caption="Links &amp; Actions">
                         <property key="linkAction" type="action" required="false" dataSource="../dataSource">
                             <caption>Link Action</caption>
                             <description>Action to execute when link is clicked (Show Page, Microflow, Nanoflow, etc.). The context object will be the row's data object.</description>
@@ -255,6 +268,10 @@
             <property key="showToolbarSearch" type="boolean" defaultValue="true">
                 <caption>Contains in Toolbar</caption>
                 <description>Show the "Contains" search field in the toolbar for quick filtering.</description>
+            </property>
+            <property key="enableToolbarFilterSearch" type="boolean" defaultValue="true">
+                <caption>Enable Toolbar Filter Search</caption>
+                <description>Enable search/autocomplete functionality within toolbar multi-select filters. Disable for simpler dropdowns.</description>
             </property>
             <property key="pagination" type="boolean" defaultValue="true">
                 <caption>Enable Pagination</caption>

@@ -24,26 +24,32 @@ export function preview(props: AGGridPreviewProps): ReactElement {
 
     // Validate custom formatter references in columns
     const formatterNames = new Set(
-        (customFormatters || []).map(f => f.formatterName).filter(Boolean)
+        (customFormatters || []).map((f) => f.formatterName).filter(Boolean)
     );
-    
+
     // Debug logging
     console.log("EditorPreview - Available formatters:", Array.from(formatterNames));
-    console.log("EditorPreview - Columns:", (columns || []).map(c => ({
-        header: c.header,
-        customFormatterName: c.customFormatterName,
-        hasValue: !!c.customFormatterName && c.customFormatterName.trim().length > 0
-    })));
-    
-    const columnsWithInvalidFormatters = (columns || []).filter(col => {
+    console.log(
+        "EditorPreview - Columns:",
+        (columns || []).map((c) => ({
+            header: c.header,
+            customFormatterName: c.customFormatterName,
+            hasValue: !!c.customFormatterName && c.customFormatterName.trim().length > 0
+        }))
+    );
+
+    const columnsWithInvalidFormatters = (columns || []).filter((col) => {
         const name = col.customFormatterName?.trim();
         return name && name.length > 0 && !formatterNames.has(name);
     });
-    console.log("EditorPreview - Columns with invalid formatters:", columnsWithInvalidFormatters.map(c => ({
-        header: c.header,
-        customFormatterName: c.customFormatterName
-    })));
-    
+    console.log(
+        "EditorPreview - Columns with invalid formatters:",
+        columnsWithInvalidFormatters.map((c) => ({
+            header: c.header,
+            customFormatterName: c.customFormatterName
+        }))
+    );
+
     const hasFormatterErrors = columnsWithInvalidFormatters.length > 0;
 
     return (
@@ -66,13 +72,14 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                         {columnsWithInvalidFormatters.map((col, idx) => (
                             <li key={idx} style={{ marginBottom: "4px" }}>
                                 Column <strong>&quot;{col.header || "Unknown"}&quot;</strong>{" "}
-                                references formatter <strong>&quot;{col.customFormatterName}&quot;</strong> which does not exist
+                                references formatter{" "}
+                                <strong>&quot;{col.customFormatterName}&quot;</strong> which does
+                                not exist
                             </li>
                         ))}
                     </ul>
                     <div style={{ marginTop: "8px", fontStyle: "italic", fontSize: "12px" }}>
-                        💡 Tip: Check the &quot;Custom Formatters&quot; tab. Available
-                        formatters:{" "}
+                        💡 Tip: Check the &quot;Custom Formatters&quot; tab. Available formatters:{" "}
                         {formatterNames.size > 0
                             ? Array.from(formatterNames).join(", ")
                             : "(none configured)"}
@@ -292,8 +299,7 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                     style={{
                         marginTop: "8px",
                         padding: "8px 12px",
-                        backgroundColor:
-                            hasCardTemplate || hasListTemplate ? "#e8f5e9" : "#fff3e0",
+                        backgroundColor: hasCardTemplate || hasListTemplate ? "#e8f5e9" : "#fff3e0",
                         border: `1px solid ${
                             hasCardTemplate || hasListTemplate ? "#81c784" : "#ffb74d"
                         }`,
@@ -322,8 +328,8 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                     </ul>
                     {!hasCardTemplate && !hasListTemplate && (
                         <div style={{ marginTop: "8px", fontStyle: "italic" }}>
-                            💡 Tip: Add HTML templates in the &quot;View Options&quot; tab
-                            to enable Cards/List views
+                            💡 Tip: Add HTML templates in the &quot;View Options&quot; tab to enable
+                            Cards/List views
                         </div>
                     )}
                 </div>

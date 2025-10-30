@@ -7,32 +7,34 @@ import { CSSProperties } from "react";
 import { DynamicValue, ListValue, ListActionValue, ListAttributeValue } from "mendix";
 import { Big } from "big.js";
 
-export type WidthTypeEnum = "fixed" | "flex" | "auto";
+export type AlignmentEnum = "auto" | "left" | "center" | "right";
+
+export type WidthTypeEnum = "auto" | "flex" | "fixed";
 
 export type DefaultSortEnum = "none" | "asc" | "desc";
 
-export type AlignmentEnum = "auto" | "left" | "center" | "right";
+export type FilterLocationEnum = "none" | "drawer" | "toolbar";
 
 export type FormatterEnum = "none" | "currency" | "currencyEUR" | "currencyGBP" | "percentage" | "number" | "decimal2" | "dateShort" | "dateLong" | "dateISO" | "dateDMY" | "dateMDY" | "dateYMD" | "dateTime" | "time" | "yesNo" | "trueFalse" | "uppercase" | "lowercase" | "capitalize" | "customPrefix" | "link" | "statusBadge";
 
 export interface ColumnsType {
     header: DynamicValue<string>;
     attribute: ListAttributeValue<string | Big | boolean | Date>;
+    hidden: boolean;
+    alignment: AlignmentEnum;
     widthType: WidthTypeEnum;
     width: number;
     flex: number;
     minWidth: number;
     maxWidth: number;
+    resizable: boolean;
+    draggable: boolean;
     sortable: boolean;
     defaultSort: DefaultSortEnum;
     sortIndex: number;
-    filter: boolean;
-    resizable: boolean;
-    alignment: AlignmentEnum;
-    includeInCardView: boolean;
     includeInSort: boolean;
-    includeInFilters: boolean;
-    hidden: boolean;
+    filter: boolean;
+    filterLocation: FilterLocationEnum;
     formatter: FormatterEnum;
     customFormatterName: string;
     customPrefix: string;
@@ -62,21 +64,21 @@ export type ThemeEnum = "alpine" | "balham" | "material" | "quartz";
 export interface ColumnsPreviewType {
     header: string;
     attribute: string;
+    hidden: boolean;
+    alignment: AlignmentEnum;
     widthType: WidthTypeEnum;
     width: number | null;
     flex: number | null;
     minWidth: number | null;
     maxWidth: number | null;
+    resizable: boolean;
+    draggable: boolean;
     sortable: boolean;
     defaultSort: DefaultSortEnum;
     sortIndex: number | null;
-    filter: boolean;
-    resizable: boolean;
-    alignment: AlignmentEnum;
-    includeInCardView: boolean;
     includeInSort: boolean;
-    includeInFilters: boolean;
-    hidden: boolean;
+    filter: boolean;
+    filterLocation: FilterLocationEnum;
     formatter: FormatterEnum;
     customFormatterName: string;
     customPrefix: string;
@@ -112,6 +114,7 @@ export interface AGGridContainerProps {
     licenseKey: string;
     useLocalStorage: boolean;
     showToolbarSearch: boolean;
+    enableToolbarFilterSearch: boolean;
     pagination: boolean;
     pageSize: number;
     height: number;
@@ -142,6 +145,7 @@ export interface AGGridPreviewProps {
     licenseKey: string;
     useLocalStorage: boolean;
     showToolbarSearch: boolean;
+    enableToolbarFilterSearch: boolean;
     pagination: boolean;
     pageSize: number | null;
     height: number | null;

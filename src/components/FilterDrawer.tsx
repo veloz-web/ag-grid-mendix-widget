@@ -1,5 +1,6 @@
 import { ReactElement, useState, useEffect, useRef } from "react";
 import { ColumnsType } from "../../typings/AGGridProps";
+import { Big } from "big.js";
 
 interface FilterDrawerProps {
     isOpen: boolean;
@@ -18,6 +19,148 @@ interface FilterDrawerProps {
     onClearFilters: () => void;
     useLocalStorage?: boolean;
     onResetSettings?: () => void;
+}
+
+/**
+ * Get the data type of a column based on its attribute type
+ */
+function getColumnDataType(column: ColumnsType): "date" | "number" | "boolean" | "string" {
+    if (!column.attribute) return "string";
+
+    // Check the formatter enum for date-related formatters
+    if (column.formatter) {
+        const dateFormatters = [
+            "dateShort",
+            "dateLong",
+            "dateISO",
+            "dateDMY",
+            "dateMDY",
+            "dateYMD",
+            "dateTime",
+            "time"
+        ];
+        if (dateFormatters.includes(column.formatter)) {
+            return "date";
+        }
+
+        const numberFormatters = [
+            "currency",
+            "currencyEUR",
+            "currencyGBP",
+            "percentage",
+            "number",
+            "decimal2"
+        ];
+        if (numberFormatters.includes(column.formatter)) {
+            return "number";
+        }
+
+        const booleanFormatters = ["yesNo", "trueFalse"];
+        if (booleanFormatters.includes(column.formatter)) {
+            return "boolean";
+        }
+    }
+
+    // Try to infer from the attribute type at runtime
+    const attrType = (column.attribute as any).type;
+    if (attrType === "DateTime") return "date";
+    if (attrType === "Integer" || attrType === "Long" || attrType === "Decimal") return "number";
+    if (attrType === "Boolean") return "boolean";
+
+    return "string";
+}
+
+/**
+ * Infer data type from actual values when column metadata isn't conclusive
+ */
+function inferTypeFromValues(values: string[]): "date" | "number" | "boolean" | "string" {
+    if (values.length === 0) return "string";
+
+    // Check first few values
+    const samples = values.slice(0, Math.min(5, values.length));
+
+    // Check if all samples are dates
+    const allDates = samples.every((v) => {
+        const date = new Date(v);
+        return !isNaN(date.getTime()) && v.match(/\d{4}-\d{2}-\d{2}|^\d{1,2}\/\d{1,2}\/\d{2,4}/);
+    });
+    if (allDates) return "date";
+
+    // Check if all samples are numbers
+    const allNumbers = samples.every((v) => !isNaN(parseFloat(v)) && isFinite(parseFloat(v)));
+    if (allNumbers) return "number";
+
+    // Check if all samples are booleans
+    const allBooleans = samples.every(
+        (v) =>
+            v.toLowerCase() === "true" ||
+            v.toLowerCase() === "false" ||
+            v.toLowerCase() === "yes" ||
+            v.toLowerCase() === "no"
+    );
+    if (allBooleans) return "boolean";
+
+    return "string";
+}
+
+/**
+ * Format a date value for display
+ */
+function formatDateValue(value: string): string {
+    try {
+        const date = new Date(value);
+        if (isNaN(date.getTime())) return value;
+
+        const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        const dayOfWeek = days[date.getDay()];
+        const month = date.getMonth() + 1;
+        const day = date.getDate();
+        const year = date.getFullYear();
+
+        return `${dayOfWeek} ${month}/${day}/${year}`;
+    } catch {
+        return value;
+    }
+}
+
+/**
+ * Parse a value to its appropriate type for sorting
+ */
+function parseValueForSorting(
+    value: string,
+    dataType: "date" | "number" | "boolean" | "string"
+): any {
+    if (!value) return value;
+
+    switch (dataType) {
+        case "date":
+            const dateVal = new Date(value);
+            return isNaN(dateVal.getTime()) ? value : dateVal.getTime();
+        case "number":
+            const numVal = parseFloat(value);
+            return isNaN(numVal) ? value : numVal;
+        case "boolean":
+            return value.toLowerCase() === "true" ? 1 : 0;
+        default:
+            return value;
+    }
+}
+
+/**
+ * Sort distinct values based on their data type
+ */
+function sortDistinctValues(
+    values: string[],
+    dataType: "date" | "number" | "boolean" | "string"
+): string[] {
+    return [...values].sort((a, b) => {
+        const parsedA = parseValueForSorting(a, dataType);
+        const parsedB = parseValueForSorting(b, dataType);
+
+        if (parsedA < parsedB) return -1;
+        if (parsedA > parsedB) return 1;
+        return 0;
+    });
 }
 
 export function FilterDrawer(props: FilterDrawerProps): ReactElement | null {
@@ -136,6 +279,14 @@ export function FilterDrawer(props: FilterDrawerProps): ReactElement | null {
                             {filterableColumns.map((col, idx) => {
                                 const columnId = col.attribute?.id || "";
                                 const distinctValues = getDistinctValues(columnId);
+                                let dataType = getColumnDataType(col);
+
+                                // If type is still string, try to infer from actual values
+                                if (dataType === "string" && distinctValues.length > 0) {
+                                    dataType = inferTypeFromValues(distinctValues);
+                                }
+
+                                const sortedValues = sortDistinctValues(distinctValues, dataType);
                                 const currentValue = localFilters[columnId] || "";
 
                                 return (
@@ -153,9 +304,11 @@ export function FilterDrawer(props: FilterDrawerProps): ReactElement | null {
                                                 }
                                             >
                                                 <option value="">All values</option>
-                                                {distinctValues.map((value, vidx) => (
+                                                {sortedValues.map((value, vidx) => (
                                                     <option key={vidx} value={value}>
-                                                        {value}
+                                                        {dataType === "date"
+                                                            ? formatDateValue(value)
+                                                            : value}
                                                     </option>
                                                 ))}
                                             </select>

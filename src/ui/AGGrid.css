@@ -150,6 +150,42 @@
     display: block;
 }
 
+/* Toolbar Reset Button */
+.toolbar-reset-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: #ef4444;
+    color: white;
+    border: 1px solid #dc2626;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.toolbar-reset-btn:hover {
+    background: #dc2626;
+    border-color: #b91c1c;
+    box-shadow: 0 2px 4px rgba(220, 38, 38, 0.3);
+}
+
+.toolbar-reset-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.3);
+}
+
+.toolbar-reset-btn:active {
+    background: #b91c1c;
+    transform: translateY(1px);
+}
+
+.toolbar-reset-btn svg {
+    flex-shrink: 0;
+}
+
 /* View Selector Styles */
 .aggrid-view-selector {
     display: inline-flex;
@@ -1217,4 +1253,266 @@
     outline: 2px solid #3b82f6;
     outline-offset: 2px;
     background-color: #eff6ff;
+}
+
+/* ========================================
+   Multi-Select Filter Component
+   ======================================== */
+
+.multiselect-filter {
+    position: relative;
+    display: inline-block;
+}
+
+.multiselect-trigger {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: #ffffff;
+    border: 1px solid #cfd4e0;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 180px;
+    max-width: 300px;
+}
+
+.multiselect-trigger:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.multiselect-trigger:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.multiselect-label {
+    font-weight: 600;
+    color: #4f566b;
+    white-space: nowrap;
+}
+
+.multiselect-value {
+    flex: 1;
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #374151;
+}
+
+.multiselect-arrow {
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+    color: #6b7280;
+}
+
+.multiselect-arrow.open {
+    transform: rotate(180deg);
+}
+
+.multiselect-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    min-width: 100%;
+    max-width: 400px;
+    background: #ffffff;
+    border: 1px solid #cfd4e0;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    max-height: 400px;
+    display: flex;
+    flex-direction: column;
+}
+
+.multiselect-search {
+    padding: 8px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.multiselect-search-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #cfd4e0;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #374151;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.multiselect-search-input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.multiselect-search-input::placeholder {
+    color: #9ca3af;
+}
+
+.multiselect-select-all {
+    padding: 8px 12px;
+    border-bottom: 1px solid #e5e7eb;
+    background: #f9fafb;
+}
+
+.multiselect-select-all-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2937;
+    cursor: pointer;
+    user-select: none;
+}
+
+/* AG Grid checkbox wrapper for consistent sizing */
+.multiselect-select-all-label .ag-checkbox-input-wrapper,
+.multiselect-option-label .ag-checkbox-input-wrapper {
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    min-height: 18px;
+    position: relative;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.multiselect-select-all-label .ag-checkbox-input,
+.multiselect-option-label .ag-checkbox-input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    cursor: pointer;
+    position: absolute;
+    opacity: 0;
+}
+
+/* Visual checkbox appearance using ::before */
+.multiselect-select-all-label .ag-checkbox-input-wrapper::before,
+.multiselect-option-label .ag-checkbox-input-wrapper::before {
+    content: '';
+    display: block;
+    width: 18px;
+    height: 18px;
+    border: 2px solid #d1d5db;
+    border-radius: 3px;
+    background: white;
+    transition: all 0.15s ease;
+}
+
+/* Checked state */
+.multiselect-select-all-label .ag-checkbox-input-wrapper.ag-checked::before,
+.multiselect-option-label .ag-checkbox-input-wrapper.ag-checked::before {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+}
+
+/* Checked checkmark using ::after */
+.multiselect-select-all-label .ag-checkbox-input-wrapper.ag-checked::after,
+.multiselect-option-label .ag-checkbox-input-wrapper.ag-checked::after {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 3px;
+    width: 5px;
+    height: 9px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+/* Indeterminate state */
+.multiselect-select-all-label .ag-checkbox-input-wrapper.ag-indeterminate::before {
+    background-color: #f59e0b;
+    border-color: #f59e0b;
+}
+
+/* Indeterminate dash using ::after */
+.multiselect-select-all-label .ag-checkbox-input-wrapper.ag-indeterminate::after {
+    content: '';
+    position: absolute;
+    left: 3px;
+    top: 8px;
+    width: 12px;
+    height: 2px;
+    background-color: white;
+}
+
+/* Hover states */
+.multiselect-select-all-label:hover .ag-checkbox-input-wrapper::before,
+.multiselect-option-label:hover .ag-checkbox-input-wrapper::before {
+    border-color: #3b82f6;
+}
+
+.multiselect-select-all-text {
+    flex: 1;
+}
+
+.multiselect-select-all-label:hover {
+    color: #3b82f6;
+}
+
+.multiselect-options {
+    overflow-y: auto;
+    max-height: 250px;
+    padding: 4px;
+}
+
+.multiselect-option {
+    display: flex;
+    align-items: center;
+    padding: 4px 8px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.15s ease;
+}
+
+.multiselect-option:hover {
+    background-color: #f3f4f6;
+}
+
+.multiselect-option-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    font-size: 14px;
+    color: #374151;
+    cursor: pointer;
+    user-select: none;
+}
+
+.multiselect-option-text {
+    flex: 1;
+}
+
+.multiselect-no-results {
+    padding: 16px;
+    text-align: center;
+    color: #9ca3af;
+    font-size: 14px;
+    font-style: italic;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .multiselect-trigger {
+        min-width: 140px;
+        font-size: 13px;
+    }
+
+    .multiselect-dropdown {
+        max-width: 300px;
+    }
 }

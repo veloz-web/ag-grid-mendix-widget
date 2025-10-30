@@ -11,7 +11,8 @@ interface DynamicViewProps {
 
 export function DynamicView(props: DynamicViewProps): ReactElement {
     const { rowData, columns, onRowClick } = props;
-    const cardColumns = columns.filter((col) => col.includeInCardView && !col.hidden);
+    // Card view now uses templates - just filter out hidden columns
+    const cardColumns = columns.filter((col) => !col.hidden);
 
     const handleCardClick = (item: any) => {
         if (!onRowClick) {

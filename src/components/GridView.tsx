@@ -1,6 +1,7 @@
-import { ReactElement, createElement } from "react";
+// GridView.tsx
+import React, { ReactElement, useMemo } from "react"; // <-- Changed import
 import { AgGridReact } from "ag-grid-react";
-import type { ColDef, GridReadyEvent, Theme } from "ag-grid-community";
+import type { ColDef, GridReadyEvent } from "ag-grid-community"; // <-- Removed 'Theme'
 import { ValueStatus } from "mendix";
 import { ColumnsType } from "../../typings/AGGridProps";
 import { renderStatusBadge, renderLink, applyFormatter } from "../utils/formatters";
@@ -10,7 +11,7 @@ import { CustomFormatterRegistry } from "../utils/customFormatters";
 interface GridViewProps {
     rowData: any[];
     columns: ColumnsType[];
-    theme: Theme;
+    themeClassName: string; // <-- Changed: from theme: Theme
     height: number;
     pagination: boolean;
     pageSize: number;
@@ -24,11 +25,252 @@ interface GridViewProps {
     customFormatterRegistry?: CustomFormatterRegistry;
 }
 
+// --- Helper function moved outside the component for memoization ---
+/**
+ * Helper function to determine cell alignment
+ */
+const getCellAlignment = (col: ColumnsType): string => {
+    // If explicit alignment is set and not auto, use it
+    if (col.alignment && col.alignment !== "auto") {
+        return col.alignment;
+    }
+
+    // Auto alignment logic based on data type and formatter
+    const formatter = col.formatter || "none";
+    const attributeType = col.attribute?.type || "String";
+
+    // Links, status badges, and actions are centered
+    if (formatter === "link" || formatter === "statusBadge") {
+        return "center";
+    }
+
+    // Numbers and dates are right-aligned
+    if (
+        attributeType === "Integer" ||
+        attributeType === "Long" ||
+        attributeType === "Decimal" ||
+        attributeType === "DateTime" ||
+        formatter === "currency" ||
+        formatter === "currencyEUR" ||
+        formatter === "currencyGBP" ||
+        formatter === "percentage" ||
+        formatter === "number" ||
+        formatter === "decimal2" ||
+        formatter.startsWith("date") ||
+        formatter === "time"
+    ) {
+        return "right";
+    }
+
+    // Text and everything else is left-aligned (default)
+    return "left";
+};
+
+/**
+ * Maps a single Mendix column configuration to an AG Grid ColDef.
+ * This is split into a helper for readability and use in useMemo.
+ */
+function mapMendixColumnToColDef(
+    col: ColumnsType,
+    columns: ColumnsType[],
+    customFormatterRegistry?: CustomFormatterRegistry
+): ColDef {
+    const colDef: ColDef = {
+        headerName: col.header?.value || "",
+        field: col.attribute?.id || "",
+        sortable: col.sortable,
+        filter: col.filter,
+        resizable: col.resizable,
+        suppressMovable: col.draggable === false, // AG Grid uses suppressMovable (inverted logic)
+        valueGetter: (params) => {
+            try {
+                const item = params.data;
+                if (!item) return "";
+
+                if (col.template) {
+                    return evaluateTemplate(col.template, item, columns);
+                }
+
+                if (!col.attribute) return "";
+                const value = col.attribute.get(item);
+                if (value.status !== ValueStatus.Available) return "";
+                return value.value;
+            } catch (e) {
+                console.error("Error in valueGetter:", e);
+                return "";
+            }
+        }
+    };
+
+    // Apply width settings
+    if (col.widthType === "flex") {
+        colDef.flex = col.flex || 1;
+        colDef.minWidth = col.minWidth || 50;
+        if (col.maxWidth && col.maxWidth > 0) {
+            colDef.maxWidth = col.maxWidth;
+        }
+    } else if (col.widthType === "auto") {
+        colDef.minWidth = col.minWidth || 50;
+        if (col.maxWidth && col.maxWidth > 0) {
+            colDef.maxWidth = col.maxWidth;
+        }
+    } else {
+        colDef.width = col.width || 150;
+    }
+
+    // Apply text alignment
+    const alignment = getCellAlignment(col);
+    colDef.cellStyle = { textAlign: alignment };
+    colDef.headerClass = `ag-header-cell-${alignment}`;
+
+    // Handle hidden columns
+    if (col.hidden) {
+        colDef.hide = true;
+    }
+
+    // Handle template columns
+    if (col.template) {
+        colDef.sortable = false;
+        colDef.filter = false;
+    }
+
+    // --- Apply Cell Renderers (using JSX) or Value Formatters ---
+    const effectiveFormatter = col.customFormatterName || col.formatter;
+    const customFormatterNameTrimmed = col.customFormatterName?.trim();
+
+    if (customFormatterNameTrimmed && customFormatterNameTrimmed.length > 0) {
+        // --- Custom Formatter ---
+        if (customFormatterRegistry && customFormatterRegistry.has(customFormatterNameTrimmed)) {
+            colDef.cellRenderer = (params: any) => {
+                try {
+                    const htmlString = customFormatterRegistry.execute(customFormatterNameTrimmed, {
+                        value: params.value,
+                        item: params.data,
+                        column: col
+                    });
+                    // Use JSX for dangerouslySetInnerHTML
+                    return <span dangerouslySetInnerHTML={{ __html: htmlString }} />;
+                } catch (e) {
+                    console.error(
+                        `Error rendering custom formatter "${customFormatterNameTrimmed}":`,
+                        e
+                    );
+                    return String(params.value || "");
+                }
+            };
+        } else {
+            // Custom formatter not found - show error
+            console.error(
+                `[AG Grid] Custom formatter "${customFormatterNameTrimmed}" not found for column "${col.header?.value}". ` +
+                    `Available formatters: ${
+                        customFormatterRegistry
+                            ? customFormatterRegistry.getFormatterNames().join(", ")
+                            : "none"
+                    }`
+            );
+            // Render error message in cell using JSX
+            colDef.cellRenderer = () => (
+                <span
+                    style={{ color: "red", fontStyle: "italic" }}
+                    title={`Custom formatter "${customFormatterNameTrimmed}" not found`}
+                >
+                    ⚠️ Formatter not found: {customFormatterNameTrimmed}
+                </span>
+            );
+        }
+    } else if (effectiveFormatter === "statusBadge") {
+        // --- Status Badge Renderer ---
+        colDef.cellRenderer = (params: any) => {
+            try {
+                const mappingValue = col.statusMapping || "";
+                const htmlString = renderStatusBadge(params.value, mappingValue);
+                return <span dangerouslySetInnerHTML={{ __html: htmlString }} />;
+            } catch (e) {
+                console.error("Error rendering status badge:", e);
+                return String(params.value || "");
+            }
+        };
+    } else if (effectiveFormatter === "link") {
+        // --- Link/Action Renderer ---
+        colDef.cellRenderer = (params: any) => {
+            try {
+                // 1. Mendix Action (Preferred)
+                if (col.linkAction && params.data) {
+                    const rowAction = col.linkAction.get(params.data);
+
+                    if (rowAction && rowAction.canExecute) {
+                        const rawValue = params.value;
+                        const displayText = col.linkText
+                            ? col.linkText.replace(/\$\{value\}/g, String(rawValue ?? ""))
+                            : String(rawValue ?? "");
+
+                        const handleAction = (e: React.MouseEvent | React.KeyboardEvent) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setTimeout(() => {
+                                rowAction.execute();
+                            }, 0);
+                        };
+
+                        // Render as accessible button using JSX
+                        return (
+                            <button
+                                type="button"
+                                className="aggrid-link-button"
+                                onClick={handleAction}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter" || e.key === " ") {
+                                        handleAction(e);
+                                    }
+                                }}
+                            >
+                                {displayText || <span className="fas fa-eye" />}
+                            </button>
+                        );
+                    }
+                }
+
+                // 2. Legacy URL Pattern (Fallback)
+                if (col.linkUrlPattern) {
+                    const htmlString = renderLink(params.value, col.linkUrlPattern, col.linkText);
+                    return <span dangerouslySetInnerHTML={{ __html: htmlString }} />;
+                }
+
+                return String(params.value || "");
+            } catch (e) {
+                console.error("Error rendering link:", e);
+                return String(params.value || "");
+            }
+        };
+    } else {
+        // --- Default Value Formatter (for text, numbers, dates) ---
+        colDef.valueFormatter = (params) => {
+            try {
+                if (params.value === null || params.value === undefined) return "";
+                return applyFormatter(
+                    params.value,
+                    col.formatter || "none",
+                    (col.attribute?.type || "String") as any,
+                    col.customPrefix,
+                    col.customSuffix
+                );
+            } catch (e) {
+                console.error("Error in formatter:", e);
+                return String(params.value || "");
+            }
+        };
+    }
+
+    return colDef;
+}
+
+// --- The Main GridView Component ---
+
 export function GridView(props: GridViewProps): ReactElement {
     const {
         rowData,
         columns,
-        theme,
+        themeClassName, // <-- Changed
         height,
         pagination,
         pageSize,
@@ -42,45 +284,9 @@ export function GridView(props: GridViewProps): ReactElement {
         customFormatterRegistry
     } = props;
 
-    // Helper function to determine cell alignment
-    const getCellAlignment = (col: ColumnsType): string => {
-        // If explicit alignment is set and not auto, use it
-        if (col.alignment && col.alignment !== "auto") {
-            return col.alignment;
-        }
-
-        // Auto alignment logic based on data type and formatter
-        const formatter = col.formatter || "none";
-        const attributeType = col.attribute?.type || "String";
-
-        // Links, status badges, and actions are centered
-        if (formatter === "link" || formatter === "statusBadge") {
-            return "center";
-        }
-
-        // Numbers and dates are right-aligned
-        if (
-            attributeType === "Integer" ||
-            attributeType === "Long" ||
-            attributeType === "Decimal" ||
-            attributeType === "DateTime" ||
-            formatter === "currency" ||
-            formatter === "currencyEUR" ||
-            formatter === "currencyGBP" ||
-            formatter === "percentage" ||
-            formatter === "number" ||
-            formatter === "decimal2" ||
-            formatter.startsWith("date") ||
-            formatter === "time"
-        ) {
-            return "right";
-        }
-
-        // Text and everything else is left-aligned (default)
-        return "left";
-    };
-
-    const getColumnDefs = (): ColDef[] => {
+    // --- IMPROVEMENT: Memoize column definitions ---
+    // This expensive calculation will only run when these specific props change.
+    const columnDefs = useMemo(() => {
         const visibleColumns = columns.filter((col) => {
             if (!col.attribute?.id) return true; // Show columns without attributes
             return columnVisibility?.[col.attribute.id] !== false;
@@ -99,227 +305,22 @@ export function GridView(props: GridViewProps): ReactElement {
             });
         }
 
-        const colDefs = orderedColumns.map((col) => {
-            const colDef: ColDef = {
-                headerName: col.header?.value || "",
-                field: col.attribute?.id || "",
-                sortable: col.sortable,
-                filter: col.filter,
-                resizable: col.resizable,
-                valueGetter: (params) => {
-                    try {
-                        const item = params.data;
-                        if (!item) return "";
-
-                        if (col.template) {
-                            return evaluateTemplate(col.template, item, columns);
-                        }
-
-                        if (!col.attribute) return "";
-                        const value = col.attribute.get(item);
-                        if (value.status !== ValueStatus.Available) return "";
-                        return value.value;
-                    } catch (e) {
-                        console.error("Error in valueGetter:", e);
-                        return "";
-                    }
-                }
-            };
-
-            // Apply width settings based on widthType
-            if (col.widthType === "flex") {
-                // Flexible width (like CSS fr units)
-                colDef.flex = col.flex || 1;
-                colDef.minWidth = col.minWidth || 50;
-                if (col.maxWidth && col.maxWidth > 0) {
-                    colDef.maxWidth = col.maxWidth;
-                }
-            } else if (col.widthType === "auto") {
-                // Auto width (fit content)
-                colDef.minWidth = col.minWidth || 50;
-                if (col.maxWidth && col.maxWidth > 0) {
-                    colDef.maxWidth = col.maxWidth;
-                }
-                // Don't set width or flex for auto
-            } else {
-                // Fixed width (default, pixels)
-                colDef.width = col.width || 150;
-            }
-
-            // Apply text alignment
-            const alignment = getCellAlignment(col);
-            colDef.cellStyle = { textAlign: alignment };
-            // Also align the header
-            colDef.headerClass = `ag-header-cell-${alignment}`;
-
-            // Handle hidden columns
-            if (col.hidden) {
-                colDef.hide = true;
-            }
-
-            // Handle template columns (virtual concatenated)
-            if (col.template) {
-                colDef.sortable = false;
-                colDef.filter = false;
-            }
-
-            // Use cellRenderer for statusBadge, link, and custom formatters; valueFormatter for others
-            const effectiveFormatter = col.customFormatterName || col.formatter;
-            const customFormatterNameTrimmed = col.customFormatterName?.trim();
-
-            if (customFormatterNameTrimmed && customFormatterNameTrimmed.length > 0) {
-                // User specified a custom formatter
-                if (customFormatterRegistry && customFormatterRegistry.has(customFormatterNameTrimmed)) {
-                    // Use custom formatter from registry
-                    colDef.cellRenderer = (params: any) => {
-                        try {
-                            const htmlString = customFormatterRegistry.execute(
-                                customFormatterNameTrimmed,
-                                {
-                                    value: params.value,
-                                    item: params.data,
-                                    column: col
-                                }
-                            );
-
-                            return createElement("span", {
-                                dangerouslySetInnerHTML: { __html: htmlString }
-                            });
-                        } catch (e) {
-                            console.error(
-                                `Error rendering custom formatter "${customFormatterNameTrimmed}":`,
-                                e
-                            );
-                            return String(params.value || "");
-                        }
-                    };
-                } else {
-                    // Custom formatter not found - show error
-                    console.error(
-                        `[AG Grid] Custom formatter "${customFormatterNameTrimmed}" not found for column "${col.header?.value}". ` +
-                        `Available formatters: ${customFormatterRegistry ? customFormatterRegistry.getFormatterNames().join(", ") : "none"}`
-                    );
-                    
-                    // Render error message in cell
-                    colDef.cellRenderer = (params: any) => {
-                        return createElement("span", {
-                            style: { color: "red", fontStyle: "italic" },
-                            title: `Custom formatter "${customFormatterNameTrimmed}" not found`
-                        }, `⚠️ Formatter not found: ${customFormatterNameTrimmed}`);
-                    };
-                }
-            } else if (effectiveFormatter === "statusBadge") {
-                colDef.cellRenderer = (params: any) => {
-                    try {
-                        const mappingValue = col.statusMapping || "";
-                        const htmlString = renderStatusBadge(params.value, mappingValue);
-
-                        // Use React.createElement to create a span with dangerouslySetInnerHTML
-                        return createElement("span", {
-                            dangerouslySetInnerHTML: { __html: htmlString }
-                        });
-                    } catch (e) {
-                        console.error("Error rendering status badge:", e);
-                        return String(params.value || "");
-                    }
-                };
-            } else if (effectiveFormatter === "link") {
-                colDef.cellRenderer = (params: any) => {
-                    try {
-                        // If there's a linkAction, create an accessible button with per-row context
-                        if (col.linkAction && params.data) {
-                            const rowAction = col.linkAction.get(params.data);
-
-                            if (rowAction && rowAction.canExecute) {
-                                const rawValue = params.value;
-                                const displayText = col.linkText
-                                    ? col.linkText.replace(/\$\{value\}/g, String(rawValue ?? ""))
-                                    : String(rawValue ?? "");
-
-                                return createElement(
-                                    "button",
-                                    {
-                                        type: "button",
-                                        className: "aggrid-link-button",
-                                        onClick: (e: any) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            // Defer execution to next tick for React-only mode compatibility
-                                            setTimeout(() => {
-                                                rowAction.execute();
-                                            }, 0);
-                                        },
-                                        onKeyDown: (e: any) => {
-                                            if (e.key === "Enter" || e.key === " ") {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                // Defer execution to next tick for React-only mode compatibility
-                                                setTimeout(() => {
-                                                    rowAction.execute();
-                                                }, 0);
-                                            }
-                                        }
-                                    },
-                                    displayText ||
-                                        createElement("span", { className: "fas fa-eye" })
-                                );
-                            }
-                        }
-
-                        // Fallback to legacy URL pattern - create accessible button that triggers row click
-                        if (col.linkUrlPattern) {
-                            const htmlString = renderLink(
-                                params.value,
-                                col.linkUrlPattern,
-                                col.linkText
-                            );
-
-                            return createElement("span", {
-                                dangerouslySetInnerHTML: { __html: htmlString }
-                            });
-                        }
-
-                        return String(params.value || "");
-                    } catch (e) {
-                        console.error("Error rendering link:", e);
-                        return String(params.value || "");
-                    }
-                };
-            } else {
-                colDef.valueFormatter = (params) => {
-                    try {
-                        if (params.value === null || params.value === undefined) return "";
-                        return applyFormatter(
-                            params.value,
-                            col.formatter || "none",
-                            (col.attribute?.type || "String") as any,
-                            col.customPrefix,
-                            col.customSuffix
-                        );
-                    } catch (e) {
-                        console.error("Error in formatter:", e);
-                        return String(params.value || "");
-                    }
-                };
-            }
-
-            return colDef;
-        });
-
-        return colDefs;
-    };
-
-    const columnDefs = getColumnDefs();
+        // Map to AG Grid ColDef using the helper
+        return orderedColumns.map((col) =>
+            mapMendixColumnToColDef(col, columns, customFormatterRegistry)
+        );
+    }, [columns, columnVisibility, columnOrder, customFormatterRegistry]);
 
     return (
-        <div style={{ height: `${height}px`, width: "100%" }}>
+        // --- THEME FIX: Apply theme class to the wrapper div ---
+        <div className={themeClassName} style={{ height: `${height}px`, width: "100%" }}>
             <AgGridReact
-                theme={theme}
-                columnDefs={columnDefs as any}
+                // theme={theme} // <-- Removed: Theme is now on the wrapper
+                columnDefs={columnDefs} // <-- Removed 'as any'
                 rowData={rowData}
                 pagination={pagination}
                 paginationPageSize={pageSize}
-                onGridReady={onGridReady as any}
+                onGridReady={onGridReady} // <-- Removed 'as any'
                 onRowClicked={onRowClicked}
                 onSortChanged={onSortChanged}
                 onFilterChanged={onFilterChanged}
@@ -348,6 +349,7 @@ export function GridView(props: GridViewProps): ReactElement {
                             }
                         }
 
+                        // Don't suppress other keys (this is default, but explicit)
                         return false;
                     }
                 }}

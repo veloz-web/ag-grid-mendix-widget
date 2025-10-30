@@ -31,7 +31,7 @@ export class CustomFormatterRegistry {
      */
     registerFormatters(formattersConfig: CustomFormatterConfig[]): void {
         console.log("[CustomFormatterRegistry] registerFormatters called with:", formattersConfig);
-        
+
         if (!formattersConfig || !Array.isArray(formattersConfig)) {
             console.log("[CustomFormatterRegistry] Invalid config - not an array or null");
             return;
@@ -46,7 +46,7 @@ export class CustomFormatterRegistry {
                 hasCode: !!formatter.formatterCode,
                 hasConfig: !!formatter.formatterConfig
             });
-            
+
             try {
                 if (formatter.formatterType === "javascript") {
                     const compiledFunction = this.compileJavaScriptFormatter(
@@ -54,7 +54,9 @@ export class CustomFormatterRegistry {
                         formatter.formatterConfig
                     );
                     this.formatters.set(formatter.formatterName, compiledFunction);
-                    console.log(`[CustomFormatterRegistry] ✓ Successfully registered: ${formatter.formatterName}`);
+                    console.log(
+                        `[CustomFormatterRegistry] ✓ Successfully registered: ${formatter.formatterName}`
+                    );
                 }
                 // Future: Add microflow support
             } catch (error) {
@@ -64,16 +66,22 @@ export class CustomFormatterRegistry {
                 );
             }
         });
-        
-        console.log(`[CustomFormatterRegistry] Total registered formatters: ${this.formatters.size}`, this.getFormatterNames());
+
+        console.log(
+            `[CustomFormatterRegistry] Total registered formatters: ${this.formatters.size}`,
+            this.getFormatterNames()
+        );
     }
 
     /**
      * Compile JavaScript formatter code into executable function
      */
     private compileJavaScriptFormatter(code: string, configJson?: string): FormatterFunction {
-        console.log("[CustomFormatterRegistry] Compiling formatter with code:", code?.substring(0, 100) + "...");
-        
+        console.log(
+            "[CustomFormatterRegistry] Compiling formatter with code:",
+            code?.substring(0, 100) + "..."
+        );
+
         // Parse configuration if provided
         let config: any;
         if (configJson && configJson.trim()) {
@@ -95,12 +103,15 @@ export class CustomFormatterRegistry {
                 ${code}
             `;
 
-            console.log("[CustomFormatterRegistry] Creating function with body:", functionBody.substring(0, 200) + "...");
+            console.log(
+                "[CustomFormatterRegistry] Creating function with body:",
+                functionBody.substring(0, 200) + "..."
+            );
 
             // Create function with parameter names
             // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
             const formatter = new Function("value", "item", "column", "config", functionBody);
-            
+
             console.log("[CustomFormatterRegistry] Function compiled successfully");
 
             // Return wrapper that injects config
@@ -109,7 +120,10 @@ export class CustomFormatterRegistry {
                     const result = formatter(value, item, column, config);
                     return result !== null && result !== undefined ? String(result) : "";
                 } catch (error) {
-                    console.error("[CustomFormatterRegistry] Error executing custom formatter:", error);
+                    console.error(
+                        "[CustomFormatterRegistry] Error executing custom formatter:",
+                        error
+                    );
                     return String(value || "");
                 }
             };

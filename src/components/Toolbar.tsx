@@ -1,8 +1,16 @@
 import React, { ChangeEvent, RefObject } from "react";
 import { ViewSelector } from "./ViewSelector";
+import { MultiSelectFilter } from "./MultiSelectFilter";
 import { ColumnsType } from "../../typings/AGGridProps";
 
 type ViewMode = "grid" | "cards" | "list" | "harden";
+
+export interface ToolbarFilterColumn {
+    columnId: string;
+    label: string;
+    options: string[];
+    selectedValues: string[];
+}
 
 export interface ToolbarProps {
     // View selector props
@@ -12,6 +20,11 @@ export interface ToolbarProps {
     onViewChange: (view: ViewMode) => void;
     hasCardTemplate: boolean;
     hasListTemplate: boolean;
+
+    // Toolbar filters props
+    toolbarFilters: ToolbarFilterColumn[];
+    onToolbarFilterChange: (columnId: string, values: string[]) => void;
+    enableToolbarFilterSearch: boolean;
 
     // Sort controls props
     showSortControls: boolean;
@@ -27,6 +40,9 @@ export interface ToolbarProps {
     globalSearch: string;
     onSearchChange: (event: ChangeEvent<HTMLInputElement>) => void;
     onClearSearch: () => void;
+
+    // Reset button props
+    onResetToolbarFilters: () => void;
 
     // Filter drawer props
     enableFilterDrawer: boolean;
@@ -47,6 +63,9 @@ export const Toolbar: React.FC<ToolbarProps> = ({
     onViewChange,
     hasCardTemplate,
     hasListTemplate,
+    toolbarFilters,
+    onToolbarFilterChange,
+    enableToolbarFilterSearch,
     showSortControls,
     hasSortApplied,
     currentSortColumnId,
@@ -58,6 +77,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
     globalSearch,
     onSearchChange,
     onClearSearch,
+    onResetToolbarFilters,
     enableFilterDrawer,
     isFilterDrawerOpen,
     activeFilterCount,
@@ -66,6 +86,14 @@ export const Toolbar: React.FC<ToolbarProps> = ({
     isColumnVisibilityOpen,
     onToggleColumnVisibility
 }) => {
+    // Check if there are any active toolbar filters or search
+    const hasActiveToolbarFilters = toolbarFilters.some(
+        (filter) =>
+            filter.selectedValues.length > 0 && filter.selectedValues.length < filter.options.length
+    );
+    const hasActiveSearch = globalSearch && globalSearch.trim() !== "";
+    const showResetButton = hasActiveToolbarFilters || hasActiveSearch;
+
     return (
         <div className="aggrid-toolbar">
             <div className="aggrid-toolbar-left">
@@ -77,6 +105,36 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                         hasCardTemplate={hasCardTemplate}
                         hasListTemplate={hasListTemplate}
                     />
+                )}
+
+                {/* Toolbar multi-select filters */}
+                {toolbarFilters
+                    .filter((filter) => filter.options.length > 1)
+                    .map((filter) => (
+                        <MultiSelectFilter
+                            key={filter.columnId}
+                            label={filter.label}
+                            options={filter.options}
+                            selectedValues={filter.selectedValues}
+                            onChange={(values) => onToolbarFilterChange(filter.columnId, values)}
+                            enableSearch={enableToolbarFilterSearch}
+                        />
+                    ))}
+
+                {/* Reset toolbar filters button */}
+                {showResetButton && (
+                    <button
+                        type="button"
+                        className="toolbar-reset-btn"
+                        onClick={onResetToolbarFilters}
+                        title="Clear all toolbar filters and search"
+                        aria-label="Reset toolbar filters"
+                    >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" />
+                        </svg>
+                        <span>Reset</span>
+                    </button>
                 )}
             </div>
             <div className="aggrid-toolbar-right">

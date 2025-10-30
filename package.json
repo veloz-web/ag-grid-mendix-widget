@@ -24,9 +24,9 @@
     "@mendix/pluggable-widgets-tools": "^10.7.1"
   },
   "dependencies": {
-    "ag-grid-community": "^34.2.0",
-    "ag-grid-enterprise": "^34.2.0",
-    "ag-grid-react": "^34.2.0",
+    "ag-grid-community": "^34.3.0",
+    "ag-grid-enterprise": "^34.3.0",
+    "ag-grid-react": "^34.3.0",
     "classnames": "^2.5.1"
   },
   "overrides": {
