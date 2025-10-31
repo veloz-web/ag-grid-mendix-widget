@@ -1,7 +1,7 @@
 // GridView.tsx
 import React, { ReactElement, useMemo } from "react"; // <-- Changed import
 import { AgGridReact } from "ag-grid-react";
-import type { ColDef, GridReadyEvent } from "ag-grid-community"; // <-- Removed 'Theme'
+import type { ColDef, GridReadyEvent, ColumnPinnedEvent } from "ag-grid-community"; // <-- Removed 'Theme'
 import { ValueStatus } from "mendix";
 import { ColumnsType } from "../../typings/AGGridProps";
 import { renderStatusBadge, renderLink, applyFormatter } from "../utils/formatters";
@@ -20,6 +20,7 @@ interface GridViewProps {
     onSortChanged?: () => void;
     onFilterChanged?: () => void;
     onColumnMoved?: () => void;
+    onColumnPinned?: (event: ColumnPinnedEvent) => void;
     columnVisibility?: Record<string, boolean>;
     columnOrder?: string[];
     customFormatterRegistry?: CustomFormatterRegistry;
@@ -116,6 +117,14 @@ function mapMendixColumnToColDef(
         }
     } else {
         colDef.width = col.width || 150;
+    }
+
+    if (col.pinned && col.pinned !== "none") {
+        colDef.pinned = col.pinned;
+    }
+
+    if (!col.pinnable) {
+        colDef.lockPinned = true; // Prevent end users from changing the pin state when disabled
     }
 
     // Apply text alignment
@@ -279,6 +288,7 @@ export function GridView(props: GridViewProps): ReactElement {
         onSortChanged,
         onFilterChanged,
         onColumnMoved,
+    onColumnPinned,
         columnVisibility,
         columnOrder,
         customFormatterRegistry
@@ -325,6 +335,7 @@ export function GridView(props: GridViewProps): ReactElement {
                 onSortChanged={onSortChanged}
                 onFilterChanged={onFilterChanged}
                 onColumnMoved={onColumnMoved}
+                onColumnPinned={onColumnPinned}
                 animateRows={true}
                 suppressCellFocus={false}
                 enableCellTextSelection={true}

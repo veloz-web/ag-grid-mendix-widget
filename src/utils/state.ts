@@ -41,3 +41,19 @@ export const getDefaultColumnVisibility = (columns = []) => {
 export const getDefaultColumnOrder = (columns = []) => {
     return columns.filter((col) => col.attribute?.id).map((col) => col.attribute.id);
 };
+
+/**
+ * Gets the default pinned configuration from column settings.
+ * @param {Array} columns - The widget's column props.
+ * @returns {Record<string, "none" | "left" | "right">} The default pinned state per column.
+ */
+export const getDefaultColumnPinned = (columns = []) => {
+    const pinned: Record<string, "none" | "left" | "right"> = {};
+    columns.forEach((col) => {
+        if (col.attribute?.id) {
+            const value = (col.pinned as "none" | "left" | "right" | undefined) ?? "none";
+            pinned[col.attribute.id] = value;
+        }
+    });
+    return pinned;
+};

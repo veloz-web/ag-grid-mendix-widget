@@ -52,6 +52,19 @@
                             <caption>Resizable</caption>
                             <description>Enable column resizing</description>
                         </property>
+                        <property key="pinned" type="enumeration" defaultValue="none">
+                            <caption>Pinned Position</caption>
+                            <description>Pin this column to the left or right side of the grid header.</description>
+                            <enumerationValues>
+                                <enumerationValue key="none">Not pinned</enumerationValue>
+                                <enumerationValue key="left">Left</enumerationValue>
+                                <enumerationValue key="right">Right</enumerationValue>
+                            </enumerationValues>
+                        </property>
+                        <property key="pinnable" type="boolean" defaultValue="false">
+                            <caption>Allow Pinning in Grid Menu</caption>
+                            <description>Allow end users to pin or unpin this column through the column options menu.</description>
+                        </property>
                     </propertyGroup>
                 </properties>
             </property>

@@ -5,14 +5,20 @@ import { ChangeEvent, Component, ReactNode, createRef } from "react";
 import "./agGridModules";
 
 // Import AG Grid specifics
-import { GridReadyEvent } from "ag-grid-community";
+import { GridReadyEvent, ColumnPinnedEvent } from "ag-grid-community";
 import { LicenseManager } from "ag-grid-enterprise";
 
 // Import Mendix types
 import { ValueStatus } from "mendix";
 
 // Import new refactored types and components
-import { AGGridContainerProps, AGGridState, PersistedGridState, ViewMode } from "./types";
+import {
+    AGGridContainerProps,
+    AGGridState,
+    ColumnPinnedState,
+    PersistedGridState,
+    ViewMode
+} from "./types";
 import { Toolbar } from "./components/Toolbar";
 import { FilterDrawer } from "./components/FilterDrawer";
 import { HiddenDrawer } from "./components/HiddenDrawer";
@@ -22,7 +28,8 @@ import { getThemeClassName } from "./utils/theme";
 import {
     getDefaultSortModel,
     getDefaultColumnVisibility,
-    getDefaultColumnOrder
+    getDefaultColumnOrder,
+    getDefaultColumnPinned
 } from "./utils/state";
 import {
     getRowData,
@@ -71,6 +78,8 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
         const initialColumnVisibility =
             persisted?.columnVisibility ?? getDefaultColumnVisibility(props.columns);
         const initialColumnOrder = persisted?.columnOrder ?? getDefaultColumnOrder(props.columns);
+        const initialColumnPinned =
+            persisted?.columnPinned ?? getDefaultColumnPinned(props.columns);
 
         this.state = {
             currentView: initialView,
@@ -81,7 +90,8 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
             sortModel: initialSort,
             columnVisibility: initialColumnVisibility,
             isColumnVisibilityOpen: false,
-            columnOrder: initialColumnOrder
+            columnOrder: initialColumnOrder,
+            columnPinned: initialColumnPinned
         };
 
         this.persistedState = this.shouldPersist
@@ -91,7 +101,8 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
                   globalSearch: initialSearch,
                   sortModel: initialSort,
                   columnVisibility: initialColumnVisibility,
-                  columnOrder: initialColumnOrder
+                  columnOrder: initialColumnOrder,
+                  columnPinned: initialColumnPinned
               }
             : null;
     }
@@ -204,18 +215,9 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
         // this.columnApi = (params as any).columnApi || null; // <-- REMOVED
         // ---
 
-        const { sortModel, activeFilters, globalSearch, columnOrder } = this.state;
+        const { sortModel, activeFilters, globalSearch, columnOrder, columnPinned } = this.state;
 
-        if (columnOrder && columnOrder.length > 0 && this.gridApi) {
-            try {
-                const columnState = columnOrder.map((colId) => ({ colId }));
-                // --- DEPRECATION FIX ---
-                this.gridApi.applyColumnState({ state: columnState, applyOrder: true }); // <-- Use gridApi
-                // ---
-            } catch (error) {
-                console.error("[AGGrid] Error applying saved column order:", error);
-            }
-        }
+        this.applyColumnStateFromState(columnOrder, columnPinned);
 
         if (sortModel.length > 0) {
             this.applyGridSortModel(sortModel);
@@ -225,22 +227,11 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
     };
 
     private onColumnMoved = () => {
-        if (!this.gridApi || !this.shouldPersist) {
-            return;
-        }
-        try {
-            // --- DEPRECATION FIX ---
-            const columnState = this.gridApi.getColumnState(); // <-- Use gridApi
-            // ---
-            const columnOrder = columnState
-                .filter((col: any) => col.colId)
-                .map((col: any) => col.colId);
-            this.setState({ columnOrder }, () => {
-                this.savePersistedState({ columnOrder });
-            });
-        } catch (error) {
-            console.error("[AGGrid] Error handling column moved:", error);
-        }
+        this.syncColumnStateFromGrid();
+    };
+
+    private onColumnPinned = (_event?: ColumnPinnedEvent) => {
+        this.syncColumnStateFromGrid();
     };
 
     private onSortChanged = () => {
@@ -309,6 +300,35 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
             }
             this.savePersistedState({ globalSearch: searchValue });
         });
+    };
+
+    private applyColumnStateFromState = (
+        columnOrder: string[],
+        columnPinned: Record<string, ColumnPinnedState>
+    ) => {
+        if (!this.gridApi) {
+            return;
+        }
+
+        try {
+            const fallbackOrder = this.props.columns
+                .filter((col) => col.attribute?.id)
+                .map((col) => col.attribute!.id);
+            const effectiveOrder = columnOrder && columnOrder.length > 0 ? columnOrder : fallbackOrder;
+
+            const state = effectiveOrder.map((colId) => {
+                const pinnedValue = columnPinned?.[colId];
+                const pinned = pinnedValue === "left" || pinnedValue === "right" ? pinnedValue : null;
+                return {
+                    colId,
+                    pinned
+                };
+            });
+
+            this.gridApi.applyColumnState({ state, applyOrder: true });
+        } catch (error) {
+            console.error("[AGGrid] Error applying column state:", error);
+        }
     };
 
     private applyFiltersFromDrawer = (
@@ -467,6 +487,18 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
             else if (parsed.viewMode === "harden" && hasCardTemplate) viewMode = "harden";
             else viewMode = "grid";
 
+            const defaultPinned = getDefaultColumnPinned(this.props.columns);
+            if (parsed.columnPinned && typeof parsed.columnPinned === "object") {
+                Object.keys(parsed.columnPinned).forEach((key) => {
+                    const value = parsed.columnPinned[key];
+                    if (value === "left" || value === "right") {
+                        defaultPinned[key] = value;
+                    } else {
+                        defaultPinned[key] = "none";
+                    }
+                });
+            }
+
             return {
                 viewMode,
                 activeFilters: parsed.activeFilters || {},
@@ -474,7 +506,8 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
                 sortModel: parsed.sortModel || [],
                 columnVisibility:
                     parsed.columnVisibility || getDefaultColumnVisibility(this.props.columns),
-                columnOrder: parsed.columnOrder || getDefaultColumnOrder(this.props.columns)
+                columnOrder: parsed.columnOrder || getDefaultColumnOrder(this.props.columns),
+                columnPinned: defaultPinned
             };
             // ...
         } catch {
@@ -494,7 +527,8 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
             globalSearch: partial.globalSearch ?? this.state.globalSearch,
             sortModel: (partial.sortModel ?? this.state.sortModel).map((s) => ({ ...s })),
             columnVisibility: { ...(partial.columnVisibility ?? this.state.columnVisibility) },
-            columnOrder: [...(partial.columnOrder ?? this.state.columnOrder)]
+            columnOrder: [...(partial.columnOrder ?? this.state.columnOrder)],
+            columnPinned: { ...(partial.columnPinned ?? this.state.columnPinned) }
         };
         this.persistedState = nextState;
         try {
@@ -520,20 +554,58 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
         const defaultSort = getDefaultSortModel(this.props.columns); // Use util
         const defaultColumnVisibility = getDefaultColumnVisibility(this.props.columns); // Use util
         const defaultColumnOrder = getDefaultColumnOrder(this.props.columns); // Use util
+        const defaultColumnPinned = getDefaultColumnPinned(this.props.columns); // Use util
 
-        this.setState({
-            currentView: defaultView,
-            activeFilters: defaultFilters,
-            globalSearch: defaultSearch,
-            sortModel: defaultSort,
-            columnVisibility: defaultColumnVisibility,
-            columnOrder: defaultColumnOrder
-        });
+        this.setState(
+            {
+                currentView: defaultView,
+                activeFilters: defaultFilters,
+                globalSearch: defaultSearch,
+                sortModel: defaultSort,
+                columnVisibility: defaultColumnVisibility,
+                columnOrder: defaultColumnOrder,
+                columnPinned: defaultColumnPinned
+            },
+            () => {
+                this.applyColumnStateFromState(defaultColumnOrder, defaultColumnPinned);
+            }
+        );
 
         this.persistedState = null;
         applyFiltersToGrid(this.gridApi, defaultFilters, defaultSearch); // Use util
         this.applyGridSortModel(defaultSort);
         this.closeFilterDrawer();
+    };
+
+    private syncColumnStateFromGrid = () => {
+        if (!this.gridApi || !this.shouldPersist) {
+            return;
+        }
+
+        try {
+            const columnState = this.gridApi.getColumnState();
+            const columnOrder = columnState
+                .filter((col: any) => col.colId)
+                .map((col: any) => col.colId);
+
+            const columnPinned: Record<string, ColumnPinnedState> = {};
+            columnState.forEach((col: any) => {
+                if (!col.colId) {
+                    return;
+                }
+                if (col.pinned === "left" || col.pinned === "right") {
+                    columnPinned[col.colId] = col.pinned;
+                } else {
+                    columnPinned[col.colId] = "none";
+                }
+            });
+
+            this.setState({ columnOrder, columnPinned }, () => {
+                this.savePersistedState({ columnOrder, columnPinned });
+            });
+        } catch (error) {
+            console.error("[AGGrid] Error syncing column state:", error);
+        }
     };
 
     // --- Render ---
@@ -681,6 +753,7 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
                         onSortChanged={this.onSortChanged}
                         onFilterChanged={this.onFilterChanged}
                         onColumnMoved={this.onColumnMoved}
+                        onColumnPinned={this.onColumnPinned}
                         columnVisibility={columnVisibility}
                         columnOrder={this.state.columnOrder}
                         customFormatterRegistry={this.customFormatterRegistry}

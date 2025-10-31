@@ -16,6 +16,7 @@ export const ViewRenderer = ({
     onSortChanged,
     onFilterChanged,
     onColumnMoved,
+    onColumnPinned,
     columnVisibility,
     columnOrder,
     customFormatterRegistry,
@@ -37,6 +38,7 @@ export const ViewRenderer = ({
                 onSortChanged={onSortChanged}
                 onFilterChanged={onFilterChanged}
                 onColumnMoved={onColumnMoved}
+                onColumnPinned={onColumnPinned}
                 columnVisibility={columnVisibility}
                 columnOrder={columnOrder}
                 customFormatterRegistry={customFormatterRegistry}
@@ -82,6 +84,7 @@ export const ViewRenderer = ({
                 onSortChanged={onSortChanged}
                 onFilterChanged={onFilterChanged}
                 onColumnMoved={onColumnMoved}
+                onColumnPinned={onColumnPinned}
                 columnVisibility={columnVisibility}
                 columnOrder={columnOrder}
                 customFormatterRegistry={customFormatterRegistry}
@@ -103,6 +106,7 @@ export const ViewRenderer = ({
                 onSortChanged={onSortChanged}
                 onFilterChanged={onFilterChanged}
                 onColumnMoved={onColumnMoved}
+                onColumnPinned={onColumnPinned}
                 columnVisibility={columnVisibility}
                 columnOrder={columnOrder}
                 customFormatterRegistry={customFormatterRegistry}

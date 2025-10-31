@@ -4,6 +4,8 @@ export { AGGridContainerProps }; // Re-export for convenience
 
 export type ViewMode = "grid" | "cards" | "list" | "harden";
 
+export type ColumnPinnedState = "none" | "left" | "right";
+
 export interface AGGridState {
     currentView: ViewMode;
     isFilterDrawerOpen: boolean;
@@ -14,6 +16,7 @@ export interface AGGridState {
     columnVisibility: Record<string, boolean>;
     isColumnVisibilityOpen: boolean;
     columnOrder: string[];
+    columnPinned: Record<string, ColumnPinnedState>;
 }
 
 export interface PersistedGridState {
@@ -23,4 +26,5 @@ export interface PersistedGridState {
     sortModel: Array<{ colId: string; sort: "asc" | "desc" | null }>;
     columnVisibility: Record<string, boolean>;
     columnOrder?: string[];
+    columnPinned?: Record<string, ColumnPinnedState>;
 }

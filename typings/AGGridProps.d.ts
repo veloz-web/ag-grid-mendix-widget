@@ -15,6 +15,8 @@ export type DefaultSortEnum = "none" | "asc" | "desc";
 
 export type FilterLocationEnum = "none" | "drawer" | "toolbar";
 
+export type PinnedEnum = "none" | "left" | "right";
+
 export type FormatterEnum = "none" | "currency" | "currencyEUR" | "currencyGBP" | "percentage" | "number" | "decimal2" | "dateShort" | "dateLong" | "dateISO" | "dateDMY" | "dateMDY" | "dateYMD" | "dateTime" | "time" | "yesNo" | "trueFalse" | "uppercase" | "lowercase" | "capitalize" | "customPrefix" | "link" | "statusBadge";
 
 export interface ColumnsType {
@@ -29,6 +31,8 @@ export interface ColumnsType {
     maxWidth: number;
     resizable: boolean;
     draggable: boolean;
+    pinned: PinnedEnum;
+    pinnable: boolean;
     sortable: boolean;
     defaultSort: DefaultSortEnum;
     sortIndex: number;
@@ -73,6 +77,8 @@ export interface ColumnsPreviewType {
     maxWidth: number | null;
     resizable: boolean;
     draggable: boolean;
+    pinned: PinnedEnum;
+    pinnable: boolean;
     sortable: boolean;
     defaultSort: DefaultSortEnum;
     sortIndex: number | null;

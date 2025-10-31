@@ -85,6 +85,19 @@
                             <caption>Draggable</caption>
                             <description>Allow this column to be reordered by dragging the column header</description>
                         </property>
+                        <property key="pinned" type="enumeration" defaultValue="none">
+                            <caption>Pinned Position</caption>
+                            <description>Pin this column to the left or right side of the grid header.</description>
+                            <enumerationValues>
+                                <enumerationValue key="none">Not pinned</enumerationValue>
+                                <enumerationValue key="left">Left</enumerationValue>
+                                <enumerationValue key="right">Right</enumerationValue>
+                            </enumerationValues>
+                        </property>
+                        <property key="pinnable" type="boolean" defaultValue="false">
+                            <caption>Allow Pinning in Grid Menu</caption>
+                            <description>Allow end users to pin or unpin this column through the column options menu.</description>
+                        </property>
                     </propertyGroup>
                     <propertyGroup caption="Sorting &amp; Filtering">
                         <property key="sortable" type="boolean" defaultValue="true">
