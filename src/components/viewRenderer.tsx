@@ -22,6 +22,9 @@ export const ViewRenderer = ({
     customFormatterRegistry,
     customCardTemplate,
     customListTemplate,
+    enableContextMenu,
+    enableSideBar,
+    enableStatusBar,
     onRowClick // Pass onRowClick to custom views
 }) => {
     if (currentView === "grid") {
@@ -42,6 +45,9 @@ export const ViewRenderer = ({
                 columnVisibility={columnVisibility}
                 columnOrder={columnOrder}
                 customFormatterRegistry={customFormatterRegistry}
+                enableContextMenu={enableContextMenu}
+                enableSideBar={enableSideBar}
+                enableStatusBar={enableStatusBar}
             />
         );
     }
@@ -88,6 +94,9 @@ export const ViewRenderer = ({
                 columnVisibility={columnVisibility}
                 columnOrder={columnOrder}
                 customFormatterRegistry={customFormatterRegistry}
+                enableContextMenu={enableContextMenu}
+                enableSideBar={enableSideBar}
+                enableStatusBar={enableStatusBar}
             />
         );
     }
@@ -110,6 +119,9 @@ export const ViewRenderer = ({
                 columnVisibility={columnVisibility}
                 columnOrder={columnOrder}
                 customFormatterRegistry={customFormatterRegistry}
+                enableContextMenu={enableContextMenu}
+                enableSideBar={enableSideBar}
+                enableStatusBar={enableStatusBar}
             />
         );
     }

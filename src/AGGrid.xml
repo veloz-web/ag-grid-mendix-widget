@@ -292,10 +292,24 @@
                 </properties>
             </property>
         </propertyGroup>
+        <propertyGroup caption="UI Elements">
+            <property key="enableSideBar" type="boolean" defaultValue="false">
+                <caption>Enable Side Bar</caption>
+                <description>Show the AG Grid side bar so users can access column and filter panels.</description>
+            </property>
+            <property key="enableStatusBar" type="boolean" defaultValue="false">
+                <caption>Enable Status Bar</caption>
+                <description>Show the AG Grid status bar with row counts and selection information.</description>
+            </property>
+        </propertyGroup>
         <propertyGroup caption="Grid Options">
             <property key="licenseKey" type="string" required="false">
                 <caption>Enterprise Key</caption>
                 <description>Your AG Grid Enterprise license key. Leave empty for Community edition. This value is masked in Studio.</description>
+            </property>
+            <property key="enableContextMenu" type="boolean" defaultValue="false">
+                <caption>Enable Context Menu</caption>
+                <description>Show the AG Grid right-click context menu for columns and cells. Disable to prevent context menu access.</description>
             </property>
             <property key="useLocalStorage" type="boolean" defaultValue="true">
                 <caption>Use Local Storage</caption>
@@ -329,6 +343,15 @@
                     <enumerationValue key="balham">Balham</enumerationValue>
                     <enumerationValue key="material">Material</enumerationValue>
                     <enumerationValue key="quartz">Quartz</enumerationValue>
+                </enumerationValues>
+            </property>
+            <property key="themeVariant" type="enumeration" defaultValue="auto">
+                <caption>Theme Variant</caption>
+                <description>Choose the light or dark variant of the selected theme. Auto follows the user’s system preference.</description>
+                <enumerationValues>
+                    <enumerationValue key="auto">Auto (match system)</enumerationValue>
+                    <enumerationValue key="light">Light</enumerationValue>
+                    <enumerationValue key="dark">Dark</enumerationValue>
                 </enumerationValues>
             </property>
         </propertyGroup>

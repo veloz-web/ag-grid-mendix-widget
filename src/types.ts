@@ -17,6 +17,7 @@ export interface AGGridState {
     isColumnVisibilityOpen: boolean;
     columnOrder: string[];
     columnPinned: Record<string, ColumnPinnedState>;
+    prefersDarkScheme: boolean;
 }
 
 export interface PersistedGridState {

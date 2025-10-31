@@ -71,6 +71,8 @@ export interface CustomFormattersType {
 
 export type ThemeEnum = "alpine" | "balham" | "material" | "quartz";
 
+export type ThemeVariantEnum = "auto" | "light" | "dark";
+
 export interface ColumnsPreviewType {
     header: string;
     attribute: string;
@@ -128,6 +130,9 @@ export interface AGGridContainerProps {
     enableFilterDrawer: boolean;
     customFormatters: CustomFormattersType[];
     licenseKey: string;
+    enableContextMenu: boolean;
+    enableSideBar: boolean;
+    enableStatusBar: boolean;
     useLocalStorage: boolean;
     showToolbarSearch: boolean;
     enableToolbarFilterSearch: boolean;
@@ -135,6 +140,7 @@ export interface AGGridContainerProps {
     pageSize: number;
     height: number;
     theme: ThemeEnum;
+    themeVariant: ThemeVariantEnum;
     onRowClick?: ListActionValue;
 }
 
@@ -159,6 +165,9 @@ export interface AGGridPreviewProps {
     enableFilterDrawer: boolean;
     customFormatters: CustomFormattersPreviewType[];
     licenseKey: string;
+    enableContextMenu: boolean;
+    enableSideBar: boolean;
+    enableStatusBar: boolean;
     useLocalStorage: boolean;
     showToolbarSearch: boolean;
     enableToolbarFilterSearch: boolean;
@@ -166,5 +175,6 @@ export interface AGGridPreviewProps {
     pageSize: number | null;
     height: number | null;
     theme: ThemeEnum;
+    themeVariant: ThemeVariantEnum;
     onRowClick: {} | null;
 }

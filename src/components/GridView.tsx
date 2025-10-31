@@ -24,6 +24,9 @@ interface GridViewProps {
     columnVisibility?: Record<string, boolean>;
     columnOrder?: string[];
     customFormatterRegistry?: CustomFormatterRegistry;
+    enableContextMenu: boolean;
+    enableSideBar: boolean;
+    enableStatusBar: boolean;
 }
 
 // --- Helper function moved outside the component for memoization ---
@@ -363,8 +366,26 @@ export function GridView(props: GridViewProps): ReactElement {
         onColumnPinned,
         columnVisibility,
         columnOrder,
-        customFormatterRegistry
+        customFormatterRegistry,
+        enableContextMenu,
+        enableSideBar,
+        enableStatusBar
     } = props;
+
+    const statusBarConfig = useMemo(() => {
+        if (!enableStatusBar) {
+            return undefined;
+        }
+
+        return {
+            statusPanels: [
+                { statusPanel: "agTotalRowCountComponent", align: "left" },
+                { statusPanel: "agFilteredRowCountComponent" },
+                { statusPanel: "agSelectedRowCountComponent" },
+                { statusPanel: "agAggregationComponent" }
+            ]
+        };
+    }, [enableStatusBar]);
 
     // --- IMPROVEMENT: Memoize column definitions ---
     // This expensive calculation will only run when these specific props change.
@@ -412,6 +433,9 @@ export function GridView(props: GridViewProps): ReactElement {
                 suppressCellFocus={false}
                 enableCellTextSelection={true}
                 ensureDomOrder={true}
+                suppressContextMenu={!enableContextMenu}
+                sideBar={enableSideBar ? true : undefined}
+                statusBar={statusBarConfig}
                 defaultColDef={{
                     sortable: true,
                     filter: true,

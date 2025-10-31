@@ -92,10 +92,24 @@
                 </properties>
             </property>
         </propertyGroup>
+        <propertyGroup caption="UI Elements">
+            <property key="enableSideBar" type="boolean" defaultValue="false">
+                <caption>Enable Side Bar</caption>
+                <description>Show the AG Grid side bar so users can access column and filter panels.</description>
+            </property>
+            <property key="enableStatusBar" type="boolean" defaultValue="false">
+                <caption>Enable Status Bar</caption>
+                <description>Show the AG Grid status bar with row counts and selection information.</description>
+            </property>
+        </propertyGroup>
         <propertyGroup caption="Grid Options">
             <property key="licenseKey" type="string" required="true">
                 <caption>AG Grid Enterprise License Key</caption>
                 <description>AG Grid Enterprise license key for full functionality</description>
+            </property>
+            <property key="enableContextMenu" type="boolean" defaultValue="false">
+                <caption>Enable Context Menu</caption>
+                <description>Show the AG Grid right-click context menu for columns and cells. Disable to prevent context menu access.</description>
             </property>
             <property key="pagination" type="boolean" defaultValue="true">
                 <caption>Enable Pagination</caption>
@@ -117,6 +131,15 @@
                     <enumerationValue key="balham">Balham</enumerationValue>
                     <enumerationValue key="material">Material</enumerationValue>
                     <enumerationValue key="quartz">Quartz</enumerationValue>
+                </enumerationValues>
+            </property>
+            <property key="themeVariant" type="enumeration" defaultValue="auto">
+                <caption>Theme Variant</caption>
+                <description>Choose the light or dark variant of the selected theme. Auto follows the user’s system preference.</description>
+                <enumerationValues>
+                    <enumerationValue key="auto">Auto (match system)</enumerationValue>
+                    <enumerationValue key="light">Light</enumerationValue>
+                    <enumerationValue key="dark">Dark</enumerationValue>
                 </enumerationValues>
             </property>
         </propertyGroup>

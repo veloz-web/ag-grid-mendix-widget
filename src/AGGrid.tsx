@@ -54,6 +54,7 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
     private filterButtonRef = createRef<HTMLButtonElement>();
     private isSettingSortProgrammatically = false;
     private isApplyingFiltersProgrammatically = false;
+    private prefersDarkMediaQuery: MediaQueryList | null = null;
     private readonly storageKey: string;
     private readonly shouldPersist: boolean;
     private persistedState: PersistedGridState | null = null;
@@ -89,6 +90,11 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
         const initialColumnPinned =
             persisted?.columnPinned ?? getDefaultColumnPinned(props.columns);
 
+        const prefersDark =
+            typeof window !== "undefined" && window.matchMedia
+                ? window.matchMedia("(prefers-color-scheme: dark)").matches
+                : false;
+
         this.state = {
             currentView: initialView,
             isFilterDrawerOpen: false,
@@ -99,7 +105,8 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
             columnVisibility: initialColumnVisibility,
             isColumnVisibilityOpen: false,
             columnOrder: initialColumnOrder,
-            columnPinned: initialColumnPinned
+            columnPinned: initialColumnPinned,
+            prefersDarkScheme: prefersDark
         };
 
         this.persistedState = this.shouldPersist
@@ -117,21 +124,44 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
 
     componentDidMount() {
         window.addEventListener("resize", this.handleResize);
+        if (typeof window !== "undefined" && window.matchMedia) {
+            this.prefersDarkMediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+            this.setState({ prefersDarkScheme: this.prefersDarkMediaQuery.matches });
+            if (typeof this.prefersDarkMediaQuery.addEventListener === "function") {
+                this.prefersDarkMediaQuery.addEventListener("change", this.handlePrefersColorSchemeChange);
+            } else if (typeof this.prefersDarkMediaQuery.addListener === "function") {
+                this.prefersDarkMediaQuery.addListener(this.handlePrefersColorSchemeChange);
+            }
+        }
     }
 
     componentWillUnmount() {
         window.removeEventListener("resize", this.handleResize);
+        if (this.prefersDarkMediaQuery) {
+            if (typeof this.prefersDarkMediaQuery.removeEventListener === "function") {
+                this.prefersDarkMediaQuery.removeEventListener("change", this.handlePrefersColorSchemeChange);
+            } else if (typeof this.prefersDarkMediaQuery.removeListener === "function") {
+                this.prefersDarkMediaQuery.removeListener(this.handlePrefersColorSchemeChange);
+            }
+        }
     }
 
     // --- Responsive & View Handlers ---
 
     private getThemeClassName = () => {
-        // Use new theme util
-        return getThemeClassName(this.props.theme);
+        return getThemeClassName(
+            this.props.theme,
+            this.props.themeVariant ?? "auto",
+            this.state.prefersDarkScheme
+        );
     };
 
     private checkIsMobile = (): boolean => {
         return window.innerWidth < 768;
+    };
+
+    private handlePrefersColorSchemeChange = (event: MediaQueryListEvent) => {
+        this.setState({ prefersDarkScheme: event.matches });
     };
 
     private handleResize = () => {
@@ -884,6 +914,9 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
                         customFormatterRegistry={this.customFormatterRegistry}
                         customCardTemplate={this.props.customCardTemplate}
                         customListTemplate={this.props.customListTemplate}
+                        enableContextMenu={Boolean(this.props.enableContextMenu)}
+                        enableSideBar={Boolean(this.props.enableSideBar)}
+                        enableStatusBar={Boolean(this.props.enableStatusBar)}
                         onRowClick={onRowClick} // Pass onRowClick for custom views
                     />
 
