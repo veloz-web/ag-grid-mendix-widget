@@ -1,6 +1,14 @@
 // src/utils/data.js
 import { ValueStatus } from "mendix";
 import { compareValuesForSort } from "./formatters";
+import {
+    DateRangeValue,
+    isDateRangeValue,
+    normalizeDateRangeValue,
+    toComparableDate,
+    isRelativeDateRangeKey,
+    resolveRelativeDateRange
+} from "./dateRange";
 
 /**
  * Safely extracts row data from the Mendix data source.
@@ -85,6 +93,12 @@ export const getFilteredData = (rowData = [], columns = [], state) => {
     const hasGlobalSearch = Boolean(globalSearch && globalSearch.trim() !== "");
     const hasActiveFilters = Object.keys(activeFilters).some((key) => {
         const value = activeFilters[key];
+        if (isDateRangeValue(value)) {
+            return Boolean(normalizeDateRangeValue(value as DateRangeValue));
+        }
+        if (Array.isArray(value)) {
+            return value.length > 0;
+        }
         return value !== undefined && value !== null && value !== "";
     });
 
@@ -105,12 +119,54 @@ export const getFilteredData = (rowData = [], columns = [], state) => {
             }
 
             return Object.entries(activeFilters).every(([columnId, filterValue]) => {
-                if (!filterValue || filterValue === "") return true;
+                if (filterValue === undefined || filterValue === null) return true;
+                if (filterValue === "") return true;
+                if (Array.isArray(filterValue) && filterValue.length === 0) return true;
+                const normalizedRange = (() => {
+                    if (typeof filterValue === "string" && isRelativeDateRangeKey(filterValue)) {
+                        const resolved = resolveRelativeDateRange(filterValue);
+                        return normalizeDateRangeValue(resolved);
+                    }
+                    if (isDateRangeValue(filterValue)) {
+                        return normalizeDateRangeValue(filterValue as DateRangeValue);
+                    }
+                    return null;
+                })();
+
+                if (normalizedRange) {
+                    const column = columns.find((col) => col.attribute?.id === columnId);
+                    if (!column || !column.attribute) return true;
+                    const value = column.attribute.get(item);
+                    if (value.status !== ValueStatus.Available) return false;
+                    const itemComparable = toComparableDate(value.value as any);
+                    if (itemComparable === null) {
+                        return false;
+                    }
+                    const fromComparable = normalizedRange.from
+                        ? toComparableDate(normalizedRange.from)
+                        : null;
+                    const toComparableValue = normalizedRange.to
+                        ? toComparableDate(normalizedRange.to)
+                        : null;
+                    if (fromComparable !== null && itemComparable < fromComparable) {
+                        return false;
+                    }
+                    if (toComparableValue !== null && itemComparable > toComparableValue) {
+                        return false;
+                    }
+                    return true;
+                }
+
                 const column = columns.find((col) => col.attribute?.id === columnId);
                 if (!column || !column.attribute) return true;
                 const value = column.attribute.get(item);
                 if (value.status !== ValueStatus.Available) return false;
                 const itemValue = String(value.value || "");
+
+                if (Array.isArray(filterValue)) {
+                    return filterValue.map(String).includes(itemValue);
+                }
+
                 const filter = String(filterValue);
                 return itemValue === filter;
             });

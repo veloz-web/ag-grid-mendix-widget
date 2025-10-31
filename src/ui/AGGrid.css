@@ -488,6 +488,39 @@
     display: block;
 }
 
+.filter-date-range {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.filter-date-field {
+    flex: 1 1 160px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.filter-date-field span {
+    font-size: 12px;
+    font-weight: 500;
+    color: #666;
+}
+
+.clear-filter-link {
+    margin-top: 8px;
+    background: none;
+    border: none;
+    color: #1976d2;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 0;
+}
+
+.clear-filter-link:hover {
+    text-decoration: underline;
+}
+
 /* Global Search Styles */
 .global-search {
     position: relative;

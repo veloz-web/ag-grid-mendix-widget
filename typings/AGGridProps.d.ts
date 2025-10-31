@@ -17,11 +17,14 @@ export type FilterLocationEnum = "none" | "drawer" | "toolbar";
 
 export type PinnedEnum = "none" | "left" | "right";
 
+export type DataTypeEnum = "auto" | "boolean" | "date" | "number" | "string";
+
 export type FormatterEnum = "none" | "currency" | "currencyEUR" | "currencyGBP" | "percentage" | "number" | "decimal2" | "dateShort" | "dateLong" | "dateISO" | "dateDMY" | "dateMDY" | "dateYMD" | "dateTime" | "time" | "yesNo" | "trueFalse" | "uppercase" | "lowercase" | "capitalize" | "customPrefix" | "link" | "statusBadge";
 
 export interface ColumnsType {
     header: DynamicValue<string>;
     attribute: ListAttributeValue<string | Big | boolean | Date>;
+    dataType: DataTypeEnum;
     hidden: boolean;
     alignment: AlignmentEnum;
     widthType: WidthTypeEnum;
@@ -39,6 +42,9 @@ export interface ColumnsType {
     includeInSort: boolean;
     filter: boolean;
     filterLocation: FilterLocationEnum;
+    useDateRange: boolean;
+    useRelativeRange: boolean;
+    floatingFilter: boolean;
     formatter: FormatterEnum;
     customFormatterName: string;
     customPrefix: string;
@@ -68,6 +74,7 @@ export type ThemeEnum = "alpine" | "balham" | "material" | "quartz";
 export interface ColumnsPreviewType {
     header: string;
     attribute: string;
+    dataType: DataTypeEnum;
     hidden: boolean;
     alignment: AlignmentEnum;
     widthType: WidthTypeEnum;
@@ -85,6 +92,9 @@ export interface ColumnsPreviewType {
     includeInSort: boolean;
     filter: boolean;
     filterLocation: FilterLocationEnum;
+    useDateRange: boolean;
+    useRelativeRange: boolean;
+    floatingFilter: boolean;
     formatter: FormatterEnum;
     customFormatterName: string;
     customPrefix: string;

@@ -36,6 +36,17 @@
                                 <attributeType name="Enum"/>
                             </attributeTypes>
                         </property>
+                        <property key="dataType" type="enumeration" defaultValue="auto">
+                            <caption>Data Type</caption>
+                            <description>Override how the grid interprets this column for sorting, filtering, and formatting. Auto uses the Mendix attribute type.</description>
+                            <enumerationValues>
+                                <enumerationValue key="auto">Auto (infer from attribute)</enumerationValue>
+                                <enumerationValue key="boolean">Boolean</enumerationValue>
+                                <enumerationValue key="date">Date</enumerationValue>
+                                <enumerationValue key="number">Number</enumerationValue>
+                                <enumerationValue key="string">String</enumerationValue>
+                            </enumerationValues>
+                        </property>
                         <property key="hidden" type="boolean" defaultValue="false">
                             <caption>Hidden Column</caption>
                             <description>Keep this column hidden in the grid UI while still allowing it to participate in filters, sorts, or templates.</description>
@@ -133,6 +144,18 @@
                                 <enumerationValue key="drawer">Filter Drawer</enumerationValue>
                                 <enumerationValue key="toolbar">Toolbar (Multi-Select)</enumerationValue>
                             </enumerationValues>
+                        </property>
+                        <property key="useDateRange" type="boolean" defaultValue="false">
+                            <caption>Use Date Range Picker</caption>
+                            <description>Show start and end date inputs in the filter drawer instead of a list of values. Only applies to date attributes.</description>
+                        </property>
+                        <property key="useRelativeRange" type="boolean" defaultValue="false">
+                            <caption>Use Relative Date Range</caption>
+                            <description>Show a dropdown of relative ranges (last 7 days, last 30 days, etc.) in the filter drawer. Only applies to date attributes.</description>
+                        </property>
+                        <property key="floatingFilter" type="boolean" defaultValue="false">
+                            <caption>Floating Filter</caption>
+                            <description>Show the filter below the column header.</description>
                         </property>
                     </propertyGroup>
                     <propertyGroup caption="Formatting &amp; Display">

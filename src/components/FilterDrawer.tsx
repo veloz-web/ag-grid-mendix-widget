@@ -1,6 +1,12 @@
 import { ReactElement, useState, useEffect, useRef } from "react";
 import { ColumnsType } from "../../typings/AGGridProps";
-import { Big } from "big.js";
+import {
+    DateRangeValue,
+    isDateRangeValue,
+    normalizeDateRangeValue,
+    isRelativeDateRangeKey,
+    relativeDateRangeOptions
+} from "../utils/dateRange";
 
 interface FilterDrawerProps {
     isOpen: boolean;
@@ -25,6 +31,14 @@ interface FilterDrawerProps {
  * Get the data type of a column based on its attribute type
  */
 function getColumnDataType(column: ColumnsType): "date" | "number" | "boolean" | "string" {
+    const explicitType = column.dataType && column.dataType !== "auto" ? column.dataType : null;
+    if (explicitType === "date" || explicitType === "number" || explicitType === "boolean") {
+        return explicitType;
+    }
+    if (explicitType === "string") {
+        return "string";
+    }
+
     if (!column.attribute) return "string";
 
     // Check the formatter enum for date-related formatters
@@ -279,15 +293,161 @@ export function FilterDrawer(props: FilterDrawerProps): ReactElement | null {
                             {filterableColumns.map((col, idx) => {
                                 const columnId = col.attribute?.id || "";
                                 const distinctValues = getDistinctValues(columnId);
+                                const dataTypeOverride = col.dataType && col.dataType !== "auto";
                                 let dataType = getColumnDataType(col);
 
-                                // If type is still string, try to infer from actual values
-                                if (dataType === "string" && distinctValues.length > 0) {
+                                if (!dataTypeOverride && dataType === "string" && distinctValues.length > 0) {
                                     dataType = inferTypeFromValues(distinctValues);
                                 }
 
+                                const filterValue = localFilters[columnId];
+                                const useDateRangeControl = Boolean(col.useDateRange && dataType === "date");
+                                const useRelativeRangeControl = Boolean(
+                                    col.useRelativeRange && dataType === "date"
+                                );
+
+                                if (useRelativeRangeControl) {
+                                    const currentValue =
+                                        typeof filterValue === "string" &&
+                                        isRelativeDateRangeKey(filterValue)
+                                            ? filterValue
+                                            : "";
+
+                                    return (
+                                        <div key={idx} className="filter-item">
+                                            <label>{col.header?.value || "Field"}</label>
+                                            <div className="filter-select-wrapper">
+                                                <select
+                                                    className="filter-select"
+                                                    value={currentValue}
+                                                    onChange={(e) => {
+                                                        const { value } = e.target;
+                                                        setLocalFilters((prev) => {
+                                                            const next = { ...prev };
+                                                            if (!value) {
+                                                                delete next[columnId];
+                                                            } else {
+                                                                next[columnId] = value;
+                                                            }
+                                                            return next;
+                                                        });
+                                                    }}
+                                                >
+                                                    <option value="">All dates</option>
+                                                    {relativeDateRangeOptions.map((option) => (
+                                                        <option key={option.key} value={option.key}>
+                                                            {option.label}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                {currentValue && (
+                                                    <button
+                                                        className="clear-filter-btn"
+                                                        onClick={() => {
+                                                            setLocalFilters((prev) => {
+                                                                const next = { ...prev };
+                                                                delete next[columnId];
+                                                                return next;
+                                                            });
+                                                        }}
+                                                        title="Clear filter"
+                                                    >
+                                                        <svg
+                                                            width="14"
+                                                            height="14"
+                                                            viewBox="0 0 24 24"
+                                                            fill="currentColor"
+                                                        >
+                                                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                                                        </svg>
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                }
+
+                                if (useDateRangeControl) {
+                                    const normalizedRange =
+                                        normalizeDateRangeValue(
+                                            isDateRangeValue(filterValue)
+                                                ? (filterValue as DateRangeValue)
+                                                : undefined
+                                        ) || {};
+                                    const fromValue = normalizedRange.from ?? "";
+                                    const toValue = normalizedRange.to ?? "";
+                                    const hasRangeValue = Boolean(fromValue || toValue);
+
+                                    const updateRange = (key: "from" | "to", value: string) => {
+                                        setLocalFilters((prev) => {
+                                            const next = { ...prev };
+                                            const existing =
+                                                normalizeDateRangeValue(
+                                                    isDateRangeValue(next[columnId])
+                                                        ? (next[columnId] as DateRangeValue)
+                                                        : undefined
+                                                ) || {};
+                                            const candidate: DateRangeValue = {
+                                                ...existing,
+                                                [key]: value ? value : undefined
+                                            };
+                                            const normalizedCandidate = normalizeDateRangeValue(candidate);
+                                            if (normalizedCandidate) {
+                                                next[columnId] = normalizedCandidate;
+                                            } else {
+                                                delete next[columnId];
+                                            }
+                                            return next;
+                                        });
+                                    };
+
+                                    const clearRange = () => {
+                                        setLocalFilters((prev) => {
+                                            if (!(columnId in prev)) {
+                                                return prev;
+                                            }
+                                            const next = { ...prev };
+                                            delete next[columnId];
+                                            return next;
+                                        });
+                                    };
+
+                                    return (
+                                        <div key={idx} className="filter-item">
+                                            <label>{col.header?.value || "Field"}</label>
+                                            <div className="filter-date-range">
+                                                <div className="filter-date-field">
+                                                    <span>From</span>
+                                                    <input
+                                                        type="date"
+                                                        value={fromValue}
+                                                        onChange={(e) => updateRange("from", e.target.value)}
+                                                    />
+                                                </div>
+                                                <div className="filter-date-field">
+                                                    <span>To</span>
+                                                    <input
+                                                        type="date"
+                                                        value={toValue}
+                                                        onChange={(e) => updateRange("to", e.target.value)}
+                                                    />
+                                                </div>
+                                            </div>
+                                            {hasRangeValue && (
+                                                <button
+                                                    type="button"
+                                                    className="clear-filter-link"
+                                                    onClick={clearRange}
+                                                >
+                                                    Clear range
+                                                </button>
+                                            )}
+                                        </div>
+                                    );
+                                }
+
                                 const sortedValues = sortDistinctValues(distinctValues, dataType);
-                                const currentValue = localFilters[columnId] || "";
+                                const currentValue = typeof filterValue === "string" ? filterValue : "";
 
                                 return (
                                     <div key={idx} className="filter-item">

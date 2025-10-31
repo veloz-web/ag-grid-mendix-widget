@@ -26,6 +26,13 @@ import { ViewRenderer } from "./components/viewRenderer";
 import { CustomFormatterRegistry } from "./utils/customFormatters";
 import { getThemeClassName } from "./utils/theme";
 import {
+    DateRangeValue,
+    isDateRangeValue,
+    normalizeDateInputValue,
+    normalizeDateRangeValue,
+    isRelativeDateRangeKey
+} from "./utils/dateRange";
+import {
     getDefaultSortModel,
     getDefaultColumnVisibility,
     getDefaultColumnOrder,
@@ -46,6 +53,7 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
     private gridApi: any = null;
     private filterButtonRef = createRef<HTMLButtonElement>();
     private isSettingSortProgrammatically = false;
+    private isApplyingFiltersProgrammatically = false;
     private readonly storageKey: string;
     private readonly shouldPersist: boolean;
     private persistedState: PersistedGridState | null = null;
@@ -223,7 +231,11 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
             this.applyGridSortModel(sortModel);
         }
 
+        this.isApplyingFiltersProgrammatically = true;
         applyFiltersToGrid(this.gridApi, activeFilters, globalSearch); // Use util
+        setTimeout(() => {
+            this.isApplyingFiltersProgrammatically = false;
+        }, 50);
     };
 
     private onColumnMoved = () => {
@@ -247,13 +259,56 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
     };
 
     private onFilterChanged = () => {
+        if (this.isApplyingFiltersProgrammatically) {
+            return;
+        }
         if (this.gridApi) {
             const filterModel = this.gridApi.getFilterModel();
             const newFilters: Record<string, any> = {};
 
             Object.keys(filterModel).forEach((colId) => {
                 const filter = filterModel[colId];
-                if (filter && filter.filter) {
+                if (!filter) {
+                    return;
+                }
+
+                if (filter.filterType === "date") {
+                    const type = filter.type;
+                    const dateFrom = normalizeDateInputValue(filter.dateFrom);
+                    const dateTo = normalizeDateInputValue(filter.dateTo);
+                    let range: DateRangeValue | null = null;
+
+                    switch (type) {
+                        case "inRange":
+                            range = normalizeDateRangeValue({ from: dateFrom, to: dateTo });
+                            break;
+                        case "greaterThan":
+                        case "greaterThanOrEqual":
+                            range = normalizeDateRangeValue({ from: dateFrom });
+                            break;
+                        case "lessThan":
+                        case "lessThanOrEqual":
+                            range = normalizeDateRangeValue({ to: dateFrom });
+                            break;
+                        case "equals":
+                            range = normalizeDateRangeValue({ from: dateFrom, to: dateFrom });
+                            break;
+                        default:
+                            range = null;
+                    }
+
+                    if (range) {
+                        newFilters[colId] = range;
+                    }
+                    return;
+                }
+
+                if (Array.isArray(filter.values) && filter.values.length > 0) {
+                    newFilters[colId] = [...filter.values];
+                    return;
+                }
+
+                if (filter.filter !== undefined && filter.filter !== null && filter.filter !== "") {
                     newFilters[colId] = filter.filter;
                 }
             });
@@ -339,6 +394,26 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
         const sortModel = Array.isArray(sort) ? sort : this.state.sortModel;
         const sanitizedFilters = Object.entries(filters || {}).reduce<Record<string, any>>(
             (acc, [key, value]) => {
+                if (isDateRangeValue(value)) {
+                    const normalizedRange = normalizeDateRangeValue(value as DateRangeValue);
+                    if (normalizedRange) {
+                        acc[key] = normalizedRange;
+                    }
+                    return acc;
+                }
+
+                if (Array.isArray(value)) {
+                    if (value.length > 0) {
+                        acc[key] = [...value];
+                    }
+                    return acc;
+                }
+
+                 if (typeof value === "string" && isRelativeDateRangeKey(value)) {
+                     acc[key] = value;
+                     return acc;
+                 }
+
                 if (value !== undefined && value !== null && value !== "") {
                     acc[key] = value;
                 }
@@ -348,6 +423,7 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
         );
 
         this.applyGridSortModel(sortModel);
+        this.isApplyingFiltersProgrammatically = true;
         applyFiltersToGrid(this.gridApi, sanitizedFilters, search); // Use util
 
         this.setState(
@@ -364,14 +440,22 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
                 });
             }
         );
+
+        setTimeout(() => {
+            this.isApplyingFiltersProgrammatically = false;
+        }, 50);
     };
 
     private clearFilters = () => {
         this.setState({ activeFilters: {}, globalSearch: "", sortModel: [] }, () => {
             this.savePersistedState({ activeFilters: {}, globalSearch: "", sortModel: [] });
         });
+        this.isApplyingFiltersProgrammatically = true;
         applyFiltersToGrid(this.gridApi, {}, ""); // Use util
         this.applyGridSortModel([]);
+        setTimeout(() => {
+            this.isApplyingFiltersProgrammatically = false;
+        }, 50);
     };
 
     // --- Toolbar Handlers ---
@@ -396,7 +480,11 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
 
         this.setState({ activeFilters: newFilters }, () => {
             this.savePersistedState({ activeFilters: newFilters });
+            this.isApplyingFiltersProgrammatically = true;
             applyFiltersToGrid(this.gridApi, newFilters, this.state.globalSearch);
+            setTimeout(() => {
+                this.isApplyingFiltersProgrammatically = false;
+            }, 50);
         });
     };
 
@@ -431,7 +519,11 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
             },
             () => {
                 this.savePersistedState({ activeFilters: newFilters, globalSearch: "" });
+                this.isApplyingFiltersProgrammatically = true;
                 applyFiltersToGrid(this.gridApi, newFilters, "");
+                setTimeout(() => {
+                    this.isApplyingFiltersProgrammatically = false;
+                }, 50);
             }
         );
     };
@@ -499,9 +591,38 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
                 });
             }
 
+            const sanitizedActiveFilters = Object.entries(parsed.activeFilters || {}).reduce<
+                Record<string, any>
+            >((acc, [key, value]) => {
+                if (isDateRangeValue(value)) {
+                    const normalized = normalizeDateRangeValue(value as DateRangeValue);
+                    if (normalized) {
+                        acc[key] = normalized;
+                    }
+                    return acc;
+                }
+
+                if (Array.isArray(value)) {
+                    if (value.length > 0) {
+                        acc[key] = [...value];
+                    }
+                    return acc;
+                }
+
+                if (typeof value === "string" && isRelativeDateRangeKey(value)) {
+                    acc[key] = value;
+                    return acc;
+                }
+
+                if (value !== undefined && value !== null && value !== "") {
+                    acc[key] = value;
+                }
+                return acc;
+            }, {});
+
             return {
                 viewMode,
-                activeFilters: parsed.activeFilters || {},
+                activeFilters: sanitizedActiveFilters,
                 globalSearch: parsed.globalSearch || "",
                 sortModel: parsed.sortModel || [],
                 columnVisibility:
@@ -572,8 +693,12 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
         );
 
         this.persistedState = null;
+        this.isApplyingFiltersProgrammatically = true;
         applyFiltersToGrid(this.gridApi, defaultFilters, defaultSearch); // Use util
         this.applyGridSortModel(defaultSort);
+        setTimeout(() => {
+            this.isApplyingFiltersProgrammatically = false;
+        }, 50);
         this.closeFilterDrawer();
     };
 

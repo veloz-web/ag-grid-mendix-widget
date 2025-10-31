@@ -36,6 +36,15 @@ const getCellAlignment = (col: ColumnsType): string => {
         return col.alignment;
     }
 
+    const explicitDataType = col.dataType && col.dataType !== "auto" ? col.dataType : null;
+
+    if (explicitDataType === "number" || explicitDataType === "date") {
+        return "right";
+    }
+    if (explicitDataType === "boolean") {
+        return "center";
+    }
+
     // Auto alignment logic based on data type and formatter
     const formatter = col.formatter || "none";
     const attributeType = col.attribute?.type || "String";
@@ -76,11 +85,12 @@ function mapMendixColumnToColDef(
     columns: ColumnsType[],
     customFormatterRegistry?: CustomFormatterRegistry
 ): ColDef {
+    const isFilterEnabled = col.filter !== false;
+    const explicitDataType = col.dataType && col.dataType !== "auto" ? col.dataType : null;
     const colDef: ColDef = {
         headerName: col.header?.value || "",
         field: col.attribute?.id || "",
         sortable: col.sortable,
-        filter: col.filter,
         resizable: col.resizable,
         suppressMovable: col.draggable === false, // AG Grid uses suppressMovable (inverted logic)
         valueGetter: (params) => {
@@ -102,6 +112,24 @@ function mapMendixColumnToColDef(
             }
         }
     };
+
+    if (explicitDataType) {
+        if (explicitDataType === "string") {
+            colDef.cellDataType = "text";
+        } else {
+            colDef.cellDataType = explicitDataType;
+        }
+    }
+
+    const usesDateLikeFilter = Boolean(
+        isFilterEnabled && (col.useDateRange || col.useRelativeRange || explicitDataType === "date")
+    );
+
+    if (usesDateLikeFilter) {
+        colDef.filter = "agDateColumnFilter";
+    } else {
+        colDef.filter = isFilterEnabled;
+    }
 
     // Apply width settings
     if (col.widthType === "flex") {
@@ -125,6 +153,50 @@ function mapMendixColumnToColDef(
 
     if (!col.pinnable) {
         colDef.lockPinned = true; // Prevent end users from changing the pin state when disabled
+    }
+
+    if (col.floatingFilter && isFilterEnabled) {
+        colDef.floatingFilter = true;
+    }
+
+    if (usesDateLikeFilter) {
+        colDef.filter = "agDateColumnFilter";
+        colDef.filterParams = {
+            ...(colDef.filterParams || {}),
+            comparator: (filterLocalDateAtMidnight: Date, cellValue: any) => {
+                if (!cellValue) {
+                    return -1;
+                }
+
+                let cellDate: Date;
+                if (cellValue instanceof Date) {
+                    cellDate = cellValue;
+                } else {
+                    const parsed = new Date(cellValue);
+                    if (isNaN(parsed.getTime())) {
+                        return -1;
+                    }
+                    cellDate = parsed;
+                }
+
+                const cellComparable = Date.UTC(
+                    cellDate.getFullYear(),
+                    cellDate.getMonth(),
+                    cellDate.getDate()
+                );
+                const filterComparable = Date.UTC(
+                    filterLocalDateAtMidnight.getFullYear(),
+                    filterLocalDateAtMidnight.getMonth(),
+                    filterLocalDateAtMidnight.getDate()
+                );
+
+                if (cellComparable === filterComparable) {
+                    return 0;
+                }
+
+                return cellComparable < filterComparable ? -1 : 1;
+            }
+        };
     }
 
     // Apply text alignment
@@ -288,7 +360,7 @@ export function GridView(props: GridViewProps): ReactElement {
         onSortChanged,
         onFilterChanged,
         onColumnMoved,
-    onColumnPinned,
+        onColumnPinned,
         columnVisibility,
         columnOrder,
         customFormatterRegistry

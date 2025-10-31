@@ -7,6 +7,12 @@ import type {
     SortModelItem,
     FilterModel
 } from "ag-grid-community";
+import {
+    isDateRangeValue,
+    normalizeDateRangeValue,
+    isRelativeDateRangeKey,
+    resolveRelativeDateRange
+} from "./dateRange";
 
 /**
  * Reads the current sort model from the grid API.
@@ -68,7 +74,53 @@ export const applyFiltersToGrid = (
     const filterModel: FilterModel = {};
 
     Object.entries(filters || {}).forEach(([colId, value]) => {
-        if (value !== undefined && value !== null && value !== "") {
+        if (value === undefined || value === null) {
+            return;
+        }
+
+        let candidateValue = value;
+
+        if (typeof candidateValue === "string" && isRelativeDateRangeKey(candidateValue)) {
+            candidateValue = resolveRelativeDateRange(candidateValue) ?? undefined;
+        }
+
+        if (isDateRangeValue(candidateValue)) {
+            const range = normalizeDateRangeValue(candidateValue);
+            if (!range) {
+                return;
+            }
+
+            const { from, to } = range;
+
+            if (from && to) {
+                filterModel[colId] = {
+                    filterType: "date",
+                    type: "inRange",
+                    dateFrom: from,
+                    dateTo: to
+                } as any;
+            } else if (from) {
+                filterModel[colId] = {
+                    filterType: "date",
+                    type: "greaterThanOrEqual",
+                    dateFrom: from
+                } as any;
+            } else if (to) {
+                filterModel[colId] = {
+                    filterType: "date",
+                    type: "lessThanOrEqual",
+                    dateFrom: to
+                } as any;
+            }
+
+            return;
+        }
+
+        if (value === "") {
+            return;
+        }
+
+        if (value !== undefined && value !== null) {
             // Try to get the filter instance to detect filter type
             // Use 'any' because getFilterInstance may not be in base types
             const filterInstance = (gridApi as any).getFilterInstance?.(colId);
