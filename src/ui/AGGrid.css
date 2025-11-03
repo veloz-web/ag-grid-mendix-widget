@@ -1297,37 +1297,52 @@
     display: inline-block;
 }
 
+.multiselect-trigger-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
 .multiselect-trigger {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 12px;
     background: #ffffff;
-    border: 1px solid #cfd4e0;
-    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
     font-size: 14px;
     color: #374151;
     cursor: pointer;
     transition: all 0.2s ease;
-    min-width: 180px;
-    max-width: 300px;
+    min-width: 280px;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 .multiselect-trigger:hover {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    border-color: #9ca3af;
 }
 
 .multiselect-trigger:focus {
     outline: none;
     border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.multiselect-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    overflow: hidden;
 }
 
 .multiselect-label {
-    font-weight: 600;
-    color: #4f566b;
+    font-weight: 500;
+    color: #4b5563;
     white-space: nowrap;
+    font-size: 13px;
 }
 
 .multiselect-value {
@@ -1336,44 +1351,96 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    color: #374151;
+    color: #6b7280;
 }
 
 .multiselect-arrow {
     flex-shrink: 0;
     transition: transform 0.2s ease;
     color: #6b7280;
+    width: 16px;
+    height: 16px;
 }
 
 .multiselect-arrow.open {
     transform: rotate(180deg);
 }
 
+.multiselect-clear {
+    position: absolute;
+    right: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    color: #6b7280;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+}
+
+.multiselect-clear:hover {
+    background: #f3f4f6;
+    color: #374151;
+}
+
 .multiselect-dropdown {
     position: absolute;
-    top: calc(100% + 4px);
+    top: calc(100% + 8px);
     left: 0;
-    min-width: 100%;
-    max-width: 400px;
+    width: 100%;
     background: #ffffff;
-    border: 1px solid #cfd4e0;
+    border: 1px solid #d1d5db;
     border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    z-index: 1000;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    z-index: 50;
     max-height: 400px;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
+}
+
+.multiselect-header {
+    position: sticky;
+    top: 0;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 12px;
+    z-index: 10;
+}
+
+.multiselect-select-all-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+    user-select: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.multiselect-select-all-label:hover {
+    background: #f3f4f6;
 }
 
 .multiselect-search {
-    padding: 8px;
+    padding: 12px;
     border-bottom: 1px solid #e5e7eb;
 }
 
 .multiselect-search-input {
     width: 100%;
     padding: 8px 12px;
-    border: 1px solid #cfd4e0;
+    border: 1px solid #d1d5db;
     border-radius: 6px;
     font-size: 14px;
     color: #374151;
@@ -1383,169 +1450,108 @@
 
 .multiselect-search-input:focus {
     border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
 .multiselect-search-input::placeholder {
     color: #9ca3af;
 }
 
-.multiselect-select-all {
-    padding: 8px 12px;
-    border-bottom: 1px solid #e5e7eb;
+.multiselect-checkbox {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #d1d5db;
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin: 0;
+    flex-shrink: 0;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+.multiselect-checkbox:hover {
+    border-color: #9ca3af;
+}
+
+.multiselect-checkbox:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.multiselect-checkbox:checked {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+    background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='m13.854 3.646-8 8a.5.5 0 0 1-.708 0l-4-4a.5.5 0 1 1 .708-.708L5.5 10.293l7.646-7.647a.5.5 0 0 1 .708.708z'/%3e%3c/svg%3e");
+    background-size: 12px 12px;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.multiselect-checkbox:indeterminate {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 16 16'%3e%3cpath stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 8h8'/%3e%3c/svg%3e");
+    background-size: 12px 12px;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.multiselect-options {
+    overflow-y: auto;
+    max-height: 320px;
+}
+
+.multiselect-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    border: none;
+    background: none;
+    font-size: 14px;
+    color: #374151;
+}
+
+.multiselect-option:hover {
     background: #f9fafb;
 }
 
-.multiselect-select-all-label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    color: #1f2937;
-    cursor: pointer;
-    user-select: none;
+.multiselect-option-text {
+    flex: 1;
+    text-align: left;
 }
 
-/* AG Grid checkbox wrapper for consistent sizing */
-.multiselect-select-all-label .ag-checkbox-input-wrapper,
-.multiselect-option-label .ag-checkbox-input-wrapper {
-    width: 18px;
-    height: 18px;
-    min-width: 18px;
-    min-height: 18px;
-    position: relative;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.multiselect-select-all-label .ag-checkbox-input,
-.multiselect-option-label .ag-checkbox-input {
-    width: 18px;
-    height: 18px;
-    margin: 0;
-    cursor: pointer;
-    position: absolute;
-    opacity: 0;
-}
-
-/* Visual checkbox appearance using ::before */
-.multiselect-select-all-label .ag-checkbox-input-wrapper::before,
-.multiselect-option-label .ag-checkbox-input-wrapper::before {
-    content: '';
-    display: block;
-    width: 18px;
-    height: 18px;
-    border: 2px solid #d1d5db;
-    border-radius: 3px;
-    background: white;
-    transition: all 0.15s ease;
-}
-
-/* Checked state */
-.multiselect-select-all-label .ag-checkbox-input-wrapper.ag-checked::before,
-.multiselect-option-label .ag-checkbox-input-wrapper.ag-checked::before {
-    background-color: #3b82f6;
-    border-color: #3b82f6;
-}
-
-/* Checked checkmark using ::after */
-.multiselect-select-all-label .ag-checkbox-input-wrapper.ag-checked::after,
-.multiselect-option-label .ag-checkbox-input-wrapper.ag-checked::after {
-    content: '';
-    position: absolute;
-    left: 6px;
-    top: 3px;
-    width: 5px;
-    height: 9px;
-    border: solid white;
-    border-width: 0 2px 2px 0;
-    transform: rotate(45deg);
-}
-
-/* Indeterminate state */
-.multiselect-select-all-label .ag-checkbox-input-wrapper.ag-indeterminate::before {
-    background-color: #f59e0b;
-    border-color: #f59e0b;
-}
-
-/* Indeterminate dash using ::after */
-.multiselect-select-all-label .ag-checkbox-input-wrapper.ag-indeterminate::after {
-    content: '';
-    position: absolute;
-    left: 3px;
-    top: 8px;
-    width: 12px;
-    height: 2px;
-    background-color: white;
-}
-
-/* Hover states */
-.multiselect-select-all-label:hover .ag-checkbox-input-wrapper::before,
-.multiselect-option-label:hover .ag-checkbox-input-wrapper::before {
-    border-color: #3b82f6;
+.multiselect-no-results {
+    padding: 16px;
+    text-align: center;
+    color: #6b7280;
+    font-size: 14px;
 }
 
 .multiselect-select-all-text {
     flex: 1;
 }
 
-.multiselect-select-all-label:hover {
-    color: #3b82f6;
-}
-
-.multiselect-options {
-    overflow-y: auto;
-    max-height: 250px;
-    padding: 4px;
-}
-
-.multiselect-option {
-    display: flex;
-    align-items: center;
-    padding: 4px 8px;
-    cursor: pointer;
-    border-radius: 4px;
-    transition: background-color 0.15s ease;
-}
-
-.multiselect-option:hover {
-    background-color: #f3f4f6;
-}
-
-.multiselect-option-label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex: 1;
-    font-size: 14px;
-    color: #374151;
-    cursor: pointer;
-    user-select: none;
-}
-
-.multiselect-option-text {
-    flex: 1;
-}
-
-.multiselect-no-results {
-    padding: 16px;
-    text-align: center;
-    color: #9ca3af;
-    font-size: 14px;
-    font-style: italic;
-}
-
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .multiselect-trigger {
-        min-width: 140px;
+        min-width: 200px;
         font-size: 13px;
     }
 
     .multiselect-dropdown {
-        max-width: 300px;
+        max-width: calc(100vw - 32px);
+    }
+
+    .multiselect-option {
+        padding: 12px 16px;
     }
 }
+
+

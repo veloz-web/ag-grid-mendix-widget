@@ -10,6 +10,9 @@ export function preview(props: AGGridPreviewProps): ReactElement {
         theme,
         enableViewSelector,
         enableFilterDrawer,
+        enableColumnMenus,
+        enableHeaderFilterButtons,
+        enableFloatingFilters,
         customCardTemplate,
         customListTemplate,
         customFormatters
@@ -21,6 +24,16 @@ export function preview(props: AGGridPreviewProps): ReactElement {
     const hasCardTemplate = !!(customCardTemplate && customCardTemplate.trim());
     const hasListTemplate = !!(customListTemplate && customListTemplate.trim());
     const showViewSelector = enableViewSelector && (hasCardTemplate || hasListTemplate);
+
+    // Check for filter configurations
+    const filterableColumns = (columns || []).filter(
+        (col) => col.filter && col.filterLocation === "drawer"
+    );
+    const toolbarFilters = (columns || []).filter(
+        (col) => col.filter && col.filterLocation === "toolbar"
+    );
+    const hasDrawerFilters = enableFilterDrawer && filterableColumns.length > 0;
+    const hasToolbarFilters = toolbarFilters.length > 0;
 
     // Validate custom formatter references in columns
     const formatterNames = new Set(
@@ -88,7 +101,7 @@ export function preview(props: AGGridPreviewProps): ReactElement {
             )}
 
             {/* Toolbar */}
-            {(showViewSelector || enableFilterDrawer) && (
+            {(showViewSelector || hasDrawerFilters || hasToolbarFilters) && (
                 <div
                     style={{
                         display: "flex",
@@ -98,9 +111,11 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                         background: "#f5f5f5",
                         borderBottom: "1px solid #ddd",
                         gap: "12px",
-                        marginBottom: "1px"
+                        marginBottom: "1px",
+                        flexWrap: "wrap"
                     }}
                 >
+                    {/* Left side: View Selector */}
                     {showViewSelector && (
                         <div
                             style={{
@@ -151,19 +166,86 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                             </div>
                         </div>
                     )}
-                    {enableFilterDrawer && (
-                        <div
-                            style={{
-                                padding: "8px 12px",
-                                border: "1px solid #ddd",
-                                background: "white",
-                                borderRadius: "6px",
-                                color: "#666"
-                            }}
-                        >
-                            Filters
-                        </div>
-                    )}
+
+                    {/* Center/Right side: Filters */}
+                    <div
+                        style={{
+                            display: "flex",
+                            gap: "8px",
+                            alignItems: "center",
+                            flexWrap: "wrap"
+                        }}
+                    >
+                        {/* Toolbar Filters */}
+                        {hasToolbarFilters && (
+                            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                                {toolbarFilters.map((col, idx) => (
+                                    <div
+                                        key={idx}
+                                        className="toolbar-filter"
+                                        style={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: "6px",
+                                            padding: "6px 10px",
+                                            border: "1px solid #ddd",
+                                            background: "white",
+                                            borderRadius: "4px",
+                                            fontSize: "13px",
+                                            color: "#666",
+                                            transition: "border-color 0.2s ease"
+                                        }}
+                                        title={`Toolbar filter for ${col.header || col.attribute}`}
+                                    >
+                                        <i
+                                            className="fas fa-filter"
+                                            style={{ fontSize: "12px" }}
+                                        ></i>
+                                        <span>{col.header || col.attribute}</span>
+                                        <select
+                                            style={{
+                                                border: "none",
+                                                background: "transparent",
+                                                color: "#666",
+                                                fontSize: "13px",
+                                                cursor: "pointer"
+                                            }}
+                                            disabled
+                                        >
+                                            <option>All values</option>
+                                        </select>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* Filter Drawer Button */}
+                        {hasDrawerFilters && (
+                            <div
+                                style={{
+                                    padding: "8px 12px",
+                                    border: "1px solid #ddd",
+                                    background: "white",
+                                    borderRadius: "6px",
+                                    color: "#666",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "6px",
+                                    fontSize: "13px"
+                                }}
+                                title={`Filter drawer with ${
+                                    filterableColumns.length
+                                } filterable column${
+                                    filterableColumns.length === 1 ? "" : "s"
+                                }: ${filterableColumns
+                                    .map((c) => c.header || c.attribute)
+                                    .join(", ")}`}
+                            >
+                                <i className="fas fa-sliders-h"></i>
+                                Filters ({filterableColumns.length})
+                            </div>
+                        )}
+                    </div>
                 </div>
             )}
             <div
@@ -293,6 +375,64 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                 the actual grid with real data.
             </div>
 
+            {/* Filter Configuration Status */}
+            {(hasDrawerFilters || hasToolbarFilters || enableFilterDrawer) && (
+                <div
+                    style={{
+                        marginTop: "8px",
+                        padding: "8px 12px",
+                        backgroundColor:
+                            hasDrawerFilters || hasToolbarFilters ? "#e8f5e9" : "#fff3e0",
+                        border: `1px solid ${
+                            hasDrawerFilters || hasToolbarFilters ? "#81c784" : "#ffb74d"
+                        }`,
+                        borderRadius: "4px",
+                        fontSize: "12px",
+                        color: hasDrawerFilters || hasToolbarFilters ? "#2e7d32" : "#e65100"
+                    }}
+                >
+                    <strong>Filter Configuration Status:</strong>
+                    <ul style={{ margin: "4px 0 0 0", paddingLeft: "20px" }}>
+                        <li>
+                            <strong>Filter Drawer:</strong>{" "}
+                            {hasDrawerFilters
+                                ? `✓ Available (${filterableColumns.length} column${
+                                      filterableColumns.length === 1 ? "" : "s"
+                                  })`
+                                : enableFilterDrawer
+                                ? "⚠ Enabled but no columns configured for drawer"
+                                : "✗ Disabled"}
+                        </li>
+                        <li>
+                            <strong>Toolbar Filters:</strong>{" "}
+                            {hasToolbarFilters
+                                ? `✓ ${toolbarFilters.length} column${
+                                      toolbarFilters.length === 1 ? "" : "s"
+                                  } configured`
+                                : "✗ No columns configured for toolbar"}
+                        </li>
+                    </ul>
+                    {hasDrawerFilters && (
+                        <div style={{ marginTop: "8px", fontStyle: "italic" }}>
+                            💡 Drawer columns:{" "}
+                            {filterableColumns.map((c) => c.header || c.attribute).join(", ")}
+                        </div>
+                    )}
+                    {hasToolbarFilters && (
+                        <div style={{ marginTop: "8px", fontStyle: "italic" }}>
+                            💡 Toolbar columns:{" "}
+                            {toolbarFilters.map((c) => c.header || c.attribute).join(", ")}
+                        </div>
+                    )}
+                    {enableFilterDrawer && !hasDrawerFilters && !hasToolbarFilters && (
+                        <div style={{ marginTop: "8px", fontStyle: "italic" }}>
+                            💡 Tip: Set column &quot;Filter Location&quot; to &quot;Filter
+                            Drawer&quot; or &quot;Toolbar&quot; to enable filtering
+                        </div>
+                    )}
+                </div>
+            )}
+
             {/* Template status info */}
             {enableViewSelector && (
                 <div
@@ -360,6 +500,22 @@ export function getPreviewCss(): string {
         
         .aggrid-preview .fa-eye:hover {
             color: #1565c0;
+        }
+        
+        .aggrid-preview .toolbar-filter select:focus {
+            outline: none;
+        }
+        
+        .aggrid-preview .toolbar-filter:hover {
+            border-color: #1976d2;
+        }
+        
+        .aggrid-preview .fa-filter {
+            color: #1976d2;
+        }
+        
+        .aggrid-preview .fa-sliders-h {
+            color: #1976d2;
         }
     `;
 }

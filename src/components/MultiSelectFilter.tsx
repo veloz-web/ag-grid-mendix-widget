@@ -6,15 +6,19 @@ interface MultiSelectFilterProps {
     selectedValues: string[];
     onChange: (values: string[]) => void;
     enableSearch?: boolean;
+    placeholder?: string;
 }
 
 export function MultiSelectFilter(props: MultiSelectFilterProps): ReactElement {
-    const { label, options, selectedValues, onChange, enableSearch = true } = props;
+    const { label, options, selectedValues, onChange, enableSearch = true, placeholder } = props;
     const [isOpen, setIsOpen] = useState(false);
     const [searchText, setSearchText] = useState("");
     const containerRef = useRef<HTMLDivElement>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);
     const selectAllCheckboxRef = useRef<HTMLInputElement>(null);
+
+    const allSelected = selectedValues.length === options.length && options.length > 0;
+    const someSelected = selectedValues.length > 0 && selectedValues.length < options.length;
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -40,27 +44,9 @@ export function MultiSelectFilter(props: MultiSelectFilterProps): ReactElement {
     // Update indeterminate state whenever selectedValues changes
     useEffect(() => {
         if (selectAllCheckboxRef.current) {
-            const isAllSelected = selectedValues.length === options.length && options.length > 0;
-            const isNoneSelected = selectedValues.length === 0;
-            const isIndeterminate = !isAllSelected && !isNoneSelected;
-
-            selectAllCheckboxRef.current.indeterminate = isIndeterminate;
-
-            // Toggle ag-indeterminate, ag-checked classes on the wrapper
-            const wrapper = selectAllCheckboxRef.current.parentElement;
-            if (wrapper && wrapper.classList.contains("ag-checkbox-input-wrapper")) {
-                // Remove all state classes first
-                wrapper.classList.remove("ag-indeterminate", "ag-checked");
-
-                // Add appropriate state class
-                if (isIndeterminate) {
-                    wrapper.classList.add("ag-indeterminate");
-                } else if (isAllSelected) {
-                    wrapper.classList.add("ag-checked");
-                }
-            }
+            selectAllCheckboxRef.current.indeterminate = someSelected;
         }
-    }, [selectedValues, options.length]);
+    }, [someSelected]);
 
     const toggleDropdown = () => {
         setIsOpen(!isOpen);
@@ -75,13 +61,16 @@ export function MultiSelectFilter(props: MultiSelectFilterProps): ReactElement {
     };
 
     const toggleSelectAll = () => {
-        // If all selected, unselect all
-        // If partial or none selected, select all
-        if (selectedValues.length === options.length) {
+        if (allSelected) {
             onChange([]);
         } else {
             onChange([...options]);
         }
+    };
+
+    const clearAll = () => {
+        onChange([]);
+        setIsOpen(false);
     };
 
     const filteredOptions = enableSearch
@@ -90,40 +79,76 @@ export function MultiSelectFilter(props: MultiSelectFilterProps): ReactElement {
 
     // Display text logic
     const getDisplayText = () => {
-        if (selectedValues.length === 0 || selectedValues.length === options.length) {
-            return "All";
+        if (selectedValues.length === 0) {
+            return placeholder || `Select ${label.toLowerCase()}...`;
+        } else if (selectedValues.length === 1) {
+            return selectedValues[0];
+        } else if (selectedValues.length === options.length) {
+            return "All selected";
+        } else {
+            return `${selectedValues.length} selected`;
         }
-        return selectedValues.join(", ");
     };
-
-    // Select All checkbox state
-    const isAllSelected = selectedValues.length === options.length && options.length > 0;
 
     return (
         <div className="multiselect-filter" ref={containerRef}>
-            <button
-                type="button"
-                className="multiselect-trigger"
-                onClick={toggleDropdown}
-                aria-haspopup="listbox"
-                aria-expanded={isOpen}
-                aria-label={`${label} filter`}
-            >
-                <span className="multiselect-label">{label}:</span>
-                <span className="multiselect-value">{getDisplayText()}</span>
-                <svg
-                    className={`multiselect-arrow ${isOpen ? "open" : ""}`}
-                    width="12"
-                    height="12"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
+            <div className="multiselect-trigger-wrapper">
+                <button
+                    type="button"
+                    className="multiselect-trigger"
+                    onClick={toggleDropdown}
+                    aria-haspopup="listbox"
+                    aria-expanded={isOpen}
+                    aria-label={`${label} filter`}
                 >
-                    <path d="M7 10l5 5 5-5z" />
-                </svg>
-            </button>
+                    <div className="multiselect-content">
+                        <span className="multiselect-label">{label}:</span>
+                        <span className="multiselect-value">{getDisplayText()}</span>
+                    </div>
+                    <svg
+                        className={`multiselect-arrow ${isOpen ? "open" : ""}`}
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                    >
+                        <path d="M7 10l5 5 5-5z" />
+                    </svg>
+                </button>
+                {selectedValues.length > 0 && (
+                    <button
+                        type="button"
+                        className="multiselect-clear"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            clearAll();
+                        }}
+                        aria-label="Clear selection"
+                        title="Clear selection"
+                    >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                        </svg>
+                    </button>
+                )}
+            </div>
 
             {isOpen && (
                 <div className="multiselect-dropdown" role="listbox">
+                    <div className="multiselect-header">
+                        <label className="multiselect-select-all-label">
+                            <input
+                                ref={selectAllCheckboxRef}
+                                type="checkbox"
+                                className="multiselect-checkbox"
+                                checked={allSelected}
+                                onChange={toggleSelectAll}
+                                aria-label="Select all options"
+                            />
+                            <span className="multiselect-select-all-text">Select All</span>
+                        </label>
+                    </div>
+
                     {enableSearch && (
                         <div className="multiselect-search">
                             <input
@@ -138,22 +163,6 @@ export function MultiSelectFilter(props: MultiSelectFilterProps): ReactElement {
                         </div>
                     )}
 
-                    <div className="multiselect-select-all">
-                        <label className="multiselect-select-all-label">
-                            <div className="ag-wrapper ag-input-wrapper ag-checkbox-input-wrapper">
-                                <input
-                                    ref={selectAllCheckboxRef}
-                                    type="checkbox"
-                                    className="ag-input-field-input ag-checkbox-input"
-                                    checked={isAllSelected}
-                                    onChange={toggleSelectAll}
-                                    aria-label="Select all options"
-                                />
-                            </div>
-                            <span className="multiselect-select-all-text">Select All</span>
-                        </label>
-                    </div>
-
                     <div className="multiselect-options">
                         {filteredOptions.length === 0 ? (
                             <div className="multiselect-no-results">No matches found</div>
@@ -161,31 +170,21 @@ export function MultiSelectFilter(props: MultiSelectFilterProps): ReactElement {
                             filteredOptions.map((option) => {
                                 const isChecked = selectedValues.includes(option);
                                 return (
-                                    <div
+                                    <label
                                         key={option}
                                         className="multiselect-option"
                                         role="option"
                                         aria-selected={isChecked}
                                     >
-                                        <label className="multiselect-option-label">
-                                            <div
-                                                className={`ag-wrapper ag-input-wrapper ag-checkbox-input-wrapper ${
-                                                    isChecked ? "ag-checked" : ""
-                                                }`}
-                                            >
-                                                <input
-                                                    type="checkbox"
-                                                    className="ag-input-field-input ag-checkbox-input"
-                                                    checked={isChecked}
-                                                    onChange={() => toggleValue(option)}
-                                                    aria-label={option}
-                                                />
-                                            </div>
-                                            <span className="multiselect-option-text">
-                                                {option}
-                                            </span>
-                                        </label>
-                                    </div>
+                                        <input
+                                            type="checkbox"
+                                            className="multiselect-checkbox"
+                                            checked={isChecked}
+                                            onChange={() => toggleValue(option)}
+                                            aria-label={option}
+                                        />
+                                        <span className="multiselect-option-text">{option}</span>
+                                    </label>
                                 );
                             })
                         )}

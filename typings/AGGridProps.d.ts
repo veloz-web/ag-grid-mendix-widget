@@ -7,17 +7,17 @@ import { CSSProperties } from "react";
 import { DynamicValue, ListValue, ListActionValue, ListAttributeValue } from "mendix";
 import { Big } from "big.js";
 
+export type DataTypeEnum = "auto" | "boolean" | "date" | "number" | "string";
+
 export type AlignmentEnum = "auto" | "left" | "center" | "right";
 
 export type WidthTypeEnum = "auto" | "flex" | "fixed";
 
+export type PinnedEnum = "none" | "left" | "right";
+
 export type DefaultSortEnum = "none" | "asc" | "desc";
 
 export type FilterLocationEnum = "none" | "drawer" | "toolbar";
-
-export type PinnedEnum = "none" | "left" | "right";
-
-export type DataTypeEnum = "auto" | "boolean" | "date" | "number" | "string";
 
 export type FormatterEnum = "none" | "currency" | "currencyEUR" | "currencyGBP" | "percentage" | "number" | "decimal2" | "dateShort" | "dateLong" | "dateISO" | "dateDMY" | "dateMDY" | "dateYMD" | "dateTime" | "time" | "yesNo" | "trueFalse" | "uppercase" | "lowercase" | "capitalize" | "customPrefix" | "link" | "statusBadge";
 
@@ -122,6 +122,9 @@ export interface AGGridContainerProps {
     tabIndex?: number;
     dataSource: ListValue;
     columns: ColumnsType[];
+    enableColumnMenus: boolean;
+    enableHeaderFilterButtons: boolean;
+    enableFloatingFilters: boolean;
     enableViewSelector: boolean;
     defaultView: DefaultViewEnum;
     mobileDefaultView: MobileDefaultViewEnum;
@@ -129,10 +132,10 @@ export interface AGGridContainerProps {
     customListTemplate: string;
     enableFilterDrawer: boolean;
     customFormatters: CustomFormattersType[];
-    licenseKey: string;
-    enableContextMenu: boolean;
     enableSideBar: boolean;
     enableStatusBar: boolean;
+    licenseKey: string;
+    enableContextMenu: boolean;
     useLocalStorage: boolean;
     showToolbarSearch: boolean;
     enableToolbarFilterSearch: boolean;
@@ -157,6 +160,9 @@ export interface AGGridPreviewProps {
     translate: (text: string) => string;
     dataSource: {} | { caption: string } | { type: string } | null;
     columns: ColumnsPreviewType[];
+    enableColumnMenus: boolean;
+    enableHeaderFilterButtons: boolean;
+    enableFloatingFilters: boolean;
     enableViewSelector: boolean;
     defaultView: DefaultViewEnum;
     mobileDefaultView: MobileDefaultViewEnum;
@@ -164,10 +170,10 @@ export interface AGGridPreviewProps {
     customListTemplate: string;
     enableFilterDrawer: boolean;
     customFormatters: CustomFormattersPreviewType[];
-    licenseKey: string;
-    enableContextMenu: boolean;
     enableSideBar: boolean;
     enableStatusBar: boolean;
+    licenseKey: string;
+    enableContextMenu: boolean;
     useLocalStorage: boolean;
     showToolbarSearch: boolean;
     enableToolbarFilterSearch: boolean;

@@ -126,9 +126,11 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
         window.addEventListener("resize", this.handleResize);
         if (typeof window !== "undefined" && window.matchMedia) {
             this.prefersDarkMediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-            this.setState({ prefersDarkScheme: this.prefersDarkMediaQuery.matches });
             if (typeof this.prefersDarkMediaQuery.addEventListener === "function") {
-                this.prefersDarkMediaQuery.addEventListener("change", this.handlePrefersColorSchemeChange);
+                this.prefersDarkMediaQuery.addEventListener(
+                    "change",
+                    this.handlePrefersColorSchemeChange
+                );
             } else if (typeof this.prefersDarkMediaQuery.addListener === "function") {
                 this.prefersDarkMediaQuery.addListener(this.handlePrefersColorSchemeChange);
             }
@@ -139,7 +141,10 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
         window.removeEventListener("resize", this.handleResize);
         if (this.prefersDarkMediaQuery) {
             if (typeof this.prefersDarkMediaQuery.removeEventListener === "function") {
-                this.prefersDarkMediaQuery.removeEventListener("change", this.handlePrefersColorSchemeChange);
+                this.prefersDarkMediaQuery.removeEventListener(
+                    "change",
+                    this.handlePrefersColorSchemeChange
+                );
             } else if (typeof this.prefersDarkMediaQuery.removeListener === "function") {
                 this.prefersDarkMediaQuery.removeListener(this.handlePrefersColorSchemeChange);
             }
@@ -399,11 +404,13 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
             const fallbackOrder = this.props.columns
                 .filter((col) => col.attribute?.id)
                 .map((col) => col.attribute!.id);
-            const effectiveOrder = columnOrder && columnOrder.length > 0 ? columnOrder : fallbackOrder;
+            const effectiveOrder =
+                columnOrder && columnOrder.length > 0 ? columnOrder : fallbackOrder;
 
             const state = effectiveOrder.map((colId) => {
                 const pinnedValue = columnPinned?.[colId];
-                const pinned = pinnedValue === "left" || pinnedValue === "right" ? pinnedValue : null;
+                const pinned =
+                    pinnedValue === "left" || pinnedValue === "right" ? pinnedValue : null;
                 return {
                     colId,
                     pinned
@@ -439,10 +446,10 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
                     return acc;
                 }
 
-                 if (typeof value === "string" && isRelativeDateRangeKey(value)) {
-                     acc[key] = value;
-                     return acc;
-                 }
+                if (typeof value === "string" && isRelativeDateRangeKey(value)) {
+                    acc[key] = value;
+                    return acc;
+                }
 
                 if (value !== undefined && value !== null && value !== "") {
                     acc[key] = value;
@@ -917,6 +924,9 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
                         enableContextMenu={Boolean(this.props.enableContextMenu)}
                         enableSideBar={Boolean(this.props.enableSideBar)}
                         enableStatusBar={Boolean(this.props.enableStatusBar)}
+                        enableColumnMenus={Boolean(this.props.enableColumnMenus)}
+                        enableHeaderFilterButtons={Boolean(this.props.enableHeaderFilterButtons)}
+                        enableFloatingFilters={Boolean(this.props.enableFloatingFilters)}
                         onRowClick={onRowClick} // Pass onRowClick for custom views
                     />
 

@@ -25,6 +25,9 @@ export const ViewRenderer = ({
     enableContextMenu,
     enableSideBar,
     enableStatusBar,
+    enableColumnMenus,
+    enableHeaderFilterButtons,
+    enableFloatingFilters,
     onRowClick // Pass onRowClick to custom views
 }) => {
     if (currentView === "grid") {
@@ -48,6 +51,9 @@ export const ViewRenderer = ({
                 enableContextMenu={enableContextMenu}
                 enableSideBar={enableSideBar}
                 enableStatusBar={enableStatusBar}
+                enableColumnMenus={enableColumnMenus}
+                enableHeaderFilterButtons={enableHeaderFilterButtons}
+                enableFloatingFilters={enableFloatingFilters}
             />
         );
     }
@@ -97,6 +103,9 @@ export const ViewRenderer = ({
                 enableContextMenu={enableContextMenu}
                 enableSideBar={enableSideBar}
                 enableStatusBar={enableStatusBar}
+                enableColumnMenus={enableColumnMenus}
+                enableHeaderFilterButtons={enableHeaderFilterButtons}
+                enableFloatingFilters={enableFloatingFilters}
             />
         );
     }
@@ -122,6 +131,9 @@ export const ViewRenderer = ({
                 enableContextMenu={enableContextMenu}
                 enableSideBar={enableSideBar}
                 enableStatusBar={enableStatusBar}
+                enableColumnMenus={enableColumnMenus}
+                enableHeaderFilterButtons={enableHeaderFilterButtons}
+                enableFloatingFilters={enableFloatingFilters}
             />
         );
     }

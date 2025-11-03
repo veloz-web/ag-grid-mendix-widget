@@ -106,9 +106,7 @@ export const isDateRangeValue = (value: unknown): value is DateRangeValue => {
     return "from" in candidate || "to" in candidate;
 };
 
-export const normalizeDateRangeValue = (
-    value?: DateRangeValue | null
-): DateRangeValue | null => {
+export const normalizeDateRangeValue = (value?: DateRangeValue | null): DateRangeValue | null => {
     if (!value) {
         return null;
     }
@@ -127,9 +125,7 @@ export const normalizeDateRangeValue = (
     return normalized.from || normalized.to ? normalized : null;
 };
 
-export const toComparableDate = (
-    value: string | Date | undefined | null
-): number | null => {
+export const toComparableDate = (value: string | Date | undefined | null): number | null => {
     if (!value) {
         return null;
     }

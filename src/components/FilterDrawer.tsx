@@ -296,12 +296,18 @@ export function FilterDrawer(props: FilterDrawerProps): ReactElement | null {
                                 const dataTypeOverride = col.dataType && col.dataType !== "auto";
                                 let dataType = getColumnDataType(col);
 
-                                if (!dataTypeOverride && dataType === "string" && distinctValues.length > 0) {
+                                if (
+                                    !dataTypeOverride &&
+                                    dataType === "string" &&
+                                    distinctValues.length > 0
+                                ) {
                                     dataType = inferTypeFromValues(distinctValues);
                                 }
 
                                 const filterValue = localFilters[columnId];
-                                const useDateRangeControl = Boolean(col.useDateRange && dataType === "date");
+                                const useDateRangeControl = Boolean(
+                                    col.useDateRange && dataType === "date"
+                                );
                                 const useRelativeRangeControl = Boolean(
                                     col.useRelativeRange && dataType === "date"
                                 );
@@ -391,7 +397,8 @@ export function FilterDrawer(props: FilterDrawerProps): ReactElement | null {
                                                 ...existing,
                                                 [key]: value ? value : undefined
                                             };
-                                            const normalizedCandidate = normalizeDateRangeValue(candidate);
+                                            const normalizedCandidate =
+                                                normalizeDateRangeValue(candidate);
                                             if (normalizedCandidate) {
                                                 next[columnId] = normalizedCandidate;
                                             } else {
@@ -421,7 +428,9 @@ export function FilterDrawer(props: FilterDrawerProps): ReactElement | null {
                                                     <input
                                                         type="date"
                                                         value={fromValue}
-                                                        onChange={(e) => updateRange("from", e.target.value)}
+                                                        onChange={(e) =>
+                                                            updateRange("from", e.target.value)
+                                                        }
                                                     />
                                                 </div>
                                                 <div className="filter-date-field">
@@ -429,7 +438,9 @@ export function FilterDrawer(props: FilterDrawerProps): ReactElement | null {
                                                     <input
                                                         type="date"
                                                         value={toValue}
-                                                        onChange={(e) => updateRange("to", e.target.value)}
+                                                        onChange={(e) =>
+                                                            updateRange("to", e.target.value)
+                                                        }
                                                     />
                                                 </div>
                                             </div>
@@ -447,7 +458,8 @@ export function FilterDrawer(props: FilterDrawerProps): ReactElement | null {
                                 }
 
                                 const sortedValues = sortDistinctValues(distinctValues, dataType);
-                                const currentValue = typeof filterValue === "string" ? filterValue : "";
+                                const currentValue =
+                                    typeof filterValue === "string" ? filterValue : "";
 
                                 return (
                                     <div key={idx} className="filter-item">

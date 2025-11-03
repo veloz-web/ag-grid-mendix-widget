@@ -36,6 +36,17 @@
                                 <attributeType name="Enum"/>
                             </attributeTypes>
                         </property>
+                        <property key="dataType" type="enumeration" defaultValue="auto">
+                            <caption>Data Type</caption>
+                            <description>Override how the grid interprets this column for sorting, filtering, and formatting. Auto uses the Mendix attribute type.</description>
+                            <enumerationValues>
+                                <enumerationValue key="auto">Auto (infer from attribute)</enumerationValue>
+                                <enumerationValue key="boolean">Boolean</enumerationValue>
+                                <enumerationValue key="date">Date</enumerationValue>
+                                <enumerationValue key="number">Number</enumerationValue>
+                                <enumerationValue key="string">String</enumerationValue>
+                            </enumerationValues>
+                        </property>
                         <property key="hidden" type="boolean" defaultValue="false">
                             <caption>Hidden Column</caption>
                             <description>Keep this column hidden in the grid UI while still allowing it to participate in filters, sorts, or templates.</description>
@@ -85,6 +96,19 @@
                             <caption>Draggable</caption>
                             <description>Allow this column to be reordered by dragging the column header</description>
                         </property>
+                        <property key="pinned" type="enumeration" defaultValue="none">
+                            <caption>Pinned Position</caption>
+                            <description>Pin this column to the left or right side of the grid header.</description>
+                            <enumerationValues>
+                                <enumerationValue key="none">Not pinned</enumerationValue>
+                                <enumerationValue key="left">Left</enumerationValue>
+                                <enumerationValue key="right">Right</enumerationValue>
+                            </enumerationValues>
+                        </property>
+                        <property key="pinnable" type="boolean" defaultValue="false">
+                            <caption>Allow Pinning in Grid Menu</caption>
+                            <description>Allow end users to pin or unpin this column through the column options menu.</description>
+                        </property>
                     </propertyGroup>
                     <propertyGroup caption="Sorting &amp; Filtering">
                         <property key="sortable" type="boolean" defaultValue="true">
@@ -120,6 +144,18 @@
                                 <enumerationValue key="drawer">Filter Drawer</enumerationValue>
                                 <enumerationValue key="toolbar">Toolbar (Multi-Select)</enumerationValue>
                             </enumerationValues>
+                        </property>
+                        <property key="useDateRange" type="boolean" defaultValue="false">
+                            <caption>Use Date Range Picker</caption>
+                            <description>Show start and end date inputs in the filter drawer instead of a list of values. Only applies to date attributes.</description>
+                        </property>
+                        <property key="useRelativeRange" type="boolean" defaultValue="false">
+                            <caption>Use Relative Date Range</caption>
+                            <description>Show a dropdown of relative ranges (last 7 days, last 30 days, etc.) in the filter drawer. Only applies to date attributes.</description>
+                        </property>
+                        <property key="floatingFilter" type="boolean" defaultValue="false">
+                            <caption>Floating Filter</caption>
+                            <description>Show the filter below the column header.</description>
                         </property>
                     </propertyGroup>
                     <propertyGroup caption="Formatting &amp; Display">
@@ -187,7 +223,22 @@
                             <description>JSON array for status badge mapping. Example: [{"value":1,"label":"Approved","className":"badge-success"},{"value":2,"label":"Denied","className":"badge-danger"}]</description>
                         </property>
                     </propertyGroup>
+
                 </properties>
+            </property>
+        </propertyGroup>
+        <propertyGroup caption="Column Defaults">
+            <property key="enableColumnMenus" type="boolean" defaultValue="true">
+                <caption>Enable Column Menus</caption>
+                <description>Show the three-dot menu icon in column headers. Disable to hide column menu access globally for all columns.</description>
+            </property>
+            <property key="enableHeaderFilterButtons" type="boolean" defaultValue="true">
+                <caption>Enable Header Filter Buttons</caption>
+                <description>Show filter icons in column headers. Disable to hide header filter icons while keeping filtering capability for toolbar/drawer filters.</description>
+            </property>
+            <property key="enableFloatingFilters" type="boolean" defaultValue="false">
+                <caption>Enable Floating Filters</caption>
+                <description>Show floating filter rows below column headers by default. Individual columns can override this setting.</description>
             </property>
         </propertyGroup>
         <propertyGroup caption="View Options">
@@ -256,10 +307,24 @@
                 </properties>
             </property>
         </propertyGroup>
+        <propertyGroup caption="UI Elements">
+            <property key="enableSideBar" type="boolean" defaultValue="false">
+                <caption>Enable Side Bar</caption>
+                <description>Show the AG Grid side bar so users can access column and filter panels.</description>
+            </property>
+            <property key="enableStatusBar" type="boolean" defaultValue="false">
+                <caption>Enable Status Bar</caption>
+                <description>Show the AG Grid status bar with row counts and selection information.</description>
+            </property>
+        </propertyGroup>
         <propertyGroup caption="Grid Options">
             <property key="licenseKey" type="string" required="false">
                 <caption>Enterprise Key</caption>
                 <description>Your AG Grid Enterprise license key. Leave empty for Community edition. This value is masked in Studio.</description>
+            </property>
+            <property key="enableContextMenu" type="boolean" defaultValue="false">
+                <caption>Enable Context Menu</caption>
+                <description>Show the AG Grid right-click context menu for columns and cells. Disable to prevent context menu access.</description>
             </property>
             <property key="useLocalStorage" type="boolean" defaultValue="true">
                 <caption>Use Local Storage</caption>
@@ -293,6 +358,15 @@
                     <enumerationValue key="balham">Balham</enumerationValue>
                     <enumerationValue key="material">Material</enumerationValue>
                     <enumerationValue key="quartz">Quartz</enumerationValue>
+                </enumerationValues>
+            </property>
+            <property key="themeVariant" type="enumeration" defaultValue="auto">
+                <caption>Theme Variant</caption>
+                <description>Choose the light or dark variant of the selected theme. Auto follows the user’s system preference.</description>
+                <enumerationValues>
+                    <enumerationValue key="auto">Auto (match system)</enumerationValue>
+                    <enumerationValue key="light">Light</enumerationValue>
+                    <enumerationValue key="dark">Dark</enumerationValue>
                 </enumerationValues>
             </property>
         </propertyGroup>

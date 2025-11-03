@@ -1,4 +1,4 @@
-// src/agGridModules.js
+// src/agGridModules.ts  // ← Fixed extension
 import {
     ClientSideRowModelModule,
     ModuleRegistry,
@@ -12,19 +12,27 @@ import {
     MenuModule,
     PaginationModule,
     ServerSideRowModelModule,
-    SetFilterModule
+    SetFilterModule,
+    TextFilterModule,
+    NumberFilterModule,
+    DateFilterModule,
+    MultiFilterModule
 } from "ag-grid-enterprise";
 
 // Register only the modules we need for optimal bundle size
 ModuleRegistry.registerModules([
-    ClientSideRowModelModule, // Required for rowData prop
-    ClientSideRowModelApiModule, // Enterprise: API methods
-    ServerSideRowModelModule, // Enterprise: Server-side row model
-    QuickFilterModule, // Community: Quick filter feature
-    ColumnApiModule, // Community: Column API features
-    PaginationModule, // Enterprise: Pagination features
-    SetFilterModule, // Enterprise: Set filtering
-    CellStyleModule, // Enterprise: Cell styling
-    ColumnsToolPanelModule, // Enterprise: Column visibility/reordering
-    MenuModule // Enterprise: Context menus
+    ClientSideRowModelModule,
+    ClientSideRowModelApiModule,
+    ServerSideRowModelModule, // Remove if not using server-side row model
+    QuickFilterModule,
+    ColumnApiModule,
+    PaginationModule,
+    SetFilterModule,
+    CellStyleModule,
+    ColumnsToolPanelModule,
+    MenuModule, // ← Fixed trailing comma
+    TextFilterModule,
+    NumberFilterModule,
+    DateFilterModule,
+    MultiFilterModule
 ]);

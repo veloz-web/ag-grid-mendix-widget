@@ -27,6 +27,9 @@ interface GridViewProps {
     enableContextMenu: boolean;
     enableSideBar: boolean;
     enableStatusBar: boolean;
+    enableColumnMenus: boolean;
+    enableHeaderFilterButtons: boolean;
+    enableFloatingFilters: boolean;
 }
 
 // --- Helper function moved outside the component for memoization ---
@@ -369,7 +372,10 @@ export function GridView(props: GridViewProps): ReactElement {
         customFormatterRegistry,
         enableContextMenu,
         enableSideBar,
-        enableStatusBar
+        enableStatusBar,
+        enableColumnMenus,
+        enableHeaderFilterButtons,
+        enableFloatingFilters
     } = props;
 
     const statusBarConfig = useMemo(() => {
@@ -434,12 +440,16 @@ export function GridView(props: GridViewProps): ReactElement {
                 enableCellTextSelection={true}
                 ensureDomOrder={true}
                 suppressContextMenu={!enableContextMenu}
+                suppressMenuHide={false}
                 sideBar={enableSideBar ? true : undefined}
                 statusBar={statusBarConfig}
                 defaultColDef={{
                     sortable: true,
-                    filter: true,
+                    filter: true, // Always enable filtering capability for programmatic use
                     resizable: true,
+                    suppressHeaderMenuButton: !enableColumnMenus,
+                    suppressHeaderFilterButton: !enableHeaderFilterButtons, // Control filter icon visibility
+                    floatingFilter: enableFloatingFilters, // Global floating filter default
                     suppressKeyboardEvent: (params) => {
                         // Allow keyboard navigation in cells with buttons
                         const key = params.event.key;

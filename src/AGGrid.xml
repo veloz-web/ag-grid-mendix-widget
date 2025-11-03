@@ -223,7 +223,22 @@
                             <description>JSON array for status badge mapping. Example: [{"value":1,"label":"Approved","className":"badge-success"},{"value":2,"label":"Denied","className":"badge-danger"}]</description>
                         </property>
                     </propertyGroup>
+
                 </properties>
+            </property>
+        </propertyGroup>
+        <propertyGroup caption="Column Defaults">
+            <property key="enableColumnMenus" type="boolean" defaultValue="true">
+                <caption>Enable Column Menus</caption>
+                <description>Show the three-dot menu icon in column headers. Disable to hide column menu access globally for all columns.</description>
+            </property>
+            <property key="enableHeaderFilterButtons" type="boolean" defaultValue="true">
+                <caption>Enable Header Filter Buttons</caption>
+                <description>Show filter icons in column headers. Disable to hide header filter icons while keeping filtering capability for toolbar/drawer filters.</description>
+            </property>
+            <property key="enableFloatingFilters" type="boolean" defaultValue="false">
+                <caption>Enable Floating Filters</caption>
+                <description>Show floating filter rows below column headers by default. Individual columns can override this setting.</description>
             </property>
         </propertyGroup>
         <propertyGroup caption="View Options">
