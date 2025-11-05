@@ -4,7 +4,7 @@ import { AgGridReact } from "ag-grid-react";
 import type { ColDef, GridReadyEvent, ColumnPinnedEvent } from "ag-grid-community"; // <-- Removed 'Theme'
 import { ValueStatus } from "mendix";
 import { ColumnsType } from "../../typings/AGGridProps";
-import { renderStatusBadge, renderLink, applyFormatter } from "../utils/formatters";
+import { renderLink, applyFormatter } from "../utils/formatters";
 import { evaluateTemplate } from "../utils/renderers";
 import { CustomFormatterRegistry } from "../utils/customFormatters";
 
@@ -56,7 +56,7 @@ const getCellAlignment = (col: ColumnsType): string => {
     const attributeType = col.attribute?.type || "String";
 
     // Links, status badges, and actions are centered
-    if (formatter === "link" || formatter === "statusBadge") {
+    if (formatter === "link") {
         return "center";
     }
 
@@ -265,18 +265,6 @@ function mapMendixColumnToColDef(
                 </span>
             );
         }
-    } else if (effectiveFormatter === "statusBadge") {
-        // --- Status Badge Renderer ---
-        colDef.cellRenderer = (params: any) => {
-            try {
-                const mappingValue = col.statusMapping || "";
-                const htmlString = renderStatusBadge(params.value, mappingValue);
-                return <span dangerouslySetInnerHTML={{ __html: htmlString }} />;
-            } catch (e) {
-                console.error("Error rendering status badge:", e);
-                return String(params.value || "");
-            }
-        };
     } else if (effectiveFormatter === "link") {
         // --- Link/Action Renderer ---
         colDef.cellRenderer = (params: any) => {

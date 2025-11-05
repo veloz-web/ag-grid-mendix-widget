@@ -2,7 +2,7 @@ import { ReactElement } from "react";
 import { ValueStatus } from "mendix";
 import { ColumnsType } from "../../typings/AGGridProps";
 import { DynamicView } from "./CardView";
-import { applyFormatter, renderStatusBadge, renderLink } from "../utils/formatters";
+import { applyFormatter, renderLink } from "../utils/formatters";
 import { CustomFormatterRegistry } from "../utils/customFormatters";
 
 interface CustomTemplateViewProps {
@@ -113,9 +113,7 @@ export function CustomTemplateView(props: CustomTemplateViewProps): ReactElement
                             });
                         }
                         // Handle built-in HTML-returning formatters
-                        else if (formatterName === "statusBadge") {
-                            displayValue = renderStatusBadge(value.value, column.statusMapping);
-                        } else if (formatterName === "link") {
+                        else if (formatterName === "link") {
                             displayValue = renderLink(
                                 value.value,
                                 column.linkUrlPattern,

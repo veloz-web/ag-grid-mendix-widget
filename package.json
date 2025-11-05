@@ -18,7 +18,7 @@
     "release": "pluggable-widgets-tools release:web",
     "format": "pluggable-widgets-tools format",
     "lint": "pluggable-widgets-tools lint",
-    "test": "pluggable-widgets-tools test:unit:web"
+    "test": "jest --config jest.config.js --coverage --watchAll=false"
   },
   "devDependencies": {
     "@mendix/pluggable-widgets-tools": "^10.7.1"

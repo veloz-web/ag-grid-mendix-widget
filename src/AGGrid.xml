@@ -185,7 +185,6 @@
                                 <enumerationValue key="capitalize">Capitalize</enumerationValue>
                                 <enumerationValue key="customPrefix">Custom Prefix/Suffix</enumerationValue>
                                 <enumerationValue key="link">Link (with URL pattern)</enumerationValue>
-                                <enumerationValue key="statusBadge">Status Badge (Custom)</enumerationValue>
                             </enumerationValues>
                         </property>
                         <property key="customFormatterName" type="string" required="false">

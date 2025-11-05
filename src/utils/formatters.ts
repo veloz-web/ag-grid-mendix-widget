@@ -25,67 +25,6 @@ export type DateFormat =
 export type AttributeType = "String" | "Boolean" | "DateTime" | "Decimal" | "Long" | "Integer";
 
 /**
- * Renders a status badge with custom styling based on value mappings
- */
-export const renderStatusBadge = (value: any, mappingString: string | undefined): string => {
-    try {
-        // Handle empty or undefined mapping - return default badge
-        if (!mappingString || typeof mappingString !== "string" || mappingString.trim() === "") {
-            return `<span class="status-badge badge-secondary">${String(value || "")}</span>`;
-        }
-
-        const mappings: StatusMapping[] = JSON.parse(mappingString);
-
-        if (!Array.isArray(mappings)) {
-            console.warn("Status mapping is not an array:", mappings);
-            return `<span class="status-badge badge-secondary">${String(value || "")}</span>`;
-        }
-
-        // Normalize the value for comparison (handle both integers and strings)
-        const normalizedValue = value !== null && value !== undefined ? value : "";
-
-        // Find matching mapping - support both numeric and string values
-        const mapping = mappings.find((m: StatusMapping) => {
-            if (m.value === undefined || m.value === null) return false;
-
-            // Try exact match first
-            if (m.value === normalizedValue) return true;
-
-            // Try string comparison
-            if (String(m.value) === String(normalizedValue)) return true;
-
-            // Try numeric comparison if both can be numbers
-            const numValue = Number(normalizedValue);
-            const numMapping = Number(m.value);
-            if (!isNaN(numValue) && !isNaN(numMapping) && numValue === numMapping) return true;
-
-            return false;
-        });
-
-        if (!mapping) {
-            // No mapping found, return default badge with the raw value
-            return `<span class="status-badge badge-secondary">${String(value || "")}</span>`;
-        }
-
-        // Return HTML string with badge
-        const className = `status-badge ${mapping.className || "badge-secondary"}`.trim();
-        const style = mapping.style ? ` style="${mapping.style}"` : "";
-        const labelText =
-            mapping.label !== undefined && mapping.label !== null
-                ? String(mapping.label)
-                : String(value || "");
-
-        return `<span class="${className}" ${style} data-status="${labelText}">${labelText}</span>`;
-    } catch (e) {
-        // If anything fails, log error and return default badge
-        console.error("Error in renderStatusBadge:", e);
-        console.error("Mapping string was:", mappingString);
-        console.error("Value was:", value);
-        return `<span class="status-badge badge-secondary">${String(value || "")}</span>`;
-    }
-};
-
-/**
  * Renders a link with custom URL and text patterns
  */
 export const renderLink = (

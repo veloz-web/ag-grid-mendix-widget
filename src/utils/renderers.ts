@@ -1,29 +1,11 @@
 import { ColumnsType, FormatterEnum } from "../../typings/AGGridProps";
 import { ValueStatus } from "mendix";
-import { renderStatusBadge, renderLink, applyFormatter, AttributeType } from "./formatters";
+import { renderLink, applyFormatter, AttributeType } from "./formatters";
 
 /**
  * Renderer functions for AG Grid components
  * These functions handle the rendering/formatting of cell values
  */
-
-/**
- * Creates a status badge renderer for AG Grid cells
- */
-export const createStatusBadgeRenderer = (statusMapping?: string) => {
-    return (value: any) => {
-        try {
-            const htmlString = renderStatusBadge(value, statusMapping);
-            return `<span dangerouslySetInnerHTML={{__html: "${htmlString.replace(
-                /"/g,
-                '\\"'
-            )}"}}></span>`;
-        } catch (e) {
-            console.error("Error rendering status badge:", e);
-            return String(value || "");
-        }
-    };
-};
 
 /**
  * Creates a link renderer for AG Grid cells
@@ -115,7 +97,7 @@ export const getCellAlignment = (col: ColumnsType): string => {
     const attributeType = col.attribute?.type || "String";
 
     // Links, status badges, and actions are centered
-    if (formatter === "link" || formatter === "statusBadge") {
+    if (formatter === "link") {
         return "center";
     }
 
@@ -151,10 +133,7 @@ export const formatCardFieldValue = (
     item: any,
     columns: ColumnsType[]
 ): { formattedValue: string | any; isHtml: boolean } => {
-    if (col.formatter === "statusBadge") {
-        const htmlString = renderStatusBadge(rawValue, col.statusMapping);
-        return { formattedValue: htmlString, isHtml: true };
-    } else if (col.formatter === "link") {
+    if (col.formatter === "link") {
         // If there's a linkAction, use that (proper Mendix navigation)
         if (col.linkAction) {
             const action = col.linkAction.get(item);

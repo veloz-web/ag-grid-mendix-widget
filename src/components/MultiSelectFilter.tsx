@@ -25,12 +25,24 @@ export function MultiSelectFilter(props: MultiSelectFilterProps): ReactElement {
         const handleClickOutside = (event: MouseEvent) => {
             if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
                 setIsOpen(false);
+                setSearchText("");
+            }
+        };
+
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === "Escape" && isOpen) {
+                setIsOpen(false);
+                setSearchText("");
             }
         };
 
         if (isOpen) {
             document.addEventListener("mousedown", handleClickOutside);
-            return () => document.removeEventListener("mousedown", handleClickOutside);
+            document.addEventListener("keydown", handleKeyDown);
+            return () => {
+                document.removeEventListener("mousedown", handleClickOutside);
+                document.removeEventListener("keydown", handleKeyDown);
+            };
         }
     }, [isOpen]);
 
@@ -41,16 +53,18 @@ export function MultiSelectFilter(props: MultiSelectFilterProps): ReactElement {
         }
     }, [isOpen, enableSearch]);
 
-    // Update indeterminate state whenever selectedValues changes
+    // Update indeterminate state whenever selectedValues or isOpen changes
     useEffect(() => {
         if (selectAllCheckboxRef.current) {
             selectAllCheckboxRef.current.indeterminate = someSelected;
         }
-    }, [someSelected]);
+    }, [someSelected, isOpen]);
 
     const toggleDropdown = () => {
         setIsOpen(!isOpen);
-        setSearchText("");
+        if (isOpen) {
+            setSearchText("");
+        }
     };
 
     const toggleValue = (value: string) => {
