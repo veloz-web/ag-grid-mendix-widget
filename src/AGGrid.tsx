@@ -23,6 +23,7 @@ import { Toolbar } from "./components/Toolbar";
 import { FilterDrawer } from "./components/FilterDrawer";
 import { HiddenDrawer } from "./components/HiddenDrawer";
 import { ViewRenderer } from "./components/viewRenderer";
+import { ColumnVisibilityPopover } from "./components/ColumnVisibilityPopover";
 import { CustomFormatterRegistry } from "./utils/customFormatters";
 import { getThemeClassName } from "./utils/theme";
 import {
@@ -153,14 +154,6 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
 
     // --- Responsive & View Handlers ---
 
-    private getThemeClassName = () => {
-        return getThemeClassName(
-            this.props.theme,
-            this.props.themeVariant ?? "auto",
-            this.state.prefersDarkScheme
-        );
-    };
-
     private checkIsMobile = (): boolean => {
         return window.innerWidth < 768;
     };
@@ -177,22 +170,6 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
                 currentView: this.getInitialView()
             });
         }
-    };
-
-    private getInitialView = (): ViewMode => {
-        const { defaultView, mobileDefaultView } = this.props;
-        const isMobile = this.checkIsMobile();
-
-        if (isMobile) {
-            return (mobileDefaultView || "cards") as ViewMode;
-        }
-        return (defaultView || "grid") as ViewMode;
-    };
-
-    private toggleView = (view: ViewMode) => {
-        this.setState({ currentView: view }, () => {
-            this.savePersistedState({ viewMode: view });
-        });
     };
 
     // --- Drawer State Handlers ---
@@ -247,6 +224,13 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
             const newVisibility = { ...prevState.columnVisibility, [columnId]: visible };
             this.savePersistedState({ columnVisibility: newVisibility });
             return { columnVisibility: newVisibility };
+        });
+    };
+
+    private resetColumnVisibilityToDefault = () => {
+        const defaultVisibility = getDefaultColumnVisibility(this.props.columns);
+        this.setState({ columnVisibility: defaultVisibility }, () => {
+            this.savePersistedState({ columnVisibility: defaultVisibility });
         });
     };
 
@@ -770,6 +754,62 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
         }
     };
 
+    // --- View Management Methods ---
+
+    private getInitialView(): ViewMode {
+        const isMobile = this.checkIsMobile();
+        const { defaultView, mobileDefaultView, customCardTemplate, customListTemplate } = this.props;
+
+        // Determine available views based on templates
+        const hasCardTemplate = !!(customCardTemplate && customCardTemplate.trim());
+        const hasListTemplate = !!(customListTemplate && customListTemplate.trim());
+
+        // Use mobile default view on mobile devices
+        if (isMobile && mobileDefaultView) {
+            if (mobileDefaultView === "cards" && hasCardTemplate) return "cards";
+            if (mobileDefaultView === "list" && hasListTemplate) return "list";
+            if (mobileDefaultView === "grid") return "grid";
+        }
+
+        // Use desktop default view
+        if (defaultView === "cards" && hasCardTemplate) return "cards";
+        if (defaultView === "list" && hasListTemplate) return "list";
+        if (defaultView === "grid") return "grid";
+
+        // Fallback to grid view
+        return "grid";
+    }
+
+    private toggleView = (newView: ViewMode) => {
+        this.setState({ currentView: newView }, () => {
+            this.savePersistedState({ viewMode: newView });
+        });
+    };
+
+    private getThemeClassName(): string {
+        const { theme, themeVariant } = this.props;
+        const { prefersDarkScheme } = this.state;
+
+        // Map theme names to AG Grid theme classes
+        const themeMap: Record<string, string> = {
+            alpine: "ag-theme-alpine",
+            balham: "ag-theme-balham",
+            material: "ag-theme-material",
+            quartz: "ag-theme-quartz"
+        };
+
+        const baseTheme = themeMap[theme] || "ag-theme-alpine";
+
+        // Apply theme variant
+        if (themeVariant === "dark") {
+            return `${baseTheme}-dark`;
+        } else if (themeVariant === "auto" && prefersDarkScheme) {
+            return `${baseTheme}-dark`;
+        }
+
+        return baseTheme;
+    };
+
     // --- Render ---
 
     render(): ReactNode {
@@ -947,12 +987,13 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
                         onResetSettings={this.resetSettings}
                     />
 
-                    <HiddenDrawer
+                    <ColumnVisibilityPopover
                         isOpen={isColumnVisibilityOpen}
+                        onClose={this.toggleColumnVisibility}
                         columns={columns}
                         columnVisibility={columnVisibility}
-                        onClose={this.toggleColumnVisibility}
-                        onToggleColumn={this.toggleColumnVisibilityItem}
+                        onColumnVisibilityChange={this.toggleColumnVisibilityItem}
+                        onResetToDefault={this.resetColumnVisibilityToDefault}
                     />
                 </div>
             );

@@ -3,15 +3,15 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for utils/theme.ts</title>
+    <title>Code coverage report for src/utils/theme.ts</title>
     <meta charset="utf-8" />
-    <link rel="stylesheet" href="../prettify.css" />
-    <link rel="stylesheet" href="../base.css" />
-    <link rel="shortcut icon" type="image/x-icon" href="../favicon.png" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../../favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style type='text/css'>
         .coverage-summary .sorter {
-            background-image: url(../sort-arrow-sprite.png);
+            background-image: url(../../sort-arrow-sprite.png);
         }
     </style>
 </head>
@@ -19,34 +19,34 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../index.html">All files</a> / <a href="index.html">utils</a> theme.ts</h1>
+        <h1><a href="../../index.html">All files</a> / <a href="index.html">src/utils</a> theme.ts</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">35.71% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>14/14</span>
+                <span class='fraction'>5/14</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">90.9% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>10/11</span>
+                <span class='fraction'>0/11</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>2/2</span>
+                <span class='fraction'>0/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">30.76% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>13/13</span>
+                <span class='fraction'>4/13</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -137,7 +137,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">18x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
@@ -145,19 +145,19 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">18x</span>
-<span class="cline-any cline-yes">18x</span>
-<span class="cline-any cline-yes">18x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">18x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">15x</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// src/utils/theme.js
 &nbsp;
@@ -184,28 +184,28 @@ const darkThemeMap = {
 type ThemeKey = keyof typeof themeMap;
 type ThemeVariant = "auto" | "light" | "dark";
 &nbsp;
-const normalizeThemeKey = (themeName: string): ThemeKey =&gt; {
-    return (themeName in themeMap ? themeName : "material") as ThemeKey;
+const normalizeThemeKey = <span class="fstat-no" title="function not covered" >(t</span>hemeName: string): ThemeKey =&gt; {
+<span class="cstat-no" title="statement not covered" >    return (themeName in themeMap ? themeName : "material") as ThemeKey;</span>
 };
 &nbsp;
-export const getThemeClassName = (
-    themeName = "material",
-    variant: ThemeVariant = "auto",
-    prefersDark = false
+export const getThemeClassName = <span class="fstat-no" title="function not covered" >(</span>
+    themeName = <span class="branch-0 cbranch-no" title="branch not covered" >"material",</span>
+    variant: ThemeVariant = <span class="branch-0 cbranch-no" title="branch not covered" >"auto",</span>
+    prefersDark = <span class="branch-0 cbranch-no" title="branch not covered" >false</span>
 ) =&gt; {
-    const key = normalizeThemeKey(themeName);
-    const baseClass = themeMap[key];
-    const darkClass = darkThemeMap[key] || <span class="branch-1 cbranch-no" title="branch not covered" >baseClass;</span>
+    const key = <span class="cstat-no" title="statement not covered" >normalizeThemeKey(themeName);</span>
+    const baseClass = <span class="cstat-no" title="statement not covered" >themeMap[key];</span>
+    const darkClass = <span class="cstat-no" title="statement not covered" >darkThemeMap[key] || baseClass;</span>
 &nbsp;
-    if (variant === "dark") {
-        return darkClass;
+<span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (variant === "dark") {</span>
+<span class="cstat-no" title="statement not covered" >        return darkClass;</span>
     }
 &nbsp;
-    if (variant === "light") {
-        return baseClass;
+<span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (variant === "light") {</span>
+<span class="cstat-no" title="statement not covered" >        return baseClass;</span>
     }
 &nbsp;
-    return prefersDark ? darkClass : baseClass;
+<span class="cstat-no" title="statement not covered" >    return prefersDark ? darkClass : baseClass;</span>
 };
 &nbsp;</pre></td></tr></table></pre>
 
@@ -214,16 +214,16 @@ export const getThemeClassName = (
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-11-05T15:49:27.294Z
+                at 2025-11-05T16:03:07.593Z
             </div>
-        <script src="../prettify.js"></script>
+        <script src="../../prettify.js"></script>
         <script>
             window.onload = function () {
                 prettyPrint();
             };
         </script>
-        <script src="../sorter.js"></script>
-        <script src="../block-navigation.js"></script>
+        <script src="../../sorter.js"></script>
+        <script src="../../block-navigation.js"></script>
     </body>
 </html>
     

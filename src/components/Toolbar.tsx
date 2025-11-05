@@ -255,6 +255,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                         aria-haspopup="dialog"
                         aria-expanded={isFilterDrawerOpen}
                         title="Filters"
+                        aria-label={`Filters${activeFilterCount > 0 ? ` (${activeFilterCount} active)` : ""}`}
                     >
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" />
@@ -265,18 +266,21 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                     </button>
                 )}
 
-                <button
-                    type="button"
-                    className="aggrid-column-visibility-btn"
-                    onClick={onToggleColumnVisibility}
-                    aria-haspopup="dialog"
-                    aria-expanded={isColumnVisibilityOpen}
-                    title="Column Visibility"
-                >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-                    </svg>
-                </button>
+                <div style={{ position: "relative" }}>
+                    <button
+                        type="button"
+                        className="aggrid-column-visibility-btn"
+                        onClick={onToggleColumnVisibility}
+                        aria-haspopup="dialog"
+                        aria-expanded={isColumnVisibilityOpen}
+                        title="Column Visibility"
+                        aria-label="Column visibility settings"
+                    >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+                        </svg>
+                    </button>
+                </div>
             </div>
         </div>
     );

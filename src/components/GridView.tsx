@@ -86,7 +86,7 @@ const getCellAlignment = (col: ColumnsType): string => {
  * Maps a single Mendix column configuration to an AG Grid ColDef.
  * This is split into a helper for readability and use in useMemo.
  */
-function mapMendixColumnToColDef(
+export function mapMendixColumnToColDef(
     col: ColumnsType,
     columns: ColumnsType[],
     customFormatterRegistry?: CustomFormatterRegistry
@@ -410,7 +410,7 @@ export function GridView(props: GridViewProps): ReactElement {
 
     return (
         // --- THEME FIX: Apply theme class to the wrapper div ---
-        <div className={themeClassName} style={{ height: `${height}px`, width: "100%" }}>
+        <div className={themeClassName} style={{ height: `${height}px`, width: "100%" }} data-testid="ag-grid">
             <AgGridReact
                 // theme={theme} // <-- Removed: Theme is now on the wrapper
                 columnDefs={columnDefs} // <-- Removed 'as any'
