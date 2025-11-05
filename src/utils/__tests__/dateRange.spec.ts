@@ -159,7 +159,11 @@ describe("dateRange utils", () => {
                 expect.arrayContaining([
                     expect.objectContaining({ key: "last7Days", label: "Last 7 days", days: 7 }),
                     expect.objectContaining({ key: "last30Days", label: "Last 1 month", days: 30 }),
-                    expect.objectContaining({ key: "last365Days", label: "Last 12 months", days: 365 })
+                    expect.objectContaining({
+                        key: "last365Days",
+                        label: "Last 12 months",
+                        days: 365
+                    })
                 ])
             );
         });

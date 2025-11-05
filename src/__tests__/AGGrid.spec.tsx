@@ -1,8 +1,9 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import "@testing-library/jest-dom";
 import { AGGrid } from "../AGGrid";
+import { LicenseManager } from "ag-grid-enterprise";
 
 // Mock Mendix dependencies
 jest.mock("mendix", () => ({
@@ -137,14 +138,12 @@ describe("AGGrid Component", () => {
         });
 
         it("sets license key when provided", () => {
-            const { LicenseManager } = require("ag-grid-community");
             render(<AGGrid {...mockProps} licenseKey="test-key" />);
 
             expect(LicenseManager.setLicenseKey).toHaveBeenCalledWith("test-key");
         });
 
         it("does not set license key when empty", () => {
-            const { LicenseManager } = require("ag-grid-community");
             render(<AGGrid {...mockProps} licenseKey="" />);
 
             expect(LicenseManager.setLicenseKey).not.toHaveBeenCalled();
@@ -202,7 +201,7 @@ describe("AGGrid Component", () => {
     describe("Mobile responsiveness", () => {
         it("uses mobile default view on small screens", () => {
             // Mock window.innerWidth
-            Object.defineProperty(window, 'innerWidth', {
+            Object.defineProperty(window, "innerWidth", {
                 writable: true,
                 value: 600
             });
@@ -213,7 +212,7 @@ describe("AGGrid Component", () => {
             expect(true).toBe(true); // Placeholder assertion
 
             // Restore original value
-            Object.defineProperty(window, 'innerWidth', {
+            Object.defineProperty(window, "innerWidth", {
                 writable: true,
                 value: 1024
             });
@@ -221,7 +220,7 @@ describe("AGGrid Component", () => {
 
         it("uses desktop default view on large screens", () => {
             // Mock window.innerWidth
-            Object.defineProperty(window, 'innerWidth', {
+            Object.defineProperty(window, "innerWidth", {
                 writable: true,
                 value: 1200
             });
@@ -230,7 +229,7 @@ describe("AGGrid Component", () => {
             expect(true).toBe(true); // Placeholder assertion
 
             // Restore original value
-            Object.defineProperty(window, 'innerWidth', {
+            Object.defineProperty(window, "innerWidth", {
                 writable: true,
                 value: 1024
             });
@@ -239,14 +238,16 @@ describe("AGGrid Component", () => {
 
     describe("Local storage", () => {
         it("loads state from localStorage when enabled", () => {
-            const mockGetItem = jest.spyOn(Storage.prototype, 'getItem');
-            mockGetItem.mockReturnValue(JSON.stringify({
-                currentView: 'cards',
-                activeFilters: {},
-                sortModel: [],
-                columnVisibility: { id: true, name: true },
-                columnOrder: ['id', 'name']
-            }));
+            const mockGetItem = jest.spyOn(Storage.prototype, "getItem");
+            mockGetItem.mockReturnValue(
+                JSON.stringify({
+                    currentView: "cards",
+                    activeFilters: {},
+                    sortModel: [],
+                    columnVisibility: { id: true, name: true },
+                    columnOrder: ["id", "name"]
+                })
+            );
 
             render(<AGGrid {...mockProps} useLocalStorage={true} />);
             // This test will fail until we implement localStorage loading
@@ -257,7 +258,7 @@ describe("AGGrid Component", () => {
         });
 
         it("does not load state from localStorage when disabled", () => {
-            const mockGetItem = jest.spyOn(Storage.prototype, 'getItem');
+            const mockGetItem = jest.spyOn(Storage.prototype, "getItem");
 
             render(<AGGrid {...mockProps} useLocalStorage={false} />);
             expect(mockGetItem).not.toHaveBeenCalled();
@@ -295,59 +296,71 @@ describe("AGGrid Component", () => {
     describe("Accessibility", () => {
         it("has proper ARIA labels on toolbar buttons", () => {
             render(<AGGrid {...mockProps} />);
-            
+
             // Check filter button has aria-label
-            const filterButton = screen.getByRole('button', { name: /filters/i });
-            expect(filterButton).toHaveAttribute('aria-label');
-            
+            const filterButton = screen.getByRole("button", { name: /filters/i });
+            expect(filterButton).toHaveAttribute("aria-label");
+
             // Check column visibility button has aria-label
-            const columnVisibilityButton = screen.getByRole('button', { name: /column visibility/i });
-            expect(columnVisibilityButton).toHaveAttribute('aria-label');
+            const columnVisibilityButton = screen.getByRole("button", {
+                name: /column visibility/i
+            });
+            expect(columnVisibilityButton).toHaveAttribute("aria-label");
         });
 
         it("supports keyboard navigation in column visibility popover", async () => {
             const user = userEvent.setup();
             render(<AGGrid {...mockProps} />);
-            
+
             // Open column visibility popover
-            const columnVisibilityButton = screen.getByRole('button', { name: /column visibility/i });
+            const columnVisibilityButton = screen.getByRole("button", {
+                name: /column visibility/i
+            });
             await user.click(columnVisibilityButton);
-            
+
             // Check popover is open and has proper role
-            const popover = screen.getByRole('dialog', { name: /column visibility/i });
+            const popover = screen.getByRole("dialog", { name: /column visibility/i });
             expect(popover).toBeInTheDocument();
-            
+
             // Check search input is focused
             const searchInput = screen.getByLabelText(/search columns/i);
             expect(searchInput).toHaveFocus();
-            
+
             // Test Escape key closes popover
-            await user.keyboard('{Escape}');
+            await user.keyboard("{Escape}");
             expect(popover).not.toBeInTheDocument();
         });
 
         it("has proper ARIA attributes in column visibility popover", async () => {
             const user = userEvent.setup();
             render(<AGGrid {...mockProps} />);
-            
+
             // Open column visibility popover
-            const columnVisibilityButton = screen.getByRole('button', { name: /column visibility/i });
+            const columnVisibilityButton = screen.getByRole("button", {
+                name: /column visibility/i
+            });
             await user.click(columnVisibilityButton);
-            
+
             // Check ARIA labels on controls
             expect(screen.getByLabelText(/search columns/i)).toBeInTheDocument();
-            
+
             // Check that select all/none buttons exist (may be disabled based on state)
-            const selectButtons = screen.getAllByRole('button');
-            const selectAllButton = selectButtons.find(btn => btn.getAttribute('aria-label') === 'Select all visible columns');
-            const selectNoneButton = selectButtons.find(btn => btn.getAttribute('aria-label') === 'Deselect all visible columns');
+            const selectButtons = screen.getAllByRole("button");
+            const selectAllButton = selectButtons.find(
+                (btn) => btn.getAttribute("aria-label") === "Select all visible columns"
+            );
+            const selectNoneButton = selectButtons.find(
+                (btn) => btn.getAttribute("aria-label") === "Deselect all visible columns"
+            );
             expect(selectAllButton).toBeInTheDocument();
             expect(selectNoneButton).toBeInTheDocument();
-            
-            expect(screen.getByLabelText(/reset column visibility to default settings/i)).toBeInTheDocument();
-            
+
+            expect(
+                screen.getByLabelText(/reset column visibility to default settings/i)
+            ).toBeInTheDocument();
+
             // Check column checkboxes have proper labels (if any columns exist)
-            const columnCheckboxes = screen.queryAllByRole('checkbox');
+            const columnCheckboxes = screen.queryAllByRole("checkbox");
             // Note: In this test setup, no columns may be rendered, so we just check the structure exists
             expect(columnCheckboxes.length).toBeGreaterThanOrEqual(0);
         });

@@ -255,7 +255,9 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                         aria-haspopup="dialog"
                         aria-expanded={isFilterDrawerOpen}
                         title="Filters"
-                        aria-label={`Filters${activeFilterCount > 0 ? ` (${activeFilterCount} active)` : ""}`}
+                        aria-label={`Filters${
+                            activeFilterCount > 0 ? ` (${activeFilterCount} active)` : ""
+                        }`}
                     >
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" />

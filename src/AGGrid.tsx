@@ -21,11 +21,9 @@ import {
 } from "./types";
 import { Toolbar } from "./components/Toolbar";
 import { FilterDrawer } from "./components/FilterDrawer";
-import { HiddenDrawer } from "./components/HiddenDrawer";
 import { ViewRenderer } from "./components/viewRenderer";
 import { ColumnVisibilityPopover } from "./components/ColumnVisibilityPopover";
 import { CustomFormatterRegistry } from "./utils/customFormatters";
-import { getThemeClassName } from "./utils/theme";
 import {
     DateRangeValue,
     isDateRangeValue,
@@ -758,7 +756,8 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
 
     private getInitialView(): ViewMode {
         const isMobile = this.checkIsMobile();
-        const { defaultView, mobileDefaultView, customCardTemplate, customListTemplate } = this.props;
+        const { defaultView, mobileDefaultView, customCardTemplate, customListTemplate } =
+            this.props;
 
         // Determine available views based on templates
         const hasCardTemplate = !!(customCardTemplate && customCardTemplate.trim());
@@ -808,7 +807,7 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
         }
 
         return baseTheme;
-    };
+    }
 
     // --- Render ---
 

@@ -132,7 +132,12 @@ export const ColumnVisibilityPopover: React.FC<ColumnVisibilityPopoverProps> = (
     });
 
     return (
-        <div className="column-visibility-popover" ref={popoverRef} role="dialog" aria-label="Column Visibility">
+        <div
+            className="column-visibility-popover"
+            ref={popoverRef}
+            role="dialog"
+            aria-label="Column Visibility"
+        >
             <div className="column-visibility-header">
                 <h4>Column Visibility</h4>
                 <button
@@ -165,7 +170,13 @@ export const ColumnVisibilityPopover: React.FC<ColumnVisibilityPopoverProps> = (
             </div>
 
             {/* Select All/None controls */}
-            <div style={{ padding: "8px 16px", borderBottom: "1px solid #e5e7eb", background: "#f9fafb" }}>
+            <div
+                style={{
+                    padding: "8px 16px",
+                    borderBottom: "1px solid #e5e7eb",
+                    background: "#f9fafb"
+                }}
+            >
                 <div style={{ display: "flex", gap: "8px" }}>
                     <button
                         type="button"
@@ -203,7 +214,11 @@ export const ColumnVisibilityPopover: React.FC<ColumnVisibilityPopoverProps> = (
             </div>
 
             {/* Column list */}
-            <div className="column-visibility-content" aria-live="polite" aria-label="Column visibility options">
+            <div
+                className="column-visibility-content"
+                aria-live="polite"
+                aria-label="Column visibility options"
+            >
                 {filteredColumns.length === 0 ? (
                     <div style={{ padding: "16px", textAlign: "center", color: "#6b7280" }}>
                         No columns found
@@ -225,12 +240,16 @@ export const ColumnVisibilityPopover: React.FC<ColumnVisibilityPopoverProps> = (
                                         }
                                     }}
                                     aria-label={`Toggle visibility of ${headerText} column`}
-                                    aria-describedby={`column-description-${columnId || headerText.replace(/\s+/g, '-')}`}
+                                    aria-describedby={`column-description-${
+                                        columnId || headerText.replace(/\s+/g, "-")
+                                    }`}
                                 />
-                                <span 
-                                    className="column-label" 
+                                <span
+                                    className="column-label"
                                     title={headerText}
-                                    id={`column-description-${columnId || headerText.replace(/\s+/g, '-')}`}
+                                    id={`column-description-${
+                                        columnId || headerText.replace(/\s+/g, "-")
+                                    }`}
                                 >
                                     {headerText}
                                 </span>

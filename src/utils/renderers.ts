@@ -131,7 +131,7 @@ export const formatCardFieldValue = (
     rawValue: any,
     attributeType: AttributeType,
     item: any,
-    columns: ColumnsType[]
+    _columns: ColumnsType[]
 ): { formattedValue: string | any; isHtml: boolean } => {
     if (col.formatter === "link") {
         // If there's a linkAction, use that (proper Mendix navigation)

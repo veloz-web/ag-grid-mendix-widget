@@ -410,7 +410,11 @@ export function GridView(props: GridViewProps): ReactElement {
 
     return (
         // --- THEME FIX: Apply theme class to the wrapper div ---
-        <div className={themeClassName} style={{ height: `${height}px`, width: "100%" }} data-testid="ag-grid">
+        <div
+            className={themeClassName}
+            style={{ height: `${height}px`, width: "100%" }}
+            data-testid="ag-grid"
+        >
             <AgGridReact
                 // theme={theme} // <-- Removed: Theme is now on the wrapper
                 columnDefs={columnDefs} // <-- Removed 'as any'

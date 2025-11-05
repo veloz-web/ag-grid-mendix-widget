@@ -1,11 +1,11 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import { GridView } from "../GridView";
+import { GridView, mapMendixColumnToColDef } from "../GridView";
 
 // Mock AG Grid
 jest.mock("ag-grid-react", () => ({
-    AgGridReact: ({ columnDefs, rowData, onGridReady, ...props }: any) => {
+    AgGridReact: ({ columnDefs, rowData, onGridReady, ..._props }: any) => {
         React.useEffect(() => {
             if (onGridReady) {
                 onGridReady({
@@ -19,7 +19,11 @@ jest.mock("ag-grid-react", () => ({
         }, [onGridReady]);
 
         return (
-            <div data-testid="ag-grid" data-coldefs={JSON.stringify(columnDefs)} data-rowdata={JSON.stringify(rowData)}>
+            <div
+                data-testid="ag-grid"
+                data-coldefs={JSON.stringify(columnDefs)}
+                data-rowdata={JSON.stringify(rowData)}
+            >
                 {columnDefs?.map((col: any, index: number) => (
                     <div key={index} data-testid={`column-${col.field}`}>
                         {col.headerName}
@@ -143,14 +147,14 @@ describe("GridView Component", () => {
             const grids = screen.getAllByTestId("ag-grid");
             const grid = grids[0]; // Get the outer container
             expect(grid).toBeInTheDocument();
-            expect(grid.closest('.ag-theme-alpine')).toBeInTheDocument();
+            expect(grid.closest(".ag-theme-alpine")).toBeInTheDocument();
         });
 
         it("passes correct height to grid container", () => {
             render(<GridView {...mockProps} height={500} />);
             const grids = screen.getAllByTestId("ag-grid");
             const gridContainer = grids[0]; // Get the outer container
-            expect(gridContainer).toHaveStyle({ height: '500px' });
+            expect(gridContainer).toHaveStyle({ height: "500px" });
         });
 
         it("renders column headers", () => {
@@ -204,9 +208,8 @@ describe("GridView Component", () => {
             ];
 
             // Test that the column mapping function handles hidden columns correctly
-            const { mapMendixColumnToColDef } = require("../GridView");
             const hiddenColDef = mapMendixColumnToColDef(columnsWithHidden[2], columnsWithHidden);
-            
+
             expect(hiddenColDef.hide).toBe(true);
         });
     });
@@ -350,7 +353,13 @@ describe("GridView Component", () => {
                 }
             ];
 
-            render(<GridView {...mockProps} columns={columnsWithCustomFormatter} customFormatterRegistry={mockRegistry as any} />);
+            render(
+                <GridView
+                    {...mockProps}
+                    columns={columnsWithCustomFormatter}
+                    customFormatterRegistry={mockRegistry as any}
+                />
+            );
             // This test will fail until we verify custom formatter execution
             // TODO: Add custom formatter verification
             expect(true).toBe(true); // Placeholder assertion

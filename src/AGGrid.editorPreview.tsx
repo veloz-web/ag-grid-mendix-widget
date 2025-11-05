@@ -10,8 +10,11 @@ export function preview(props: AGGridPreviewProps): ReactElement {
         theme,
         enableViewSelector,
         enableFilterDrawer,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         enableColumnMenus,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         enableHeaderFilterButtons,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         enableFloatingFilters,
         customCardTemplate,
         customListTemplate,

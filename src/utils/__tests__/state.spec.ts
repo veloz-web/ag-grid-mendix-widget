@@ -51,9 +51,7 @@ describe("state utils", () => {
         it("ignores columns with defaultSort none", () => {
             const result = getDefaultSortModel(mockColumns);
             expect(result).not.toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({ colId: "col3" })
-                ])
+                expect.arrayContaining([expect.objectContaining({ colId: "col3" })])
             );
         });
 

@@ -14,19 +14,36 @@ describe("formatters utils", () => {
             expect(result).toBe("test");
         });
 
+        // eslint-disable-next-line no-template-curly-in-string
         it("replaces ${value} placeholder in URL", () => {
+            // eslint-disable-next-line no-template-curly-in-string
             const result = renderLink("test-value", "https://example.com/${value}", "View");
-            expect(result).toBe('<a href="https://example.com/test-value" class="aggrid-link"><span class="fa fa-eye"></span> <span class="sr-only">View</span></a>');
+            expect(result).toBe(
+                '<a href="https://example.com/test-value" class="aggrid-link"><span class="fa fa-eye"></span> <span class="sr-only">View</span></a>'
+            );
         });
 
         it("uses value as display text when linkTextPattern is empty", () => {
+            // eslint-disable-next-line no-template-curly-in-string
             const result = renderLink("test-value", "https://example.com/${value}", "");
-            expect(result).toBe('<a href="https://example.com/test-value" class="aggrid-link"><span class="fa fa-eye"></span> <span class="sr-only">test-value</span></a>');
+            expect(result).toBe(
+                '<a href="https://example.com/test-value" class="aggrid-link"><span class="fa fa-eye"></span> <span class="sr-only">test-value</span></a>'
+            );
         });
 
+        // eslint-disable-next-line no-template-curly-in-string
         it("replaces ${value} placeholder in link text", () => {
-            const result = renderLink("test-value", "https://example.com/${value}", "View ${value}");
-            expect(result).toBe('<a href="https://example.com/test-value" class="aggrid-link"><span class="fa fa-eye"></span> <span class="sr-only">View test-value</span></a>');
+            // eslint-disable-next-line no-template-curly-in-string
+            const result = renderLink(
+                "test-value",
+                // eslint-disable-next-line no-template-curly-in-string
+                "https://example.com/${value}",
+                // eslint-disable-next-line no-template-curly-in-string
+                "View ${value}"
+            );
+            expect(result).toBe(
+                '<a href="https://example.com/test-value" class="aggrid-link"><span class="fa fa-eye"></span> <span class="sr-only">View test-value</span></a>'
+            );
         });
     });
 
@@ -72,7 +89,9 @@ describe("formatters utils", () => {
         });
 
         it("applies custom prefix/suffix", () => {
-            expect(applyFormatter("test", "customPrefix", "String", "prefix-", "-suffix")).toBe("prefix-test-suffix");
+            expect(applyFormatter("test", "customPrefix", "String", "prefix-", "-suffix")).toBe(
+                "prefix-test-suffix"
+            );
         });
 
         it("handles invalid values gracefully", () => {

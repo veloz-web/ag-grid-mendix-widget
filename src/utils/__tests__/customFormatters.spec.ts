@@ -23,7 +23,7 @@ describe("CustomFormatterRegistry", () => {
                 {
                     formatterName: "testFormatter",
                     formatterType: "javascript" as const,
-                    formatterCode: 'return value.toUpperCase();',
+                    formatterCode: "return value.toUpperCase();",
                     formatterConfig: undefined
                 }
             ];
@@ -38,13 +38,18 @@ describe("CustomFormatterRegistry", () => {
                 {
                     formatterName: "configFormatter",
                     formatterType: "javascript" as const,
-                    formatterCode: 'return `${value} - ${config.suffix}`;',
+                    // eslint-disable-next-line no-template-curly-in-string
+                    formatterCode: "return `${value} - ${config.suffix}`;",
                     formatterConfig: '{"suffix": "test"}'
                 }
             ];
 
             registry.registerFormatters(formatters);
-            const result = registry.execute("configFormatter", { value: "hello", item: {}, column: {} });
+            const result = registry.execute("configFormatter", {
+                value: "hello",
+                item: {},
+                column: {}
+            });
             expect(result).toBe("hello - test");
         });
 
@@ -53,13 +58,17 @@ describe("CustomFormatterRegistry", () => {
                 {
                     formatterName: "invalidConfigFormatter",
                     formatterType: "javascript" as const,
-                    formatterCode: 'return value;',
-                    formatterConfig: 'invalid json'
+                    formatterCode: "return value;",
+                    formatterConfig: "invalid json"
                 }
             ];
 
             registry.registerFormatters(formatters);
-            const result = registry.execute("invalidConfigFormatter", { value: "test", item: {}, column: {} });
+            const result = registry.execute("invalidConfigFormatter", {
+                value: "test",
+                item: {},
+                column: {}
+            });
             expect(result).toBe("test");
         });
 
@@ -68,13 +77,13 @@ describe("CustomFormatterRegistry", () => {
                 {
                     formatterName: "validFormatter",
                     formatterType: "javascript" as const,
-                    formatterCode: 'return value;',
+                    formatterCode: "return value;",
                     formatterConfig: undefined
                 },
                 {
                     formatterName: "invalidFormatter",
                     formatterType: "javascript" as const,
-                    formatterCode: 'invalid javascript syntax {{{',
+                    formatterCode: "invalid javascript syntax {{{",
                     formatterConfig: undefined
                 }
             ];
@@ -89,7 +98,7 @@ describe("CustomFormatterRegistry", () => {
                 {
                     formatterName: "microflowFormatter",
                     formatterType: "microflow" as any,
-                    formatterCode: 'some code',
+                    formatterCode: "some code",
                     formatterConfig: undefined
                 }
             ];
@@ -105,13 +114,14 @@ describe("CustomFormatterRegistry", () => {
                 {
                     formatterName: "upperCase",
                     formatterType: "javascript" as const,
-                    formatterCode: 'return value.toUpperCase();',
+                    formatterCode: "return value.toUpperCase();",
                     formatterConfig: undefined
                 },
                 {
                     formatterName: "withConfig",
                     formatterType: "javascript" as const,
-                    formatterCode: 'return `${value}-${config.prefix}`;',
+                    // eslint-disable-next-line no-template-curly-in-string
+                    formatterCode: "return `${value}-${config.prefix}`;",
                     formatterConfig: '{"prefix": "test"}'
                 }
             ];
@@ -151,7 +161,11 @@ describe("CustomFormatterRegistry", () => {
             ];
             registry.registerFormatters(errorFormatters);
 
-            const result = registry.execute("errorFormatter", { value: "test", item: {}, column: {} });
+            const result = registry.execute("errorFormatter", {
+                value: "test",
+                item: {},
+                column: {}
+            });
             expect(result).toBe("test");
         });
 
@@ -171,7 +185,7 @@ describe("CustomFormatterRegistry", () => {
                 {
                     formatterName: "test",
                     formatterType: "javascript" as const,
-                    formatterCode: 'return value;',
+                    formatterCode: "return value;",
                     formatterConfig: undefined
                 }
             ];
@@ -188,13 +202,13 @@ describe("CustomFormatterRegistry", () => {
                 {
                     formatterName: "formatter1",
                     formatterType: "javascript" as const,
-                    formatterCode: 'return value;',
+                    formatterCode: "return value;",
                     formatterConfig: undefined
                 },
                 {
                     formatterName: "formatter2",
                     formatterType: "javascript" as const,
-                    formatterCode: 'return value;',
+                    formatterCode: "return value;",
                     formatterConfig: undefined
                 }
             ];
@@ -209,7 +223,7 @@ describe("CustomFormatterRegistry", () => {
                 {
                     formatterName: "test",
                     formatterType: "javascript" as const,
-                    formatterCode: 'return value;',
+                    formatterCode: "return value;",
                     formatterConfig: undefined
                 }
             ];

@@ -49,10 +49,7 @@ describe("MultiSelectFilter", () => {
 
         it("shows 'All selected' when everything selected", () => {
             render(
-                <MultiSelectFilter
-                    {...baseProps}
-                    selectedValues={["Open", "Closed", "Pending"]}
-                />
+                <MultiSelectFilter {...baseProps} selectedValues={["Open", "Closed", "Pending"]} />
             );
 
             expect(screen.getByText("All selected")).toBeInTheDocument();
@@ -66,7 +63,9 @@ describe("MultiSelectFilter", () => {
             expect(screen.getByRole("button", { name: "Clear selection" })).toBeInTheDocument();
 
             rerender(<MultiSelectFilter {...baseProps} selectedValues={[]} />);
-            expect(screen.queryByRole("button", { name: "Clear selection" })).not.toBeInTheDocument();
+            expect(
+                screen.queryByRole("button", { name: "Clear selection" })
+            ).not.toBeInTheDocument();
         });
     });
 
@@ -111,10 +110,7 @@ describe("MultiSelectFilter", () => {
 
         it("checkbox is checked when everything selected", () => {
             render(
-                <MultiSelectFilter
-                    {...baseProps}
-                    selectedValues={["Open", "Closed", "Pending"]}
-                />
+                <MultiSelectFilter {...baseProps} selectedValues={["Open", "Closed", "Pending"]} />
             );
 
             openDropdown();
@@ -140,10 +136,7 @@ describe("MultiSelectFilter", () => {
 
         it("deselects everything when toggled from fully selected", () => {
             render(
-                <MultiSelectFilter
-                    {...baseProps}
-                    selectedValues={["Open", "Closed", "Pending"]}
-                />
+                <MultiSelectFilter {...baseProps} selectedValues={["Open", "Closed", "Pending"]} />
             );
 
             openDropdown();
@@ -163,7 +156,8 @@ describe("MultiSelectFilter", () => {
     });
 
     describe("Individual option toggles", () => {
-        const openDropdown = () => fireEvent.click(screen.getByRole("button", { name: /Status filter/i }));
+        const openDropdown = () =>
+            fireEvent.click(screen.getByRole("button", { name: /Status filter/i }));
 
         it("checks option that was previously unselected", () => {
             render(<MultiSelectFilter {...baseProps} selectedValues={[]} />);
@@ -217,13 +211,7 @@ describe("MultiSelectFilter", () => {
         });
 
         it("can render without search input", () => {
-            render(
-                <MultiSelectFilter
-                    {...baseProps}
-                    enableSearch={false}
-                    selectedValues={[]}
-                />
-            );
+            render(<MultiSelectFilter {...baseProps} enableSearch={false} selectedValues={[]} />);
 
             fireEvent.click(screen.getByRole("button", { name: /Status filter/i }));
             expect(screen.queryByPlaceholderText("Search...")).not.toBeInTheDocument();
@@ -321,9 +309,7 @@ describe("MultiSelectFilter", () => {
 
     describe("Dynamic updates", () => {
         it("handles options changing after render", () => {
-            const { rerender } = render(
-                <MultiSelectFilter {...baseProps} selectedValues={[]} />
-            );
+            const { rerender } = render(<MultiSelectFilter {...baseProps} selectedValues={[]} />);
 
             rerender(
                 <MultiSelectFilter
