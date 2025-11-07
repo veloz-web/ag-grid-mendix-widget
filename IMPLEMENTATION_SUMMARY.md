@@ -175,7 +175,7 @@ Before deploying to production, test:
         <column 
             header="Status"
             attribute="Status"
-            formatter="statusBadge"
+            formatter="none"
             includeInCardView="true"
             includeInFilters="true"
             statusMapping='[

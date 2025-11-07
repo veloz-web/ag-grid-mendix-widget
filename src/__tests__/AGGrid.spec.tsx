@@ -122,6 +122,8 @@ describe("AGGrid Component", () => {
         height: 500,
         theme: "material" as const,
         themeVariant: "auto" as const,
+        enablePolling: false,
+        pollingInterval: 60,
         onRowClick: undefined
     };
 

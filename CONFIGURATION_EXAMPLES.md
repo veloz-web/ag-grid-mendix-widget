@@ -41,7 +41,7 @@ Perfect for a simple data table that users can view in different formats.
             header="Status"
             attribute="StatusCode"
             width="120"
-            formatter="statusBadge"
+            formatter="none"
             includeInCardView="true"
             includeInSort="true"
             statusMapping='[
@@ -103,7 +103,7 @@ Ideal for complex data with many search criteria.
             header="Status"
             attribute="Status"
             width="120"
-            formatter="statusBadge"
+            formatter="none"
             includeInCardView="true"
             includeInSort="true"
             includeInFilters="true"
@@ -417,7 +417,7 @@ Perfect for accounting, finance, or sales data.
             header="Type"
             attribute="TransactionType"
             width="120"
-            formatter="statusBadge"
+            formatter="none"
             includeInCardView="true"
             includeInSort="true"
             includeInFilters="true"
@@ -496,7 +496,7 @@ Perfect for accounting, finance, or sales data.
 | Money | `currency`, `currencyEUR`, `currencyGBP` | $1,234.56 |
 | Percentages | `percentage` | 45.67% |
 | Dates | `dateShort`, `dateLong`, `dateTime`, `time` | 10/7/2025 |
-| Status/Categories | `statusBadge` | ✓ Active |
+| Status/Categories | `none` | Active |
 | Yes/No fields | `yesNo`, `trueFalse` | Yes / True |
 | Text | `uppercase`, `lowercase`, `capitalize` | JOHN / john / John |
 | IDs/Codes | `customPrefix` | REQ-12345 |

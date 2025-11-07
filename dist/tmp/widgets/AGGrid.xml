@@ -368,6 +368,14 @@
                     <enumerationValue key="dark">Dark</enumerationValue>
                 </enumerationValues>
             </property>
+            <property key="enablePolling" type="boolean" defaultValue="false">
+                <caption>Enable Data Polling</caption>
+                <description>Automatically check for new data added by other users</description>
+            </property>
+            <property key="pollingInterval" type="integer" defaultValue="60">
+                <caption>Polling Interval (seconds)</caption>
+                <description>How often to check for new data (in seconds). Minimum 10 seconds.</description>
+            </property>
         </propertyGroup>
         <propertyGroup caption="Events">
             <property key="onRowClick" type="action" dataSource="dataSource">

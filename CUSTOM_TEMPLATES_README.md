@@ -62,6 +62,246 @@ Use `{{FieldName}}` to insert field values. The FieldName must match exactly wit
 </div>
 ```
 
+### Conditional Rendering
+
+Templates support conditional logic to show/hide content based on field values or conditions. This is perfect for creating flexible layouts that adapt to different data types or optional fields.
+
+#### Basic Conditional Blocks
+
+```html
+<!-- Show content only if field has a value -->
+{{#if Status}}
+  <div class="status-label">Status: {{Status}}</div>
+{{/if}}
+
+<!-- Show content only if field equals a specific value -->
+{{#if Priority == "High"}}
+  <div class="urgent">⚠️ High Priority</div>
+{{/if}}
+
+{{#if Type == "Bug"}}
+  <div class="bug-card">{{Title}}</div>
+{{/if}}
+```
+
+#### Conditional with Else
+
+```html
+{{#if IsActive}}
+  <span class="active">✓ Active</span>
+{{else}}
+  <span class="inactive">✗ Inactive</span>
+{{/if}}
+```
+
+#### Advanced Conditional Logic
+
+**Nested Conditionals:**
+```html
+{{#if EntityType == "Task"}}
+  <div class="task-card">
+    {{#if Priority == "High"}}
+      <div class="urgent">⚠️ High Priority Task</div>
+    {{/if}}
+    {{#if Assignee}}
+      <p>Assigned to: {{Assignee}}</p>
+    {{/if}}
+  </div>
+{{/if}}
+```
+
+**Logical Operators (&& and ||):**
+```html
+<!-- AND conditions: both must be true -->
+{{#if Status == "Active" && Priority == "High"}}
+  <div class="urgent-active">🔥 Active High Priority</div>
+{{/if}}
+
+<!-- OR conditions: either can be true -->
+{{#if Status == "Pending" || Status == "InProgress"}}
+  <div class="in-work">🔄 Work in Progress</div>
+{{/if}}
+
+<!-- Complex combinations -->
+{{#if (Type == "Bug" && Severity == "Critical") || (Type == "Feature" && Priority == "High")}}
+  <div class="high-attention">🚨 Requires Immediate Attention</div>
+{{/if}}
+```
+
+**Field Existence with Logic:**
+```html
+<!-- Show section only if multiple fields exist -->
+{{#if Title && Description}}
+  <div class="content-section">
+    <h4>{{Title}}</h4>
+    <p>{{Description}}</p>
+  </div>
+{{/if}}
+
+<!-- Show different content based on field combinations -->
+{{#if Status && !DueDate}}
+  <div class="no-deadline">{{Status}} - No deadline set</div>
+{{/if}}
+```
+
+**Boolean Field Handling:**
+```html
+<!-- ✅ Correct: Shows content only when boolean is true -->
+{{#if IsActive}}
+  <span class="active">✓ Active</span>
+{{/if}}
+
+<!-- ✅ Also correct: Explicit boolean comparison -->
+{{#if IsActive == "true"}}
+  <span class="active">✓ Active</span>
+{{/if}}
+
+<!-- ❌ Wrong: This would never show because false is not truthy for booleans -->
+{{#if IsInactive}}
+  <span class="inactive">✗ Inactive</span>
+{{/if}}
+
+<!-- ✅ Correct: Explicit check for false -->
+{{#if IsActive == "false"}}
+  <span class="inactive">✗ Inactive</span>
+{{/if}}
+```
+
+**Numeric Field Handling:**
+```html
+<!-- ✅ Correct: Shows guest count including 0 -->
+{{#if NumberOfGuests}}
+  <span>Guests: {{NumberOfGuests}}</span>
+{{/if}}
+
+<!-- ✅ Correct: Show different message for 0 vs many -->
+{{#if NumberOfGuests == "0"}}
+  <span>No guests</span>
+{{else}}
+  <span>{{NumberOfGuests}} guests</span>
+{{/if}}
+
+<!-- ✅ Correct: Check for specific ranges -->
+{{#if NumberOfGuests && NumberOfGuests != "0"}}
+  <div class="group-booking">
+    Group booking: {{NumberOfGuests}} guests
+  </div>
+{{/if}}
+```
+
+#### Field Type Behavior
+
+**Boolean Fields:**
+- `{{#if IsActive}}` → Shows content only when `true`
+- `{{#if IsActive == "false"}}` → Shows content only when `false`
+
+**Numeric Fields:**
+- `{{#if NumberOfGuests}}` → Shows content when number exists (including `0`)
+- `{{#if NumberOfGuests == "0"}}` → Shows content only when exactly `0`
+
+**String/Text Fields:**
+- `{{#if Name}}` → Shows content when string is not empty
+- `{{#if Name == ""}}` → Shows content only when string is empty
+
+**Date Fields:**
+- `{{#if CreatedDate}}` → Shows content when date exists
+- `{{#if CreatedDate == "null"}}` → Shows content only when date is null
+
+#### String Operations
+
+Templates support string method calls for advanced conditional logic based on text patterns, substrings, and string properties.
+
+**startsWith() - Check if string begins with specific text:**
+```html
+<!-- Show different content based on form number prefix -->
+{{#if Form #.startsWith("ABC")}}
+  <div class="form-abc">ABC Form: {{Form #}}</div>
+{{/if}}
+
+{{#if Form #.startsWith("XYZ")}}
+  <div class="form-xyz">XYZ Form: {{Form #}}</div>
+{{/if}}
+
+<!-- Still works with explicit comparison -->
+{{#if Form #.startsWith("ABC") == "true"}}
+  <div class="form-abc">ABC Form: {{Form #}}</div>
+{{/if}}
+```
+
+**endsWith() - Check if string ends with specific text:**
+```html
+{{#if FileName.endsWith(".pdf")}}
+  <div class="pdf-file">📄 {{FileName}}</div>
+{{/if}}
+
+{{#if FileName.endsWith(".docx")}}
+  <div class="word-file">📝 {{FileName}}</div>
+{{/if}}
+```
+
+**substring() - Extract and compare substrings:**
+```html
+<!-- Check first 3 characters of form number -->
+{{#if Form #.substring(0,3) == "ABC"}}
+  <div class="abc-form">ABC Form Series</div>
+{{/if}}
+
+<!-- Check specific character positions -->
+{{#if Code.substring(2,5) == "123"}}
+  <div class="special-code">Special Code Pattern</div>
+{{/if}}
+```
+
+**length - Check string length:**
+```html
+<!-- Show different styling based on name length -->
+{{#if Name.length == "1"}}
+  <div class="initial">{{Name}}.</div>
+{{/if}}
+
+{{#if Name.length != "0"}}
+  <div class="full-name">{{Name}}</div>
+{{/if}}
+```
+
+**includes() - Check if string contains specific text:**
+```html
+<!-- Check for keywords in description -->
+{{#if Description.includes("urgent")}}
+  <div class="urgent-item">🚨 {{Title}}</div>
+{{/if}}
+
+{{#if Tags.includes("featured")}}
+  <div class="featured">⭐ Featured Item</div>
+{{/if}}
+
+<!-- Your specific use case -->
+{{#if Form #.includes("VAF")}}
+  <div class="sr-card-bottom-banner"><span>{{Guests}} Guests</span></div>
+{{/if}}
+```
+
+**Supported String Methods:**
+- `startsWith(text)` - Returns true if string starts with the specified text
+- `endsWith(text)` - Returns true if string ends with the specified text  
+- `substring(start, end?)` - Returns substring from start index to end index (optional)
+- `length` - Returns the length of the string as a number
+- `includes(text)` - Returns true if string contains the specified text
+
+**Method Call Syntax:**
+```
+FieldName.method(args)                    // Boolean result (recommended)
+FieldName.method(args) == "expected_value" // Explicit string comparison (still supported)
+```
+
+**Notes:**
+- Boolean methods (`startsWith`, `endsWith`, `includes`) work directly as conditions
+- Numeric methods (`length`, `substring`) require explicit comparison with `==` or `!=`
+- Arguments should be quoted strings: `startsWith("ABC")`
+- Numeric arguments for substring don't need quotes: `substring(0,3)`
+- All methods are case-sensitive
+- Invalid method calls or missing fields return false (condition not met)
+
 ### Formatting Support
 
 Templates automatically apply any formatting configured for columns (currency, date, number formatting, etc.). Custom prefixes and suffixes are also applied.
@@ -201,11 +441,57 @@ Only fields configured as columns in the widget are available for templating. Th
 - Check that the data source provides the field
 - Verify the placeholder syntax `{{FieldName}}`
 
+### Conditional Logic Issues
+
+- Ensure conditional syntax is correct: `{{#if condition}}content{{/if}}`
+- Check that field names in conditions match column headers exactly
+- Verify comparison operators (`==`, `!=`) and quote usage
+- Remember conditionals are case-sensitive
+- Nested conditionals are supported but test carefully
+
 ### Formatting Issues
 
 - Review column formatting configuration
 - Check custom prefix/suffix settings
 - Ensure data types match expectations
+
+### Common Conditional Mistakes
+
+```html
+<!-- ❌ Wrong: Missing quotes around string values -->
+{{#if Status == Active}} <!-- Should be: Status == "Active" -->
+
+<!-- ❌ Wrong: Incorrect closing syntax -->
+{{#if Status}}Content{{/if}} <!-- Correct -->
+
+<!-- ❌ Wrong: Nested quotes issue -->
+{{#if Type == 'Bug'}} <!-- Use double quotes: Type == "Bug" -->
+
+<!-- ❌ Wrong: Missing spaces around operators -->
+{{#if Status=="Active"&&Priority=="High"}} <!-- Should be: Status == "Active" && Priority == "High" -->
+
+<!-- ❌ Wrong: Incorrect operator precedence (&& binds tighter than ||) -->
+{{#if A || B && C}} <!-- Same as: A || (B && C) - use parentheses if needed: (A || B) && C -->
+```
+
+### Compound Condition Examples
+
+```html
+<!-- ✅ Correct: AND operator -->
+{{#if Status == "Active" && Priority == "High"}}
+  <div>High priority active item</div>
+{{/if}}
+
+<!-- ✅ Correct: OR operator -->
+{{#if Type == "Bug" || Type == "Issue"}}
+  <div>Problem report</div>
+{{/if}}
+
+<!-- ✅ Correct: Complex logic with parentheses -->
+{{#if (Status == "Active" && Priority == "High") || Type == "Critical"}}
+  <div>Requires attention</div>
+{{/if}}
+```
 
 ## Security Considerations
 
@@ -228,14 +514,33 @@ When switching from default views to custom templates:
 
 ### Conditional Rendering
 
-Use CSS to hide/show elements based on data:
+Use conditional blocks to create adaptive templates that show different content based on data:
 
 ```html
-<div class="product-card">
-    <h4>{{Name}}</h4>
-    <p class="description {{Description ? '' : 'hidden'}}">{{Description}}</p>
-    <span class="status {{Status === 'Active' ? 'active' : 'inactive'}}">{{Status}}</span>
-</div>
+<!-- Different layouts for different entity types -->
+{{#if EntityType == "Task"}}
+  <div class="task-card">
+    <h4>📋 {{Title}}</h4>
+    {{#if Assignee}}
+      <p>Assigned to: {{Assignee}}</p>
+    {{/if}}
+    {{#if DueDate}}
+      <p class="due-date">Due: {{DueDate}}</p>
+    {{/if}}
+  </div>
+{{/if}}
+
+{{#if EntityType == "Project"}}
+  <div class="project-card">
+    <h4>📁 {{ProjectName}}</h4>
+    <div class="progress">Progress: {{Progress}}%</div>
+    {{#if Status == "Complete"}}
+      <span class="completed">✅ Complete</span>
+    {{else}}
+      <span class="in-progress">🔄 In Progress</span>
+    {{/if}}
+  </div>
+{{/if}}
 ```
 
 ### Complex Layouts
@@ -252,5 +557,18 @@ Create multi-column or grid layouts:
             <time>{{PublishDate}}</time>
         </div>
     </div>
+</div>
+```
+
+### Dynamic Styling
+
+Use conditional classes for dynamic styling:
+
+```html
+<div class="card {{#if Priority == 'High'}}urgent{{else}}normal{{/if}}">
+    <h4>{{Title}}</h4>
+    <p class="status {{#if Status == 'Active'}}active{{else}}inactive{{/if}}">
+        {{Status}}
+    </p>
 </div>
 ```

@@ -144,6 +144,8 @@ export interface AGGridContainerProps {
     height: number;
     theme: ThemeEnum;
     themeVariant: ThemeVariantEnum;
+    enablePolling: boolean;
+    pollingInterval: number;
     onRowClick?: ListActionValue;
 }
 
@@ -182,5 +184,7 @@ export interface AGGridPreviewProps {
     height: number | null;
     theme: ThemeEnum;
     themeVariant: ThemeVariantEnum;
+    enablePolling: boolean;
+    pollingInterval: number | null;
     onRowClick: {} | null;
 }

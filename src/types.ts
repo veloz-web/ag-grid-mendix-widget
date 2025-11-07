@@ -18,6 +18,8 @@ export interface AGGridState {
     columnOrder: string[];
     columnPinned: Record<string, ColumnPinnedState>;
     prefersDarkScheme: boolean;
+    hasNewData: boolean;
+    newRecordCount: number;
 }
 
 export interface PersistedGridState {

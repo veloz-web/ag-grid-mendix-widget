@@ -56,7 +56,7 @@ Column Configuration:
 ├── Name (String) → Auto → Left-aligned ✓
 ├── Age (Integer) → Auto → Right-aligned ✓
 ├── Salary (Decimal, Currency formatter) → Auto → Right-aligned ✓
-├── Status (StatusBadge formatter) → Auto → Center-aligned ✓
+├── Status (String) → Auto → Left-aligned ✓
 └── Actions (Link formatter) → Auto → Center-aligned ✓
 ```
 

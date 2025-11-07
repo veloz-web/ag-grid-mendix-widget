@@ -88,7 +88,7 @@ Each column now has additional properties:
         <column 
             header="Status"
             attribute="Status"
-            formatter="statusBadge"
+            formatter="none"
             includeInCardView="true"
             includeInFilters="true"
             statusMapping='[

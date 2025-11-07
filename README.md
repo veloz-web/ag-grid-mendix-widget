@@ -82,7 +82,7 @@ npm start
         <column 
             header="Status"
             attribute="Status"
-            formatter="statusBadge"
+            formatter="none"
             includeInCardView="true"
             includeInFilters="true"
             statusMapping='[
@@ -473,17 +473,17 @@ For optimal performance with large datasets:
 **Configure in Studio Pro:**
 ```
 Custom Formatters > + New
-    Formatter Name: statusBadge
+    Formatter Name: myCustomFormatter
     Formatter Type: JavaScript Function
-    Formatter Code: [See STATUS_BADGE_EXAMPLE.md]
-    Formatter Configuration: [JSON mapping]
+    Formatter Code: [Your custom JavaScript]
+    Formatter Configuration: [JSON configuration]
 ```
 
 **Use in Templates:**
 ```html
 <div class="card" data-status="{{Status}}">
-    {{statusBadge("Status")}}  <!-- Formatted badge -->
-    {{dateMDY("Date")}}        <!-- Built-in formatter -->
+    {{myCustomFormatter("Status")}}  <!-- Custom formatted value -->
+    {{dateMDY("Date")}}              <!-- Built-in formatter -->
 </div>
 ```
 
@@ -497,6 +497,59 @@ Custom Formatters > + New
 - **[Custom Formatters Guide](./CUSTOM_FORMATTERS_GUIDE.md)** - Complete documentation with 5 examples
 - **[Status Badge Example](./STATUS_BADGE_EXAMPLE.md)** - Quick-start migration guide
 - **[Implementation Summary](./CUSTOM_FORMATTERS_SUMMARY.md)** - Technical details
+
+## Development
+
+### Code Quality & Linting
+
+This project uses ESLint with TypeScript support for code quality. Key linting rules include:
+
+- **Unused Variables/Parameters**: Parameters prefixed with underscore (`_`) are ignored by the linter
+  - Example: `function myFunction(_unusedParam: string) { ... }`
+  - This allows keeping function signatures consistent while indicating intentionally unused parameters
+- **Formatting**: Prettier is used for consistent code formatting
+- **TypeScript**: Strict type checking with some relaxed rules for Mendix widget compatibility
+
+### Building & Testing
+
+```bash
+# Install dependencies
+npm install
+
+# Development server with hot reloading
+npm start
+
+# Build for development
+npm run build
+
+# Build for production/release
+npm run release
+
+# Run tests
+npm test
+
+# Lint code
+npm run lint
+
+# Format code
+npm run format
+```
+
+### Project Structure
+
+```
+src/
+├── components/          # React components
+│   ├── GridView.tsx    # AG Grid integration
+│   ├── CardView.tsx    # Mobile card layout
+│   ├── FilterDrawer.tsx # Filter panel
+│   └── CustomTemplateView.tsx # Custom HTML templates
+├── utils/              # Utility functions
+│   ├── formatters.ts   # Value formatting
+│   ├── renderers.ts    # Cell renderers
+│   └── customFormatters.ts # Runtime formatter compilation
+└── types.ts           # TypeScript interfaces
+```
 
 ## Feature Roadmap
 
