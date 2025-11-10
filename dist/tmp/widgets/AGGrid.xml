@@ -377,6 +377,28 @@
                 <description>How often to check for new data (in seconds). Minimum 10 seconds.</description>
             </property>
         </propertyGroup>
+        <propertyGroup caption="Notifications">
+            <property key="enableNotifications" type="boolean" defaultValue="false">
+                <caption>Enable Notifications</caption>
+                <description>Show toast notifications when new data is detected by polling</description>
+            </property>
+            <property key="toastPosition" type="enumeration" defaultValue="topRight">
+                <caption>Toast Position</caption>
+                <description>Where to display toast notifications on screen</description>
+                <enumerationValues>
+                    <enumerationValue key="topLeft">Top Left</enumerationValue>
+                    <enumerationValue key="topCenter">Top Center</enumerationValue>
+                    <enumerationValue key="topRight">Top Right</enumerationValue>
+                    <enumerationValue key="bottomLeft">Bottom Left</enumerationValue>
+                    <enumerationValue key="bottomCenter">Bottom Center</enumerationValue>
+                    <enumerationValue key="bottomRight">Bottom Right</enumerationValue>
+                </enumerationValues>
+            </property>
+            <property key="autoHideDuration" type="integer" defaultValue="5000">
+                <caption>Auto Hide Duration (ms)</caption>
+                <description>How long to show notifications before auto-hiding. Set to 0 to require manual dismissal.</description>
+            </property>
+        </propertyGroup>
         <propertyGroup caption="Events">
             <property key="onRowClick" type="action" dataSource="dataSource">
                 <caption>On Row Click</caption>

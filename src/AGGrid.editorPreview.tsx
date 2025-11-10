@@ -18,7 +18,10 @@ export function preview(props: AGGridPreviewProps): ReactElement {
         enableFloatingFilters,
         customCardTemplate,
         customListTemplate,
-        customFormatters
+        customFormatters,
+        enablePolling,
+        pollingInterval,
+        enableNotifications
     } = props;
 
     const themeClass = `ag-theme-${theme}`;
@@ -477,6 +480,90 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                     )}
                 </div>
             )}
+
+            {/* Polling & Notifications Status */}
+            {(enablePolling || enableNotifications) && (
+                <div
+                    style={{
+                        marginTop: "8px",
+                        padding: "8px 12px",
+                        backgroundColor: "#f3e5f5",
+                        border: "1px solid #ba68c8",
+                        borderRadius: "4px",
+                        fontSize: "12px",
+                        color: "#6a1b9a"
+                    }}
+                >
+                    <strong>Real-time Data Updates:</strong>
+                    <div
+                        style={{
+                            marginTop: "6px",
+                            display: "flex",
+                            gap: "16px",
+                            flexWrap: "wrap"
+                        }}
+                    >
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                            <i
+                                className="fas fa-sync-alt"
+                                style={{
+                                    fontSize: "14px",
+                                    color: enablePolling ? "#7b1fa2" : "#999"
+                                }}
+                            ></i>
+                            <strong>Polling:</strong>
+                            <span style={{ color: enablePolling ? "#7b1fa2" : "#999" }}>
+                                {enablePolling ? (
+                                    <>
+                                        ✓ ON (every{" "}
+                                        {pollingInterval ? `${pollingInterval / 1000}s` : "5s"})
+                                    </>
+                                ) : (
+                                    "✗ OFF"
+                                )}
+                            </span>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                            <i
+                                className="fas fa-bell"
+                                style={{
+                                    fontSize: "14px",
+                                    color: enableNotifications ? "#7b1fa2" : "#999"
+                                }}
+                            ></i>
+                            <strong>Notifications:</strong>
+                            <span style={{ color: enableNotifications ? "#7b1fa2" : "#999" }}>
+                                {enableNotifications ? "✓ ON" : "✗ OFF"}
+                            </span>
+                        </div>
+                    </div>
+                    {enablePolling && !enableNotifications && (
+                        <div
+                            style={{
+                                marginTop: "8px",
+                                fontStyle: "italic",
+                                fontSize: "11px",
+                                color: "#6a1b9a"
+                            }}
+                        >
+                            💡 Tip: Enable &quot;Notifications&quot; to show toast alerts when new
+                            data is detected
+                        </div>
+                    )}
+                    {!enablePolling && enableNotifications && (
+                        <div
+                            style={{
+                                marginTop: "8px",
+                                fontStyle: "italic",
+                                fontSize: "11px",
+                                color: "#ff6f00"
+                            }}
+                        >
+                            ⚠️ Warning: Notifications require polling to be enabled
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 }
@@ -519,6 +606,19 @@ export function getPreviewCss(): string {
         
         .aggrid-preview .fa-sliders-h {
             color: #1976d2;
+        }
+        
+        .aggrid-preview-container .fa-sync-alt,
+        .aggrid-preview-container .fa-bell {
+            transition: transform 0.2s ease;
+        }
+        
+        .aggrid-preview-container .fa-sync-alt:hover {
+            transform: rotate(180deg);
+        }
+        
+        .aggrid-preview-container .fa-bell:hover {
+            transform: scale(1.1);
         }
     `;
 }

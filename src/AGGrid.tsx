@@ -44,6 +44,12 @@ import {
     getFilteredData
 } from "./utils/data";
 import { getGridSortModel, applyGridSortModel, applyFiltersToGrid } from "./utils/gridApi";
+import {
+    shouldShowNotification,
+    calculateCumulativeChange,
+    formatCumulativeMessage,
+    normalizePollingInterval
+} from "./utils/polling";
 
 // Import base styles
 import "./ui/AGGrid.css";
@@ -57,10 +63,13 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
     private prefersDarkMediaQuery: MediaQueryList | null = null;
     private readonly storageKey: string;
     private readonly shouldPersist: boolean;
-    private persistedState: PersistedGridState | null = null;
     private customFormatterRegistry: CustomFormatterRegistry = new CustomFormatterRegistry();
     private pollInterval: NodeJS.Timeout | null = null;
-    private lastKnownDataCount: number = 0;
+    private lastKnownDataCount = 0;
+    private isPollingReload = false;
+    private cumulativeChangeCount = 0;
+    private baselineCountForNotification = 0;
+    private toastTimers: Map<string, NodeJS.Timeout> = new Map();
 
     constructor(props: AGGridContainerProps) {
         super(props);
@@ -109,39 +118,26 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
             columnOrder: initialColumnOrder,
             columnPinned: initialColumnPinned,
             prefersDarkScheme: prefersDark,
-            hasNewData: false,
-            newRecordCount: 0
+            toastNotifications: []
         };
-
-        this.persistedState = this.shouldPersist
-            ? {
-                  viewMode: initialView,
-                  activeFilters: initialFilters,
-                  globalSearch: initialSearch,
-                  sortModel: initialSort,
-                  columnVisibility: initialColumnVisibility,
-                  columnOrder: initialColumnOrder,
-                  columnPinned: initialColumnPinned
-              }
-            : null;
     }
 
     handleVisibilityChange = () => {
         if (!document.hidden && this.props.enablePolling) {
             this.checkForNewData();
         }
-    }
+    };
 
     startPolling() {
         if (!this.props.enablePolling) {
-            console.log('[AGGrid Polling] Not starting - polling disabled');
+            console.log("[AGGrid Polling] Not starting - polling disabled");
             return;
         }
 
         this.stopPolling(); // Clear any existing interval
 
-        const intervalMs = Math.max(this.props.pollingInterval * 1000, 10000); // Minimum 10 seconds
-        console.log('[AGGrid Polling] ✓ Starting polling', {
+        const intervalMs = normalizePollingInterval(this.props.pollingInterval);
+        console.log("[AGGrid Polling] ✓ Starting polling", {
             intervalSeconds: this.props.pollingInterval,
             intervalMs: intervalMs,
             minInterval: 10000
@@ -154,88 +150,214 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
 
     stopPolling() {
         if (this.pollInterval) {
-            console.log('[AGGrid Polling] Stopping polling');
+            console.log("[AGGrid Polling] Stopping polling");
             clearInterval(this.pollInterval);
         }
     }
 
     async checkForNewData() {
-        console.log('[AGGrid Polling] Check triggered', {
+        console.log("[AGGrid Polling] Check triggered", {
             enablePolling: this.props.enablePolling,
-            hasGridApi: !!this.gridApi,
-            hasNewData: this.state.hasNewData,
             lastKnownCount: this.lastKnownDataCount
         });
 
         if (!this.props.enablePolling) {
-            console.log('[AGGrid Polling] Polling disabled in props');
-            return;
-        }
-
-        // Don't check if we already have a pending notification
-        if (this.state.hasNewData) {
-            console.log('[AGGrid Polling] Skipping - notification already shown');
+            console.log("[AGGrid Polling] Polling disabled in props");
             return;
         }
 
         try {
-            // CRITICAL FIX: Force Mendix to reload the datasource before checking count
+            // Force Mendix to reload the datasource before checking count
             const datasource = this.props.dataSource;
-            
-            console.log('[AGGrid Polling] Datasource status before reload:', datasource.status);
-            
+
+            console.log("[AGGrid Polling] Datasource status before reload:", datasource.status);
+
+            // Set flag to ignore componentDidUpdate during polling reload
+            this.isPollingReload = true;
+
             // Request a reload of the datasource if it has a reload method
-            if (datasource && typeof (datasource as any).reload === 'function') {
-                console.log('[AGGrid Polling] Calling datasource.reload()...');
+            if (datasource && typeof (datasource as any).reload === "function") {
+                console.log("[AGGrid Polling] Calling datasource.reload()...");
                 await (datasource as any).reload();
-                console.log('[AGGrid Polling] Datasource reloaded');
+                console.log("[AGGrid Polling] Datasource reloaded");
             } else {
-                console.log('[AGGrid Polling] ⚠️ Datasource has no reload method, data may be cached');
+                console.log(
+                    "[AGGrid Polling] ⚠️ Datasource has no reload method, data may be cached"
+                );
             }
+
+            // Clear flag after reload completes
+            this.isPollingReload = false;
 
             // Get current data from the datasource (now refreshed)
             const currentData = getRowData(this.props.dataSource);
             const currentCount = currentData.length;
 
-            console.log('[AGGrid Polling] Data check', {
+            console.log("[AGGrid Polling] Data check", {
                 currentCount,
                 lastKnownCount: this.lastKnownDataCount,
                 dataSourceStatus: this.props.dataSource.status
             });
 
-            // Check if the count has changed
-            if (currentCount !== this.lastKnownDataCount) {
-                const difference = currentCount - this.lastKnownDataCount;
+            // Use utility function to determine if notification should be shown
+            const decision = shouldShowNotification(
+                currentCount,
+                this.lastKnownDataCount,
+                this.props.enableNotifications || false
+            );
 
-                console.log('[AGGrid Polling] 🔔 CHANGE DETECTED!', {
-                    oldCount: this.lastKnownDataCount,
-                    newCount: currentCount,
-                    difference: difference
-                });
+            console.log("[AGGrid Polling] Notification decision:", {
+                shouldShow: decision.shouldShow,
+                delta: decision.delta,
+                enableNotifications: this.props.enableNotifications,
+                autoHideDuration: this.props.autoHideDuration,
+                toastPosition: this.props.toastPosition
+            });
 
-                // Show notification banner
-                this.setState({
-                    hasNewData: true,
-                    newRecordCount: Math.abs(difference)
-                });
-
-                // Update baseline count
-                this.lastKnownDataCount = currentCount;
-
-                // Auto-dismiss notification after 5 seconds
-                setTimeout(() => {
-                    this.setState({ hasNewData: false });
-                }, 5000);
-            } else {
-                console.log('[AGGrid Polling] No change detected');
+            if (!decision.shouldShow) {
+                if (decision.delta === 0 && this.lastKnownDataCount > 0) {
+                    console.log("[AGGrid Polling] No change detected");
+                } else if (this.lastKnownDataCount === 0) {
+                    console.log("[AGGrid Polling] Baseline not yet set, ignoring");
+                }
+                return;
             }
+
+            // Change detected!
+            console.log("[AGGrid Polling] 🔔 CHANGE DETECTED!", {
+                oldCount: this.lastKnownDataCount,
+                newCount: currentCount,
+                difference: decision.delta
+            });
+
+            // Calculate cumulative change using utility function
+            const hasExistingNotification = this.state.toastNotifications.some(
+                (t) => t.id === "polling-notification"
+            );
+
+            if (!hasExistingNotification) {
+                // First notification - set baseline
+                this.baselineCountForNotification = this.lastKnownDataCount;
+            }
+
+            this.cumulativeChangeCount = calculateCumulativeChange(
+                decision.delta,
+                this.cumulativeChangeCount,
+                hasExistingNotification
+            );
+
+            // Format message using utility function
+            const message = formatCumulativeMessage(this.cumulativeChangeCount);
+            const type = this.cumulativeChangeCount > 0 ? "success" : "info";
+
+            // Show/update toast notification
+            this.showToast(message, type, "polling-notification");
+
+            // Update baseline count
+            this.lastKnownDataCount = currentCount;
         } catch (error) {
             console.error("[AGGrid] Error checking for new data:", error);
         }
     }
 
+    private showToast = (
+        message: string,
+        type: "info" | "success" | "warning" | "error" = "info",
+        toastKey?: string
+    ) => {
+        const duration = this.props.autoHideDuration ?? 5000; // Use nullish coalescing - default 5000ms if null/undefined
+
+        // If a key is provided, check if a toast with this key already exists
+        if (toastKey) {
+            const existingToast = this.state.toastNotifications.find((t) => t.id === toastKey);
+
+            if (existingToast) {
+                // Update existing toast message and reset timer
+                this.setState((prevState) => ({
+                    toastNotifications: prevState.toastNotifications.map((t) =>
+                        t.id === toastKey ? { ...t, message, type } : t
+                    )
+                }));
+
+                // Clear existing timer and set new one
+                const existingTimer = this.toastTimers.get(toastKey);
+                if (existingTimer) {
+                    clearTimeout(existingTimer);
+                }
+
+                if (duration > 0) {
+                    const timer = setTimeout(() => {
+                        this.dismissToast(toastKey);
+                        this.toastTimers.delete(toastKey);
+                    }, duration);
+                    this.toastTimers.set(toastKey, timer);
+                }
+
+                return;
+            }
+        }
+
+        // Create new toast
+        const toastId = toastKey || `toast-${Date.now()}-${Math.random()}`;
+        const newToast = {
+            id: toastId,
+            message,
+            type,
+            duration
+        };
+
+        console.log("[AGGrid Toast] Creating new toast:", {
+            id: toastId,
+            message,
+            type,
+            duration,
+            enableNotifications: this.props.enableNotifications,
+            toastPosition: this.props.toastPosition
+        });
+
+        this.setState(
+            (prevState) => ({
+                toastNotifications: [...prevState.toastNotifications, newToast]
+            }),
+            () => {
+                console.log(
+                    "[AGGrid Toast] State updated, total toasts:",
+                    this.state.toastNotifications.length
+                );
+            }
+        );
+
+        // Auto-dismiss if duration > 0
+        if (duration > 0) {
+            const timer = setTimeout(() => {
+                this.dismissToast(toastId);
+                this.toastTimers.delete(toastId);
+            }, duration);
+            this.toastTimers.set(toastId, timer);
+        }
+    };
+
+    private dismissToast = (toastId: string) => {
+        // Clear any pending timer
+        const timer = this.toastTimers.get(toastId);
+        if (timer) {
+            clearTimeout(timer);
+            this.toastTimers.delete(toastId);
+        }
+
+        // Reset cumulative count when polling notification is dismissed
+        if (toastId === "polling-notification") {
+            this.cumulativeChangeCount = 0;
+            this.baselineCountForNotification = this.lastKnownDataCount;
+        }
+
+        this.setState((prevState) => ({
+            toastNotifications: prevState.toastNotifications.filter((t) => t.id !== toastId)
+        }));
+    };
+
     componentDidMount() {
-        console.log('[AGGrid] Component mounted', {
+        console.log("[AGGrid] Component mounted", {
             enablePolling: this.props.enablePolling,
             pollingInterval: this.props.pollingInterval
         });
@@ -243,7 +365,7 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
         // Initialize baseline count immediately to prevent false "new records" notification
         const initialData = getRowData(this.props.dataSource);
         this.lastKnownDataCount = initialData.length;
-        console.log('[AGGrid] Initialized baseline count on mount:', this.lastKnownDataCount);
+        console.log("[AGGrid] Initialized baseline count on mount:", this.lastKnownDataCount);
 
         window.addEventListener("resize", this.handleResize);
         if (typeof window !== "undefined" && window.matchMedia) {
@@ -260,40 +382,44 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
 
         // Regular polling (less frequent)
         this.startPolling();
-        
+
         // Check immediately when user returns
-        document.addEventListener('visibilitychange', this.handleVisibilityChange);
-        
+        document.addEventListener("visibilitychange", this.handleVisibilityChange);
+
         // Optional: Check when grid gains focus
-        this.gridRef.current?.addEventListener('focus', this.checkForNewData);
+        this.gridRef.current?.addEventListener("focus", this.checkForNewData);
     }
 
     componentDidUpdate(prevProps: AGGridContainerProps) {
-        // Update baseline count when datasource changes (Mendix refresh)
-        // but DON'T show notification - only polling should trigger notifications
+        // Log datasource changes but don't interfere with polling logic
         if (this.props.dataSource !== prevProps.dataSource) {
             const newData = getRowData(this.props.dataSource);
-            const newCount = newData.length;
-            
-            console.log('[AGGrid] Datasource updated by Mendix', {
+            console.log("[AGGrid] Datasource updated by Mendix", {
                 oldStatus: prevProps.dataSource?.status,
                 newStatus: this.props.dataSource?.status,
-                newCount: newCount,
-                lastKnownCount: this.lastKnownDataCount
+                newCount: newData.length,
+                lastKnownCount: this.lastKnownDataCount,
+                isPollingReload: this.isPollingReload
             });
 
-            // Silently update baseline - let polling handle notifications
-            this.lastKnownDataCount = newCount;
-            console.log('[AGGrid] Updated baseline count (silent):', newCount);
+            // If this is NOT a polling reload, update baseline to prevent false notifications
+            if (!this.isPollingReload) {
+                console.log("[AGGrid] External datasource change - updating baseline");
+                this.lastKnownDataCount = newData.length;
+            } else {
+                console.log(
+                    "[AGGrid] Polling reload - baseline will be updated by checkForNewData()"
+                );
+            }
         }
 
         // Restart polling if the setting changed
         if (this.props.enablePolling !== prevProps.enablePolling) {
             if (this.props.enablePolling) {
-                console.log('[AGGrid] Polling enabled via props change');
+                console.log("[AGGrid] Polling enabled via props change");
                 this.startPolling();
             } else {
-                console.log('[AGGrid] Polling disabled via props change');
+                console.log("[AGGrid] Polling disabled via props change");
                 this.stopPolling();
             }
         }
@@ -311,13 +437,17 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
                 this.prefersDarkMediaQuery.removeListener(this.handlePrefersColorSchemeChange);
             }
         }
-        
+
         // Clean up polling
         this.stopPolling();
-        document.removeEventListener('visibilitychange', this.handleVisibilityChange);
+        document.removeEventListener("visibilitychange", this.handleVisibilityChange);
         if (this.gridRef.current) {
-            this.gridRef.current.removeEventListener('focus', this.checkForNewData);
+            this.gridRef.current.removeEventListener("focus", this.checkForNewData);
         }
+
+        // Clean up all toast timers
+        this.toastTimers.forEach((timer) => clearTimeout(timer));
+        this.toastTimers.clear();
     }
 
     // --- Responsive & View Handlers ---
@@ -829,8 +959,6 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
         if (!this.shouldPersist || typeof window === "undefined") {
             return;
         }
-        // ... (rest of your save logic)
-        // This is fine as-is.
         const nextState: PersistedGridState = {
             viewMode: partial.viewMode ?? this.state.currentView,
             activeFilters: { ...(partial.activeFilters ?? this.state.activeFilters) },
@@ -840,7 +968,6 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
             columnOrder: [...(partial.columnOrder ?? this.state.columnOrder)],
             columnPinned: { ...(partial.columnPinned ?? this.state.columnPinned) }
         };
-        this.persistedState = nextState;
         try {
             window.localStorage.setItem(this.storageKey, JSON.stringify(nextState));
         } catch {
@@ -881,7 +1008,6 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
             }
         );
 
-        this.persistedState = null;
         this.isApplyingFiltersProgrammatically = true;
         applyFiltersToGrid(this.gridApi, defaultFilters, defaultSearch); // Use util
         this.applyGridSortModel(defaultSort);
@@ -1075,25 +1201,49 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
             ).length;
             const activeFilterCount = columnFilterCount + (globalSearch ? 1 : 0);
 
+            // Debug toast rendering
+            if (this.state.toastNotifications.length > 0) {
+                console.log("[AGGrid Render] Toast container should be visible:", {
+                    toastCount: this.state.toastNotifications.length,
+                    toasts: this.state.toastNotifications,
+                    position: this.props.toastPosition || "topRight"
+                });
+            }
+
             return (
                 <div className="aggrid-container">
-                    {/* Polling notification banner */}
-                    {this.state.hasNewData && (
-                        <div className="aggrid-refresh-banner">
-                            <div className="aggrid-refresh-banner-content">
-                                <i className="glyphicon glyphicon-ok-circle"></i>
-                                <span className="aggrid-refresh-banner-message">
-                                    {this.state.newRecordCount} new record{this.state.newRecordCount !== 1 ? 's' : ''} loaded
-                                </span>
-                                <button 
-                                    className="btn btn-link btn-sm"
-                                    onClick={() => this.setState({ hasNewData: false })}
-                                    title="Dismiss this notification"
-                                    style={{ marginLeft: 'auto' }}
-                                >
-                                    <i className="glyphicon glyphicon-remove"></i>
-                                </button>
-                            </div>
+                    {/* Toast Notifications */}
+                    {this.state.toastNotifications.length > 0 && (
+                        <div
+                            className={`aggrid-toast-container ${
+                                this.props.toastPosition || "topRight"
+                            }`}
+                        >
+                            {this.state.toastNotifications.map((toast) => (
+                                <div key={toast.id} className={`aggrid-toast toast-${toast.type}`}>
+                                    <i
+                                        className={`aggrid-toast-icon glyphicon ${
+                                            toast.type === "success"
+                                                ? "glyphicon-ok-circle"
+                                                : toast.type === "error"
+                                                ? "glyphicon-remove-circle"
+                                                : toast.type === "warning"
+                                                ? "glyphicon-warning-sign"
+                                                : "glyphicon-info-sign"
+                                        }`}
+                                    ></i>
+                                    <div className="aggrid-toast-content">
+                                        <div className="aggrid-toast-message">{toast.message}</div>
+                                    </div>
+                                    <button
+                                        className="aggrid-toast-close"
+                                        onClick={() => this.dismissToast(toast.id)}
+                                        title="Dismiss"
+                                    >
+                                        <i className="glyphicon glyphicon-remove"></i>
+                                    </button>
+                                </div>
+                            ))}
                         </div>
                     )}
 
@@ -1191,7 +1341,7 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
             return (
                 <div className="aggrid-container" style={{ padding: "20px" }}>
                     <div
-                        ref={this.gridRef} 
+                        ref={this.gridRef}
                         style={{
                             backgroundColor: "#ffebee",
                             border: "1px solid #f44336",

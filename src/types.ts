@@ -6,6 +6,15 @@ export type ViewMode = "grid" | "cards" | "list" | "harden";
 
 export type ColumnPinnedState = "none" | "left" | "right";
 
+export type ToastType = "info" | "success" | "warning" | "error";
+
+export interface ToastNotification {
+    id: string;
+    message: string;
+    type: ToastType;
+    duration?: number;
+}
+
 export interface AGGridState {
     currentView: ViewMode;
     isFilterDrawerOpen: boolean;
@@ -18,8 +27,7 @@ export interface AGGridState {
     columnOrder: string[];
     columnPinned: Record<string, ColumnPinnedState>;
     prefersDarkScheme: boolean;
-    hasNewData: boolean;
-    newRecordCount: number;
+    toastNotifications: ToastNotification[];
 }
 
 export interface PersistedGridState {

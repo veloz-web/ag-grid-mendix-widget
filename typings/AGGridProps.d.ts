@@ -19,7 +19,29 @@ export type DefaultSortEnum = "none" | "asc" | "desc";
 
 export type FilterLocationEnum = "none" | "drawer" | "toolbar";
 
-export type FormatterEnum = "none" | "currency" | "currencyEUR" | "currencyGBP" | "percentage" | "number" | "decimal2" | "dateShort" | "dateLong" | "dateISO" | "dateDMY" | "dateMDY" | "dateYMD" | "dateTime" | "time" | "yesNo" | "trueFalse" | "uppercase" | "lowercase" | "capitalize" | "customPrefix" | "link";
+export type FormatterEnum =
+    | "none"
+    | "currency"
+    | "currencyEUR"
+    | "currencyGBP"
+    | "percentage"
+    | "number"
+    | "decimal2"
+    | "dateShort"
+    | "dateLong"
+    | "dateISO"
+    | "dateDMY"
+    | "dateMDY"
+    | "dateYMD"
+    | "dateTime"
+    | "time"
+    | "yesNo"
+    | "trueFalse"
+    | "uppercase"
+    | "lowercase"
+    | "capitalize"
+    | "customPrefix"
+    | "link";
 
 export interface ColumnsType {
     header: DynamicValue<string>;
@@ -72,6 +94,14 @@ export interface CustomFormattersType {
 export type ThemeEnum = "alpine" | "balham" | "material" | "quartz";
 
 export type ThemeVariantEnum = "auto" | "light" | "dark";
+
+export type ToastPositionEnum =
+    | "topLeft"
+    | "topCenter"
+    | "topRight"
+    | "bottomLeft"
+    | "bottomCenter"
+    | "bottomRight";
 
 export interface ColumnsPreviewType {
     header: string;
@@ -146,6 +176,9 @@ export interface AGGridContainerProps {
     themeVariant: ThemeVariantEnum;
     enablePolling: boolean;
     pollingInterval: number;
+    enableNotifications: boolean;
+    toastPosition: ToastPositionEnum;
+    autoHideDuration: number;
     onRowClick?: ListActionValue;
 }
 
@@ -186,5 +219,8 @@ export interface AGGridPreviewProps {
     themeVariant: ThemeVariantEnum;
     enablePolling: boolean;
     pollingInterval: number | null;
+    enableNotifications: boolean;
+    toastPosition: ToastPositionEnum;
+    autoHideDuration: number | null;
     onRowClick: {} | null;
 }

@@ -1677,4 +1677,158 @@
     }
 }
 
+/* Toast Notification Styles */
+.aggrid-toast-container {
+    position: fixed;
+    z-index: 9999;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+}
+
+.aggrid-toast-container.topLeft {
+    top: 0;
+    left: 0;
+}
+
+.aggrid-toast-container.topCenter {
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.aggrid-toast-container.topRight {
+    top: 0;
+    right: 0;
+}
+
+.aggrid-toast-container.bottomLeft {
+    bottom: 0;
+    left: 0;
+}
+
+.aggrid-toast-container.bottomCenter {
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.aggrid-toast-container.bottomRight {
+    bottom: 0;
+    right: 0;
+}
+
+.aggrid-toast {
+    pointer-events: auto;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 300px;
+    max-width: 500px;
+    animation: toastSlideIn 0.3s ease-out;
+    border-left: 4px solid #4caf50;
+}
+
+.aggrid-toast.toast-info {
+    border-left-color: #2196f3;
+}
+
+.aggrid-toast.toast-success {
+    border-left-color: #4caf50;
+}
+
+.aggrid-toast.toast-warning {
+    border-left-color: #ff9800;
+}
+
+.aggrid-toast.toast-error {
+    border-left-color: #f44336;
+}
+
+.aggrid-toast-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.aggrid-toast.toast-info .aggrid-toast-icon {
+    color: #2196f3;
+}
+
+.aggrid-toast.toast-success .aggrid-toast-icon {
+    color: #4caf50;
+}
+
+.aggrid-toast.toast-warning .aggrid-toast-icon {
+    color: #ff9800;
+}
+
+.aggrid-toast.toast-error .aggrid-toast-icon {
+    color: #f44336;
+}
+
+.aggrid-toast-content {
+    flex: 1;
+}
+
+.aggrid-toast-message {
+    font-size: 14px;
+    color: #333;
+    line-height: 1.4;
+}
+
+.aggrid-toast-close {
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    padding: 4px;
+    line-height: 1;
+    font-size: 18px;
+    flex-shrink: 0;
+    transition: color 0.2s;
+}
+
+.aggrid-toast-close:hover {
+    color: #333;
+}
+
+@keyframes toastSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.aggrid-toast.toast-exit {
+    animation: toastSlideOut 0.3s ease-out forwards;
+}
+
+@keyframes toastSlideOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+}
+
+@media (max-width: 768px) {
+    .aggrid-toast {
+        min-width: 280px;
+        max-width: calc(100vw - 32px);
+    }
+}
+
 
