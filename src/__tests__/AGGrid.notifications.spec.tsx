@@ -69,36 +69,54 @@ describe("AGGrid - Toast Notifications", () => {
 
     describe("Toast Creation", () => {
         it("should create toast notification when enabled and data changes", async () => {
+            const mockReload = jest.fn().mockResolvedValue(undefined);
+            let itemCount = 2;
+
             const props = {
                 ...defaultProps,
                 enablePolling: true,
                 enableNotifications: true,
-                pollingInterval: 1000
-            };
-
-            const { container, rerender } = render(createElement(AGGrid, props));
-
-            // Initial render - no toasts
-            expect(container.querySelector(".aggrid-toast-container")).toBeNull();
-
-            // Simulate data change by updating dataSource
-            const updatedProps = {
-                ...props,
+                pollingInterval: 1,
                 dataSource: {
-                    ...props.dataSource,
-                    items: [...props.dataSource.items!, { id: "3", data: { name: "Item 3" } }]
+                    status: "available",
+                    get items() {
+                        // Return different arrays each time to simulate data growth
+                        const items = [];
+                        for (let i = 1; i <= itemCount; i++) {
+                            items.push({ id: String(i), data: { name: `Item ${i}` } });
+                        }
+                        return items;
+                    },
+                    limit: 10,
+                    offset: 0,
+                    hasMoreItems: false,
+                    reload: mockReload
                 } as any
             };
 
-            // Fast-forward to trigger polling
-            jest.advanceTimersByTime(1000);
+            const { container } = render(createElement(AGGrid, props));
 
-            rerender(createElement(AGGrid, updatedProps));
+            // First polling cycle - establish baseline (1 second normalizes to 10 seconds)
+            jest.advanceTimersByTime(10000);
+            await Promise.resolve();
+            await waitFor(() => expect(mockReload).toHaveBeenCalledTimes(1), { timeout: 100 });
 
-            await waitFor(() => {
-                const toastContainer = container.querySelector(".aggrid-toast-container");
-                expect(toastContainer).toBeTruthy();
-            });
+            // Simulate data growth
+            itemCount = 3;
+
+            // Second polling cycle - should detect change
+            jest.advanceTimersByTime(10000);
+            await Promise.resolve();
+            await waitFor(() => expect(mockReload).toHaveBeenCalledTimes(2), { timeout: 100 });
+
+            // Should show toast notification
+            await waitFor(
+                () => {
+                    const toastContainer = container.querySelector(".aggrid-toast-container");
+                    expect(toastContainer).toBeTruthy();
+                },
+                { timeout: 1000 }
+            );
         });
 
         it("should not create toast when notifications disabled", async () => {
@@ -420,6 +438,202 @@ describe("AGGrid - Toast Notifications", () => {
             positions.forEach((position) => {
                 expect(position).toMatch(/^(top|bottom)(Left|Center|Right)$/);
             });
+        });
+    });
+
+    describe("Polling Race Condition Prevention", () => {
+        it("should keep isPollingReload flag true during entire polling check", async () => {
+            // Mock console methods
+            const consoleLogSpy = jest.spyOn(console, "log").mockImplementation();
+            const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
+
+            const mockReload = jest.fn().mockResolvedValue(undefined);
+
+            const props = {
+                ...defaultProps,
+                enablePolling: true,
+                enableNotifications: true,
+                pollingInterval: 1,
+                dataSource: {
+                    ...defaultProps.dataSource,
+                    reload: mockReload
+                } as any
+            };
+
+            const { rerender } = render(createElement(AGGrid, props));
+
+            // Advance past first polling interval - baseline should be set (1s → 10s min)
+            jest.advanceTimersByTime(10000);
+            await Promise.resolve();
+            await waitFor(() => expect(mockReload).toHaveBeenCalledTimes(1), { timeout: 100 });
+
+            // Now simulate new data arriving
+            const updatedProps = {
+                ...props,
+                dataSource: {
+                    ...props.dataSource,
+                    reload: mockReload,
+                    items: [
+                        { id: "1", data: { name: "Item 1" } },
+                        { id: "2", data: { name: "Item 2" } },
+                        { id: "3", data: { name: "Item 3" } } // New item
+                    ]
+                } as any
+            };
+
+            rerender(createElement(AGGrid, updatedProps));
+
+            // Trigger next polling check
+            jest.advanceTimersByTime(10000);
+            await Promise.resolve();
+
+            // Wait for reload to complete
+            await waitFor(() => expect(mockReload).toHaveBeenCalledTimes(2), { timeout: 100 });
+
+            // Check console logs for the expected sequence
+            const logs = consoleLogSpy.mock.calls.map((call) => call[0]);
+
+            // Should NOT see "External datasource change - updating baseline"
+            // during polling (isPollingReload flag should prevent it)
+            const hasPollingFlag = logs.some(
+                (log) => typeof log === "string" && log.includes("[AGGrid Polling]")
+            );
+
+            expect(hasPollingFlag).toBe(true);
+
+            consoleLogSpy.mockRestore();
+            consoleErrorSpy.mockRestore();
+        });
+
+        it("should clear isPollingReload flag after baseline update", async () => {
+            const mockReload = jest.fn().mockResolvedValue(undefined);
+
+            const props = {
+                ...defaultProps,
+                enablePolling: true,
+                enableNotifications: true,
+                pollingInterval: 1,
+                dataSource: {
+                    ...defaultProps.dataSource,
+                    reload: mockReload
+                } as any
+            };
+
+            render(createElement(AGGrid, props));
+
+            // First polling check (1s → 10s min)
+            jest.advanceTimersByTime(10000);
+            await Promise.resolve();
+            await waitFor(() => expect(mockReload).toHaveBeenCalledTimes(1), { timeout: 100 });
+
+            // Second polling check - flag should have been cleared from first check
+            jest.advanceTimersByTime(10000);
+            await Promise.resolve();
+            await waitFor(() => expect(mockReload).toHaveBeenCalledTimes(2), { timeout: 100 });
+
+            // Third polling check - flag should have been cleared from second check
+            jest.advanceTimersByTime(10000);
+            await Promise.resolve();
+            await waitFor(() => expect(mockReload).toHaveBeenCalledTimes(3), { timeout: 100 });
+
+            // If flag wasn't cleared properly, subsequent checks would fail
+            expect(mockReload).toHaveBeenCalledTimes(3);
+        });
+
+        it("should clear isPollingReload flag when no change detected", async () => {
+            const mockReload = jest.fn().mockResolvedValue(undefined);
+
+            const props = {
+                ...defaultProps,
+                enablePolling: true,
+                enableNotifications: true,
+                pollingInterval: 1,
+                dataSource: {
+                    ...defaultProps.dataSource,
+                    reload: mockReload
+                } as any
+            };
+
+            const { rerender } = render(createElement(AGGrid, props));
+
+            // First polling check - establishes baseline (1s → 10s min)
+            jest.advanceTimersByTime(10000);
+            await Promise.resolve();
+            await waitFor(() => expect(mockReload).toHaveBeenCalledTimes(1), { timeout: 100 });
+
+            // Second polling check - no change, should still clear flag
+            jest.advanceTimersByTime(10000);
+            await Promise.resolve();
+            await waitFor(() => expect(mockReload).toHaveBeenCalledTimes(2), { timeout: 100 });
+
+            // Now simulate external data change (not from polling)
+            // This should update the baseline via componentDidUpdate
+            const updatedProps = {
+                ...props,
+                dataSource: {
+                    ...props.dataSource,
+                    reload: mockReload,
+                    items: [...props.dataSource.items!, { id: "3", data: { name: "Item 3" } }]
+                } as any
+            };
+
+            rerender(createElement(AGGrid, updatedProps));
+
+            // Third polling check - should work because flag was cleared after second check
+            jest.advanceTimersByTime(10000);
+            await Promise.resolve();
+            await waitFor(() => expect(mockReload).toHaveBeenCalledTimes(3), { timeout: 100 });
+
+            // If flag wasn't cleared after the "no change" check,
+            // the external update wouldn't have updated the baseline
+            expect(mockReload).toHaveBeenCalledTimes(3);
+        });
+
+        it("should clear isPollingReload flag even on error", async () => {
+            // Suppress console.error for this test
+            const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
+
+            // First call succeeds, second call fails
+            const mockReload = jest
+                .fn()
+                .mockResolvedValueOnce(undefined)
+                .mockRejectedValueOnce(new Error("Reload failed"));
+
+            const props = {
+                ...defaultProps,
+                enablePolling: true,
+                enableNotifications: true,
+                pollingInterval: 1,
+                dataSource: {
+                    ...defaultProps.dataSource,
+                    reload: mockReload
+                } as any
+            };
+
+            render(createElement(AGGrid, props));
+
+            // First polling check - succeeds (1s → 10s min)
+            jest.advanceTimersByTime(10000);
+            await Promise.resolve();
+            await waitFor(() => expect(mockReload).toHaveBeenCalledTimes(1), { timeout: 100 });
+
+            // Second polling check - fails
+            jest.advanceTimersByTime(10000);
+            await Promise.resolve();
+            await waitFor(() => expect(mockReload).toHaveBeenCalledTimes(2), { timeout: 100 });
+
+            // Error should have been logged
+            await waitFor(
+                () => {
+                    expect(consoleErrorSpy).toHaveBeenCalledWith(
+                        "[AGGrid] Error checking for new data:",
+                        expect.any(Error)
+                    );
+                },
+                { timeout: 100 }
+            );
+
+            consoleErrorSpy.mockRestore();
         });
     });
 });

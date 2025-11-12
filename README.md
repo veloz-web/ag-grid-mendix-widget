@@ -15,14 +15,39 @@ A powerful Mendix pluggable widget that integrates AG Grid into your Mendix appl
 - **Design-Time Preview**: See your grid in Mendix Studio Pro without running the app
 - **Touch-Friendly**: Optimized for both desktop and mobile interactions
 
-## 🔑 AG Grid Enterprise License
+## � Documentation Index
+
+### Getting Started
+- **[QUICK_SETUP_GUIDE.md](./docs/QUICK_SETUP_GUIDE.md)** - Get started in minutes
+- **[DEPLOYMENT_STEPS.md](./docs/DEPLOYMENT_STEPS.md)** - How to deploy the widget to Mendix
+- **[CONFIGURATION_EXAMPLES.md](./docs/CONFIGURATION_EXAMPLES.md)** - Real-world configuration examples
+
+### Features & Configuration
+- **[VIEW_MODES_GUIDE.md](./docs/VIEW_MODES_GUIDE.md)** - Grid, Cards, and List views
+- **[CUSTOM_FORMATTERS_GUIDE.md](./docs/CUSTOM_FORMATTERS_GUIDE.md)** - Define custom formatters
+- **[CUSTOM_TEMPLATES_README.md](./docs/CUSTOM_TEMPLATES_README.md)** - Custom card/list templates
+- **[DATE_FORMATTING_GUIDE.md](./docs/DATE_FORMATTING_GUIDE.md)** - Date formatting options
+- **[DEFAULT_SORT_GUIDE.md](./docs/DEFAULT_SORT_GUIDE.md)** - Configure default sorting
+- **[TEXT_ALIGNMENT_GUIDE.md](./docs/TEXT_ALIGNMENT_GUIDE.md)** - Align text in columns
+- **[COLUMN_WIDTH_CONFIGURATION.md](./docs/COLUMN_WIDTH_CONFIGURATION.md)** - Column width options
+- **[POLLING_GUIDE.md](./docs/POLLING_GUIDE.md)** - Auto-detect new data
+- **[ACCESSIBILITY.md](./docs/ACCESSIBILITY.md)** - Keyboard navigation & accessibility
+
+### Troubleshooting
+- **[ACTIONS_TROUBLESHOOTING.md](./docs/ACTIONS_TROUBLESHOOTING.md)** - Fix row click action issues
+- **[ROW_CLICK_ACTIONS.md](./docs/ROW_CLICK_ACTIONS.md)** - Configure row click behavior
+- **[SORT_FILTER_TROUBLESHOOTING.md](./docs/SORT_FILTER_TROUBLESHOOTING.md)** - Sort & filter debugging
+
+### Advanced
+- **[LICENSE_SETUP.md](./docs/LICENSE_SETUP.md)** - AG Grid Enterprise license configuration
+
+## �🔑 AG Grid Enterprise License
 
 This widget supports both **AG Grid Community** (free) and **AG Grid Enterprise** (paid license).
 
 **To use Enterprise features:**
 1. Configure your license key in the widget properties (Grid Options section)
-2. See [QUICK_LICENSE_SETUP.md](./QUICK_LICENSE_SETUP.md) for 2-minute setup guide
-3. Full details: [LICENSE_KEY_SETUP.md](./LICENSE_KEY_SETUP.md)
+2. See [LICENSE_SETUP.md](./docs/LICENSE_SETUP.md) for setup guide
 
 **Using Community Edition:**
 - No configuration needed
@@ -145,7 +170,7 @@ The view selector intelligently adapts based on your configuration:
 
 **localStorage Safety**: If a user previously selected Cards or List view but you later remove the template, the widget automatically resets to Grid view on next load.
 
-**See [UI_REFERENCE.md](./UI_REFERENCE.md) for visual examples and [CONFIGURATION_EXAMPLES.md](./CONFIGURATION_EXAMPLES.md) for detailed configurations.**
+**See [UI_REFERENCE.md](./UI_REFERENCE.md) for visual examples and [CONFIGURATION_EXAMPLES.md](./docs/CONFIGURATION_EXAMPLES.md) for detailed configurations.**
 
 ## How the Data Source Works
 

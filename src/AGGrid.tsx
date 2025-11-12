@@ -138,27 +138,34 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
 
         const intervalMs = normalizePollingInterval(this.props.pollingInterval);
         console.log("[AGGrid Polling] ✓ Starting polling", {
-            intervalSeconds: this.props.pollingInterval,
-            intervalMs: intervalMs,
+            configuredSeconds: this.props.pollingInterval,
+            actualIntervalMs: intervalMs,
+            actualIntervalSeconds: intervalMs / 1000,
             minInterval: 10000
         });
 
         this.pollInterval = setInterval(() => {
+            console.log("[AGGrid Polling] ⏰ Interval fired - triggering check");
             this.checkForNewData();
         }, intervalMs);
+
+        console.log("[AGGrid Polling] Interval set:", this.pollInterval);
     }
 
     stopPolling() {
         if (this.pollInterval) {
-            console.log("[AGGrid Polling] Stopping polling");
+            console.log("[AGGrid Polling] Stopping polling, interval ID:", this.pollInterval);
             clearInterval(this.pollInterval);
+            this.pollInterval = null;
         }
     }
 
     async checkForNewData() {
-        console.log("[AGGrid Polling] Check triggered", {
+        const timestamp = new Date().toISOString();
+        console.log(`[AGGrid Polling] ${timestamp} - Check triggered`, {
             enablePolling: this.props.enablePolling,
-            lastKnownCount: this.lastKnownDataCount
+            lastKnownCount: this.lastKnownDataCount,
+            isPollingReload: this.isPollingReload
         });
 
         if (!this.props.enablePolling) {
@@ -170,7 +177,11 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
             // Force Mendix to reload the datasource before checking count
             const datasource = this.props.dataSource;
 
-            console.log("[AGGrid Polling] Datasource status before reload:", datasource.status);
+            console.log("[AGGrid Polling] Datasource before reload:", {
+                status: datasource.status,
+                itemCount: datasource.items?.length,
+                hasReloadMethod: typeof (datasource as any).reload === "function"
+            });
 
             // Set flag to ignore componentDidUpdate during polling reload
             this.isPollingReload = true;
@@ -178,25 +189,29 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
             // Request a reload of the datasource if it has a reload method
             if (datasource && typeof (datasource as any).reload === "function") {
                 console.log("[AGGrid Polling] Calling datasource.reload()...");
-                await (datasource as any).reload();
-                console.log("[AGGrid Polling] Datasource reloaded");
+                const reloadPromise = (datasource as any).reload();
+                console.log("[AGGrid Polling] Reload promise created:", reloadPromise);
+                await reloadPromise;
+                console.log(
+                    "[AGGrid Polling] Datasource reloaded, status:",
+                    this.props.dataSource.status
+                );
             } else {
                 console.log(
                     "[AGGrid Polling] ⚠️ Datasource has no reload method, data may be cached"
                 );
             }
 
-            // Clear flag after reload completes
-            this.isPollingReload = false;
-
             // Get current data from the datasource (now refreshed)
             const currentData = getRowData(this.props.dataSource);
             const currentCount = currentData.length;
 
-            console.log("[AGGrid Polling] Data check", {
+            console.log("[AGGrid Polling] Data check after reload:", {
                 currentCount,
                 lastKnownCount: this.lastKnownDataCount,
-                dataSourceStatus: this.props.dataSource.status
+                delta: currentCount - this.lastKnownDataCount,
+                dataSourceStatus: this.props.dataSource.status,
+                isPollingReload: this.isPollingReload
             });
 
             // Use utility function to determine if notification should be shown
@@ -219,7 +234,11 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
                     console.log("[AGGrid Polling] No change detected");
                 } else if (this.lastKnownDataCount === 0) {
                     console.log("[AGGrid Polling] Baseline not yet set, ignoring");
+                    // On first check, set baseline
+                    this.lastKnownDataCount = currentCount;
                 }
+                // Clear flag even when no notification is shown
+                this.isPollingReload = false;
                 return;
             }
 
@@ -255,8 +274,13 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
 
             // Update baseline count
             this.lastKnownDataCount = currentCount;
+
+            // Clear flag AFTER we've updated the baseline
+            this.isPollingReload = false;
         } catch (error) {
             console.error("[AGGrid] Error checking for new data:", error);
+            // Clear flag even on error
+            this.isPollingReload = false;
         }
     }
 
@@ -311,6 +335,7 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
             message,
             type,
             duration,
+            willAutoHide: duration > 0,
             enableNotifications: this.props.enableNotifications,
             toastPosition: this.props.toastPosition
         });
@@ -329,15 +354,25 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
 
         // Auto-dismiss if duration > 0
         if (duration > 0) {
+            console.log(`[AGGrid Toast] Setting auto-dismiss timer for ${duration}ms`);
             const timer = setTimeout(() => {
                 this.dismissToast(toastId);
                 this.toastTimers.delete(toastId);
             }, duration);
             this.toastTimers.set(toastId, timer);
+        } else {
+            console.log("[AGGrid Toast] No auto-dismiss - duration is 0");
         }
     };
 
     private dismissToast = (toastId: string) => {
+        console.log("[AGGrid Toast] Dismissing toast:", {
+            id: toastId,
+            hadTimer: this.toastTimers.has(toastId),
+            currentToasts: this.state.toastNotifications.length,
+            autoHideDuration: this.props.autoHideDuration
+        });
+
         // Clear any pending timer
         const timer = this.toastTimers.get(toastId);
         if (timer) {
@@ -402,13 +437,15 @@ export class AGGrid extends Component<AGGridContainerProps, AGGridState> {
                 isPollingReload: this.isPollingReload
             });
 
-            // If this is NOT a polling reload, update baseline to prevent false notifications
-            if (!this.isPollingReload) {
-                console.log("[AGGrid] External datasource change - updating baseline");
-                this.lastKnownDataCount = newData.length;
+            // Only update baseline if this was triggered BY our polling check
+            // Let external changes be detected naturally by the next polling cycle
+            if (this.isPollingReload) {
+                console.log(
+                    "[AGGrid] Polling reload completed - baseline will be updated by checkForNewData()"
+                );
             } else {
                 console.log(
-                    "[AGGrid] Polling reload - baseline will be updated by checkForNewData()"
+                    "[AGGrid] External datasource change detected - will be caught by next polling cycle"
                 );
             }
         }
