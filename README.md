@@ -4,13 +4,15 @@ A powerful Mendix pluggable widget that integrates AG Grid into your Mendix appl
 
 ## ✨ Key Features
 
-- **AG Grid Enterprise Support**: Configure your Enterprise license through widget properties
+- **AG Grid Enterprise Ready**: Built with Enterprise modules - just add your license key
+- **Advanced Filtering**: Set filters, multi-filters, text/number/date filters included
+- **Server-Side Row Model**: Handle large datasets with server-side operations
 - **Multiple View Modes**: Switch between Grid, Cards, and List views
 - **Custom Formatters**: Define reusable formatters in widget config (no code changes needed!)
 - **Responsive Design**: Automatic view switching based on device (desktop/mobile)
 - **Filter Drawer**: Slide-out filter panel with Apply Changes button for staged updates
 - **Rich Formatters**: 16+ built-in formatters including status badges with JSON mapping
-- **AG Grid Core**: Full power of AG Grid (Community or Enterprise) with sorting, filtering, pagination
+- **Data Polling**: Auto-detect and notify users of new data
 - **Theme Support**: 4 modern themes (Alpine, Balham, Material, Quartz)
 - **Design-Time Preview**: See your grid in Mendix Studio Pro without running the app
 - **Touch-Friendly**: Optimized for both desktop and mobile interactions
@@ -41,7 +43,10 @@ A powerful Mendix pluggable widget that integrates AG Grid into your Mendix appl
 ### Advanced
 - **[LICENSE_SETUP.md](./docs/LICENSE_SETUP.md)** - AG Grid Enterprise license configuration
 
-## �🔑 AG Grid Enterprise License
+### Project Info
+- **[ROADMAP.md](./ROADMAP.md)** - Planned features and future enhancements
+
+## 🔑 AG Grid Enterprise License
 
 This widget supports both **AG Grid Community** (free) and **AG Grid Enterprise** (paid license).
 

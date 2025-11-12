@@ -56,7 +56,7 @@ console.log('\nRepackaging .mpk file...');
 
 const distTmpDir = path.join(__dirname, '../dist/tmp');
 const outputDir = path.join(__dirname, '../dist/1.0.0');
-const outputFile = path.join(outputDir, 'mendix.aggrid.AGGrid.mpk');
+const outputFile = path.join(outputDir, 'mendix.AGGrid.mpk');
 
 // Ensure output directory exists
 if (!fs.existsSync(outputDir)) {
