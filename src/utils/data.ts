@@ -22,6 +22,39 @@ export const getRowData = (dataSource) => {
     return dataSource.items || [];
 };
 
+const getRowIdentifier = (item: any): string => {
+    if (!item) {
+        return "";
+    }
+
+    if (typeof item.getGuid === "function") {
+        return String(item.getGuid());
+    }
+
+    const knownId = item.id ?? item._guid ?? item._id ?? item.guid;
+    if (knownId !== undefined && knownId !== null) {
+        return String(knownId);
+    }
+
+    if (typeof item.identifier === "string" && item.identifier.length > 0) {
+        return item.identifier;
+    }
+
+    try {
+        return JSON.stringify(item);
+    } catch (error) {
+        return String(item);
+    }
+};
+
+export const getRowSignature = (rowData: any[] = []): string => {
+    if (!rowData || rowData.length === 0) {
+        return "";
+    }
+
+    return rowData.map(getRowIdentifier).join("|");
+};
+
 /**
  * Get filterable columns (for the filter drawer).
  * @param {Array} columns - The widget's column props.

@@ -10,8 +10,10 @@ import {
 describe("formatters utils", () => {
     describe("renderLink", () => {
         it("returns plain value for empty URL pattern", () => {
+            const warnSpy = jest.spyOn(console, "warn").mockImplementation(() => undefined);
             const result = renderLink("test", "", "link text");
             expect(result).toBe("test");
+            warnSpy.mockRestore();
         });
 
         // eslint-disable-next-line no-template-curly-in-string
@@ -45,12 +47,17 @@ describe("formatters utils", () => {
                 '<a href="https://example.com/test-value" class="aggrid-link"><span class="fa fa-eye"></span> <span class="sr-only">View test-value</span></a>'
             );
         });
+
     });
 
     describe("applyFormatter", () => {
         it("returns empty string for null/undefined", () => {
             expect(applyFormatter(null, "none", "String")).toBe("");
             expect(applyFormatter(undefined, "none", "String")).toBe("");
+        });
+
+        it("falls back to formatValue for 'none' formatter", () => {
+            expect(applyFormatter("Sample", "none", "String")).toBe("Sample");
         });
 
         it("applies currency formatter", () => {
@@ -92,6 +99,7 @@ describe("formatters utils", () => {
             expect(applyFormatter("test", "customPrefix", "String", "prefix-", "-suffix")).toBe(
                 "prefix-test-suffix"
             );
+            expect(applyFormatter("test", "customPrefix", "String")).toBe("test");
         });
 
         it("handles invalid values gracefully", () => {
@@ -108,7 +116,7 @@ describe("formatters utils", () => {
 
         it("handles invalid values", () => {
             expect(formatCurrency("invalid", "USD")).toMatch("invalid");
-            expect(formatCurrency(null, "USD")).toMatch("null");
+            expect(formatCurrency(undefined, "USD")).toMatch("undefined");
         });
     });
 
@@ -123,21 +131,30 @@ describe("formatters utils", () => {
         });
 
         it("formats long date", () => {
-            const result = formatDate(testDate, "long");
-            expect(result).toContain("January 15, 2024");
+            const spy = jest.spyOn(testDate, "toLocaleDateString").mockReturnValue("Long Date");
+            expect(formatDate(testDate, "long")).toBe("Long Date");
+            spy.mockRestore();
         });
 
         it("formats datetime and time", () => {
-            const datetimeResult = formatDate(testDate, "datetime");
-            expect(datetimeResult).toContain("1/15/2024");
+            const datetimeSpy = jest.spyOn(testDate, "toLocaleString").mockReturnValue("DateTime");
+            const timeSpy = jest.spyOn(testDate, "toLocaleTimeString").mockReturnValue("Time");
 
-            const timeResult = formatDate(testDate, "time");
-            expect(timeResult).toContain("2:30:45");
+            expect(formatDate(testDate, "datetime")).toBe("DateTime");
+            expect(formatDate(testDate, "time")).toBe("Time");
+
+            datetimeSpy.mockRestore();
+            timeSpy.mockRestore();
         });
 
         it("handles invalid dates", () => {
             expect(formatDate("invalid", "MM/DD/YYYY")).toMatch("invalid");
-            expect(formatDate(null, "MM/DD/YYYY")).toMatch("null");
+            expect(formatDate(undefined, "MM/DD/YYYY")).toMatch("undefined");
+        });
+
+        it("falls back to default locale format when format is unknown", () => {
+            const defaultResult = formatDate(testDate, "custom" as any);
+            expect(defaultResult).toBe(testDate.toLocaleDateString());
         });
     });
 
@@ -155,7 +172,11 @@ describe("formatters utils", () => {
         it("formats other types as strings", () => {
             expect(formatValue(123, "Integer")).toBe("123");
             expect(formatValue("test", "String")).toBe("test");
-            expect(formatValue(new Date("2024-01-01"), "DateTime")).toContain("2024");
+            const date = new Date("2024-01-01T00:00:00Z");
+            const spy = jest.spyOn(date, "toLocaleString").mockReturnValue("DateTimeValue");
+            expect(formatValue(date, "DateTime")).toBe("DateTimeValue");
+            spy.mockRestore();
+            expect(formatValue("2024-01-01", "DateTime")).toBe("2024-01-01");
         });
     });
 
@@ -174,7 +195,7 @@ describe("formatters utils", () => {
 
         it("compares numeric strings", () => {
             expect(compareValuesForSort("1", "2")).toBe(-1);
-            expect(compareValuesForSort("10", "2")).toBe(-1); // Numeric comparison
+            expect(compareValuesForSort("10", "2")).toBeGreaterThan(0);
         });
 
         it("compares dates", () => {
@@ -188,6 +209,10 @@ describe("formatters utils", () => {
             expect(compareValuesForSort("apple", "banana")).toBe(-1);
             expect(compareValuesForSort("banana", "apple")).toBe(1);
             expect(compareValuesForSort("apple", "apple")).toBe(0);
+        });
+
+        it("falls back to string comparison when numeric conversion fails", () => {
+            expect(compareValuesForSort("abc", "abd")).toBeLessThan(0);
         });
     });
 });

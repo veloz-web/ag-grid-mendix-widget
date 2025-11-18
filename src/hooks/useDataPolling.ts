@@ -1,6 +1,6 @@
 // src/hooks/useDataPolling.js
 import { useEffect, useRef, useState, useCallback } from "react";
-import { getRowData } from "../utils/data";
+import { getRowData, getRowSignature } from "../utils/data";
 import { ValueStatus } from "mendix";
 import {
     shouldShowNotification,
@@ -15,12 +15,15 @@ export const useDataPolling = (props, showToast, _gridApiRef) => {
     const [lastKnownDataCount, setLastKnownDataCount] = useState(0);
     const [isPollingReload, setIsPollingReload] = useState(false);
     const [cumulativeChange, setCumulativeChange] = useState(0);
+    const lastRowSignatureRef = useRef("");
 
     // Initialize baseline count
     useEffect(() => {
         if (dataSource && dataSource.status === ValueStatus.Available) {
-            const initialCount = getRowData(dataSource).length;
-            setLastKnownDataCount(getRowData(dataSource).length);
+            const initialData = getRowData(dataSource);
+            const initialCount = initialData.length;
+            setLastKnownDataCount(initialCount);
+            lastRowSignatureRef.current = getRowSignature(initialData);
             console.log("[AGGrid] Initialized baseline count on mount:", initialCount);
         }
     }, [dataSource]);
@@ -44,6 +47,17 @@ export const useDataPolling = (props, showToast, _gridApiRef) => {
             // Or we can get it from the ref if Mendix updates it
             const currentData = getRowData(dataSource); // Use freshest prop
             const currentCount = currentData.length;
+            const currentSignature = getRowSignature(currentData);
+
+            if (currentSignature === lastRowSignatureRef.current) {
+                console.log(
+                    "[AGGrid Polling] No data change detected after reload; skipping update"
+                );
+                setLastKnownDataCount(currentCount);
+                return;
+            }
+
+            lastRowSignatureRef.current = currentSignature;
 
             const decision = shouldShowNotification(
                 currentCount,

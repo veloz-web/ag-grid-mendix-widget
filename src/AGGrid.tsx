@@ -30,7 +30,7 @@ import { HiddenDrawer } from "./components/HiddenDrawer";
 import { ToastContainer } from "./components/ToastContainer";
 
 // Import Utils
-import { getRowData, getFilterableColumns, getFilteredData } from "./utils/data";
+import { getRowData, getFilterableColumns, getFilteredData, getRowSignature } from "./utils/data";
 import { getInitialState } from "./utils/initialState";
 import { getThemeClassName } from "./utils/theme";
 import { CustomFormatterRegistry } from "./utils/customFormatters";
@@ -62,6 +62,10 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
     // --- 3. Initialize State ---
     // Keep the initial state in a ref so we can pass it to `usePersistence.resetSettings` later
     const initialStateRef = useRef(getInitialState(props));
+    const rowDataCacheRef = useRef<{ signature: string; data: any[] }>({
+        signature: "",
+        data: []
+    });
     const [state, setState] = useState(initialStateRef.current);
 
     const {
@@ -310,6 +314,20 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
     // --- 7. Render Logic ---
     const { dataSource, height, pagination, pageSize } = props;
 
+    // Get row data (only update reference when data actually changes)
+    const latestRowData = getRowData(dataSource);
+    const latestRowSignature = useMemo(() => getRowSignature(latestRowData), [latestRowData]);
+    const allRowData = useMemo(() => {
+        if (rowDataCacheRef.current.signature !== latestRowSignature) {
+            rowDataCacheRef.current = {
+                signature: latestRowSignature,
+                data: latestRowData
+            };
+        }
+
+        return rowDataCacheRef.current.data;
+    }, [latestRowData, latestRowSignature]);
+
     // Loading states
     if (!dataSource || dataSource.status === ValueStatus.Loading) {
         return <div className="aggrid-loading">Loading...</div>;
@@ -317,9 +335,6 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
     if (dataSource.status === ValueStatus.Unavailable) {
         return <div className="aggrid-loading">No data source available</div>;
     }
-
-    // Get row data
-    const allRowData = getRowData(dataSource);
     const filteredData =
         currentView === "grid"
             ? allRowData // Grid handles its own filtering
