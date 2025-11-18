@@ -16,6 +16,7 @@ export const usePersistence = (props, state, setState, initialState) => {
             const nextState = {
                 viewMode: partial.viewMode ?? state.currentView,
                 activeFilters: partial.activeFilters ?? state.activeFilters,
+                gridFilterModel: partial.gridFilterModel ?? state.gridFilterModel,
                 globalSearch: partial.globalSearch ?? state.globalSearch,
                 sortModel: partial.sortModel ?? state.sortModel,
                 columnVisibility: partial.columnVisibility ?? state.columnVisibility,

@@ -56,8 +56,10 @@ export const renderLink = (
             displayText = String(value || "");
         }
 
-        // Return HTML anchor tag
-        return `<a href="${url}" class="aggrid-link"><span class="fa fa-eye"></span> <span class="sr-only">${displayText}</span></a>`;
+        // Return HTML anchor tag that prevents navigation but allows bubbling to parent handlers
+        const passiveHandlers = `data-passive-link="true" onclick="event.preventDefault();" onkeydown="if(event.key===' '||event.key==='Spacebar'){event.preventDefault(); event.target.click();}"`;
+
+        return `<a href="${url}" class="aggrid-link" ${passiveHandlers}><span class="fa fa-eye"></span> <span class="sr-only">${displayText}</span></a>`;
     } catch (e) {
         console.error("Error in renderLink:", e);
         console.error("URL pattern was:", urlPattern);
@@ -221,14 +223,14 @@ export const compareValuesForSort = (a: any, b: any): number => {
     }
 
     if (a instanceof Date && b instanceof Date) {
-        return a.getTime() - b.getTime();
+        return Math.sign(a.getTime() - b.getTime());
     }
 
     const aNumber = typeof a === "number" ? a : Number(a);
     const bNumber = typeof b === "number" ? b : Number(b);
 
     if (!isNaN(aNumber) && !isNaN(bNumber)) {
-        return aNumber - bNumber;
+        return Math.sign(aNumber - bNumber);
     }
 
     return String(a).localeCompare(String(b), undefined, {

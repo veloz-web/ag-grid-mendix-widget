@@ -1,125 +1,251 @@
-// src/hooks/useGridApi.ts
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, useEffect } from "react";
+import {
+    GridApi,
+    GridReadyEvent,
+    SortChangedEvent,
+    FilterChangedEvent,
+    ColumnMovedEvent,
+    ColumnPinnedEvent,
+    ColumnState
+} from "ag-grid-community";
 import { exportToPDF } from "../utils/pdfExport";
-import { AGGridState, ColumnPinnedState } from "../types";
+import { AGGridState, ColumnPinnedState, PersistedGridState } from "../types";
+import { debugLog } from "../utils/logger";
+
+type FilterModel = Record<string, any> | null;
+
+type ExtendedGridApi = GridApi & {
+    setQuickFilter: (value: string) => void;
+    setFilterModel: (model: FilterModel) => void;
+    getFilterModel: () => FilterModel;
+    setSortModel: (model: AGGridState["sortModel"]) => void;
+    getSortModel: () => AGGridState["sortModel"];
+};
+
+const normalizePinnedValue = (value?: ColumnPinnedState): "left" | "right" | null => {
+    if (value === "left" || value === "right") {
+        return value;
+    }
+    return null;
+};
+
+const areJsonEqual = (left: unknown, right: unknown): boolean =>
+    JSON.stringify(left ?? null) === JSON.stringify(right ?? null);
+
+const cloneFilterModel = (model: FilterModel): FilterModel => {
+    if (!model) {
+        return null;
+    }
+    try {
+        return JSON.parse(JSON.stringify(model));
+    } catch {
+        return null;
+    }
+};
 
 export const useGridApi = (
     state: AGGridState,
-    setState: any,
-    savePersistedState: any,
-    _columns: any
+    setState: React.Dispatch<React.SetStateAction<AGGridState>>,
+    savePersistedState: (state: Partial<PersistedGridState>) => void,
+    _columns: any // Kept for signature compatibility, though ideally typed
 ) => {
-    const gridApiRef = useRef<any>(null);
-    const isApplyingFilters = useRef(false);
-    const isSettingSort = useRef(false);
+    const gridApiRef = useRef<ExtendedGridApi | null>(null);
+    const { columnOrder, columnPinned, sortModel, globalSearch, gridFilterModel } = state;
 
     // --- Grid API Helpers ---
 
     const applyGridSortModel = useCallback(
         (sortModel: Array<{ colId: string; sort: "asc" | "desc" }>) => {
             const api = gridApiRef.current;
-            if (!api || typeof api.setSortModel !== "function") {
+            if (!api || api.isDestroyed()) {
                 console.warn("[AGGrid] Grid API unavailable for setSortModel");
                 return;
             }
-            isSettingSort.current = true;
+            // AG Grid events will fire, but we check event.source in the listener
+            // to prevent infinite loops, removing the need for setTimeout flags.
             api.setSortModel(sortModel);
-            setTimeout(() => {
-                isSettingSort.current = false;
-            }, 50);
         },
         []
     );
 
-    const applyFiltersToGrid = useCallback((filters: Record<string, any>, search: string) => {
-        if (!gridApiRef.current) return;
-        isApplyingFilters.current = true;
-        // Apply filters to grid
-        gridApiRef.current.setQuickFilter(search || "");
-        setTimeout(() => {
-            isApplyingFilters.current = false;
-        }, 50);
-    }, []);
+    const applyFiltersToGrid = useCallback(
+        (filters: Record<string, any>, search: string) => {
+            const api = gridApiRef.current;
+            if (!api || api.isDestroyed()) return;
 
-    const applyGlobalSearch = useCallback((search) => {
-        if (!gridApiRef.current) return;
-        gridApiRef.current.setQuickFilter(search || "");
-    }, []);
+            const hasFilters = Boolean(filters && Object.keys(filters).length > 0);
+            const normalizedFilters = hasFilters ? filters : null;
 
-    // --- Grid Event Callbacks ---
+            api.setQuickFilter(search || "");
+            api.setFilterModel(normalizedFilters);
 
-    const onGridReady = useCallback(
-        (params: any) => {
-            gridApiRef.current = params.api;
-            console.log("[AGGrid] Grid ready, API available");
-
-            // Apply initial state directly (don't use callbacks to avoid stale closure issues)
-            const {
-                sortModel,
-                activeFilters: _activeFilters,
-                globalSearch,
-                columnOrder,
-                columnPinned
-            } = state;
-
-            // Apply column state
-            if (columnOrder && columnOrder.length > 0) {
-                const columnState = columnOrder.map((colId: string) => ({
-                    colId,
-                    pinned: columnPinned[colId] === "none" ? null : columnPinned[colId]
-                }));
-                params.api.applyColumnState({ state: columnState, applyOrder: true });
-            }
-
-            // Apply sort and search directly
-            if (sortModel && sortModel.length > 0) {
-                isSettingSort.current = true;
-                params.api.setSortModel(sortModel);
-                setTimeout(() => {
-                    isSettingSort.current = false;
-                }, 50);
-            }
-            if (globalSearch) {
-                params.api.setQuickFilter(globalSearch || "");
-            }
+            const clonedModel = cloneFilterModel(normalizedFilters);
+            setState((prev) => ({ ...prev, gridFilterModel: clonedModel }));
+            savePersistedState({ gridFilterModel: clonedModel });
         },
-        [state]
+        [savePersistedState, setState]
     );
 
-    const onSortChanged = useCallback(() => {
-        if (isSettingSort.current || !gridApiRef.current) return;
-        const sortModel = gridApiRef.current.getSortModel();
-        setState((s: any) => ({ ...s, sortModel }));
-        savePersistedState({ sortModel });
-    }, [setState, savePersistedState]);
-
-    const onFilterChanged = useCallback(() => {
-        if (isApplyingFilters.current || !gridApiRef.current) return;
-        const filterModel = gridApiRef.current.getFilterModel();
-        console.log("[AGGrid] Filter changed:", filterModel);
-        // Grid's internal filters - we don't sync these to state
-        // Our drawer filters are managed separately
+    const applyGlobalSearch = useCallback((search: string) => {
+        if (!gridApiRef.current) return;
+        gridApiRef.current.setQuickFilter(search || "");
     }, []);
+
+    // --- Internal State Synchronization Helper ---
 
     const syncColumnStateFromGrid = useCallback(() => {
         if (!gridApiRef.current) return;
+
         const columnState = gridApiRef.current.getColumnState();
-        const columnOrder = columnState.map((c: any) => c.colId);
-        const columnPinned = columnState.reduce(
-            (acc: Record<string, ColumnPinnedState>, col: any) => {
-                acc[col.colId] = col.pinned || "none";
-                return acc;
-            },
-            {}
-        );
-        setState((s: any) => ({ ...s, columnOrder, columnPinned }));
-        savePersistedState({ columnOrder, columnPinned });
+        const columnOrder = columnState.map((c) => c.colId);
+
+        const columnPinned = columnState.reduce((acc: Record<string, ColumnPinnedState>, col) => {
+            acc[col.colId] = (col.pinned as ColumnPinnedState) || "none";
+            return acc;
+        }, {});
+
+        // We update local state and persist to Mendix
+        const newStateUpdate = { columnOrder, columnPinned };
+
+        setState((prev) => ({ ...prev, ...newStateUpdate }));
+        savePersistedState(newStateUpdate);
     }, [setState, savePersistedState]);
 
-    const onColumnMoved = syncColumnStateFromGrid;
-    const onColumnPinned = syncColumnStateFromGrid;
+    // --- Grid Event Callbacks ---
+
+    const onGridReady = useCallback((params: GridReadyEvent) => {
+        gridApiRef.current = params.api as ExtendedGridApi;
+        debugLog("[AGGrid] Grid ready, API available");
+
+        // NOTE: We do NOT apply state here anymore.
+        // We rely on the useEffect below to sync `state` -> `grid`.
+        // This separates "Initialization" from "State Synchronization".
+    }, []);
+
+    /**
+     * Effect: Sync External State -> Grid
+     * This ensures that if Mendix loads a saved state (or state changes externally),
+     * the Grid updates to match.
+     */
+    useEffect(() => {
+        const api = gridApiRef.current;
+        if (!api || api.isDestroyed()) return;
+
+        const currentColumnState = api.getColumnState();
+        const desiredOrder = columnOrder ?? [];
+        const desiredPinned = columnPinned ?? {};
+        const hasDesiredOrder = Array.isArray(desiredOrder) && desiredOrder.length > 0;
+
+        const orderDiffers = hasDesiredOrder
+            ? desiredOrder.length !== currentColumnState.length ||
+              desiredOrder.some((colId, index) => currentColumnState[index]?.colId !== colId)
+            : false;
+
+        const pinnedDiffers = currentColumnState.some((col) => {
+            const desiredPin = normalizePinnedValue(desiredPinned[col.colId]);
+            const currentPin = col.pinned ?? null;
+            return desiredPin !== currentPin;
+        });
+
+        if (hasDesiredOrder && (orderDiffers || pinnedDiffers)) {
+            const seen = new Set<string>();
+            const orderedState: ColumnState[] = [];
+
+            const pushColumnState = (colId: string) => {
+                if (!colId) return;
+                orderedState.push({
+                    colId,
+                    pinned: normalizePinnedValue(desiredPinned[colId]) ?? undefined
+                });
+                seen.add(colId);
+            };
+
+            desiredOrder.forEach(pushColumnState);
+            currentColumnState.forEach((col) => {
+                if (seen.has(col.colId)) return;
+                orderedState.push({
+                    colId: col.colId,
+                    pinned: normalizePinnedValue(desiredPinned[col.colId]) ?? undefined
+                });
+            });
+
+            api.applyColumnState({ state: orderedState, applyOrder: true });
+        } else if (!hasDesiredOrder && pinnedDiffers) {
+            const pinnedOnlyState: ColumnState[] = currentColumnState.map((col) => ({
+                colId: col.colId,
+                pinned: normalizePinnedValue(desiredPinned[col.colId]) ?? undefined
+            }));
+            api.applyColumnState({ state: pinnedOnlyState });
+        }
+
+        const desiredSort = sortModel ?? [];
+        const currentSort = api.getSortModel() ?? [];
+        if (!areJsonEqual(currentSort, desiredSort)) {
+            api.setSortModel(desiredSort);
+        }
+
+        if (globalSearch !== undefined) {
+            api.setQuickFilter(globalSearch || "");
+        }
+
+        const desiredFilters = gridFilterModel ?? null;
+        const normalizedDesiredFilters =
+            desiredFilters && Object.keys(desiredFilters).length > 0 ? desiredFilters : null;
+        const currentFilters = api.getFilterModel() ?? null;
+        if (!areJsonEqual(currentFilters, normalizedDesiredFilters)) {
+            api.setFilterModel(normalizedDesiredFilters);
+        }
+    }, [columnOrder, columnPinned, sortModel, globalSearch, gridFilterModel]);
+    // Dependency array is specific properties to avoid re-running on unrelated state changes
+
+    // --- Event Listeners ---
+
+    const onSortChanged = useCallback(
+        (params: SortChangedEvent) => {
+            // CRITICAL FIX: Prevent infinite loops.
+            // Only save state if the change came from user interaction ('ui', 'columnMenu')
+            // If source is 'api', it means *we* triggered it via setSortModel, so ignore it.
+            if (params.source === "api") return;
+            const api = params.api as ExtendedGridApi;
+            const sortModel = api.getSortModel();
+            setState((s) => ({ ...s, sortModel }));
+            savePersistedState({ sortModel });
+        },
+        [setState, savePersistedState]
+    );
+
+    const onFilterChanged = useCallback(
+        (params: FilterChangedEvent) => {
+            if (params.source === "api") return;
+
+            const api = params.api as ExtendedGridApi;
+            const filterModel = cloneFilterModel(api.getFilterModel() ?? null);
+            debugLog("[AGGrid] Filter changed (User initiated):", filterModel);
+            setState((prev) => ({ ...prev, gridFilterModel: filterModel }));
+            savePersistedState({ gridFilterModel: filterModel });
+        },
+        [savePersistedState, setState]
+    );
+
+    // Debounce could be added here for performance, as moving columns fires rapidly
+    const onColumnMoved = useCallback(
+        (params: ColumnMovedEvent) => {
+            if (params.source === "api") return;
+            syncColumnStateFromGrid();
+        },
+        [syncColumnStateFromGrid]
+    );
+
+    const onColumnPinned = useCallback(
+        (params: ColumnPinnedEvent) => {
+            if (params.source === "api") return;
+            syncColumnStateFromGrid();
+        },
+        [syncColumnStateFromGrid]
+    );
 
     // --- Export Logic ---
+
     const handleExportRequest = useCallback(
         (req: {
             format: "csv" | "excel" | "pdf";
@@ -129,6 +255,8 @@ export const useGridApi = (
             title?: string;
         }) => {
             const { format, ...options } = req;
+
+            // Persist user preference
             savePersistedState({
                 preferredExportFormat: format,
                 preferredExportOptions: options
@@ -136,29 +264,37 @@ export const useGridApi = (
 
             const api = gridApiRef.current;
 
-            if (!api) {
+            if (!api || api.isDestroyed()) {
                 console.warn("[AGGrid] Grid API not ready for export");
                 return;
             }
 
-            // Now that CsvExportModule is registered, all exports work the same way
-            if (format === "csv") {
-                api.exportDataAsCsv({
-                    fileName: `${options.fileName}.csv`,
-                    allColumns: options.allColumns
-                });
-            } else if (format === "excel") {
-                api.exportDataAsExcel({
-                    fileName: `${options.fileName}.xlsx`,
-                    allColumns: options.allColumns
-                });
-            } else if (format === "pdf") {
-                exportToPDF(api, {
-                    fileName: options.fileName,
-                    pageOrientation: options.pageOrientation || "landscape",
-                    title: options.title || "",
-                    allColumns: options.allColumns
-                });
+            switch (format) {
+                case "csv":
+                    api.exportDataAsCsv({
+                        fileName: `${options.fileName}.csv`,
+                        allColumns: options.allColumns
+                    });
+                    break;
+                case "excel":
+                    // Ensure Enterprise is enabled for this
+                    if (api.exportDataAsExcel) {
+                        api.exportDataAsExcel({
+                            fileName: `${options.fileName}.xlsx`,
+                            allColumns: options.allColumns
+                        });
+                    } else {
+                        console.error("[AGGrid] Excel export requires AG Grid Enterprise");
+                    }
+                    break;
+                case "pdf":
+                    exportToPDF(api, {
+                        fileName: options.fileName,
+                        pageOrientation: options.pageOrientation || "landscape",
+                        title: options.title || "",
+                        allColumns: options.allColumns
+                    });
+                    break;
             }
         },
         [savePersistedState]

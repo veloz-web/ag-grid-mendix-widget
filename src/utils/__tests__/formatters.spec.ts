@@ -20,17 +20,17 @@ describe("formatters utils", () => {
         it("replaces ${value} placeholder in URL", () => {
             // eslint-disable-next-line no-template-curly-in-string
             const result = renderLink("test-value", "https://example.com/${value}", "View");
-            expect(result).toBe(
-                '<a href="https://example.com/test-value" class="aggrid-link"><span class="fa fa-eye"></span> <span class="sr-only">View</span></a>'
-            );
+            expect(result).toContain('href="https://example.com/test-value"');
+            expect(result).toContain('class="aggrid-link"');
+            expect(result).toContain('data-passive-link="true"');
+            expect(result).toContain('<span class="sr-only">View</span>');
         });
 
         it("uses value as display text when linkTextPattern is empty", () => {
             // eslint-disable-next-line no-template-curly-in-string
             const result = renderLink("test-value", "https://example.com/${value}", "");
-            expect(result).toBe(
-                '<a href="https://example.com/test-value" class="aggrid-link"><span class="fa fa-eye"></span> <span class="sr-only">test-value</span></a>'
-            );
+            expect(result).toContain('href="https://example.com/test-value"');
+            expect(result).toContain('<span class="sr-only">test-value</span>');
         });
 
         // eslint-disable-next-line no-template-curly-in-string
@@ -43,11 +43,11 @@ describe("formatters utils", () => {
                 // eslint-disable-next-line no-template-curly-in-string
                 "View ${value}"
             );
-            expect(result).toBe(
-                '<a href="https://example.com/test-value" class="aggrid-link"><span class="fa fa-eye"></span> <span class="sr-only">View test-value</span></a>'
+            expect(result).toContain('<span class="sr-only">View test-value</span>');
+            expect(result).toContain(
+                "onkeydown=\"if(event.key===' '||event.key==='Spacebar'){event.preventDefault(); event.target.click();}\""
             );
         });
-
     });
 
     describe("applyFormatter", () => {

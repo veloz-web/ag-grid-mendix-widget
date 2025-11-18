@@ -72,9 +72,15 @@ const loadPersistedState = (storageKey: string): PersistedGridState | null => {
             }
         }
 
+        const gridFilterModel =
+            parsed.gridFilterModel && typeof parsed.gridFilterModel === "object"
+                ? parsed.gridFilterModel
+                : null;
+
         return {
             viewMode,
             activeFilters: sanitizedFilters,
+            gridFilterModel,
             globalSearch: typeof parsed.globalSearch === "string" ? parsed.globalSearch : "",
             sortModel: Array.isArray(parsed.sortModel) ? parsed.sortModel : [],
             columnVisibility: parsed.columnVisibility || {},
@@ -97,6 +103,7 @@ export const getInitialState = (props: AGGridContainerProps): AGGridState => {
     const isMobile = checkIsMobile();
     const initialView = persisted?.viewMode ?? getInitialViewMode(props, isMobile);
     const initialFilters = persisted?.activeFilters ?? {};
+    const initialGridFilters = persisted?.gridFilterModel ?? null;
     const initialSearch = persisted?.globalSearch ?? "";
     const initialSort = persisted?.sortModel ?? getDefaultSortModel(props.columns);
     const initialColumnVisibility =
@@ -114,6 +121,7 @@ export const getInitialState = (props: AGGridContainerProps): AGGridState => {
         isFilterDrawerOpen: false,
         isMobile,
         activeFilters: initialFilters,
+        gridFilterModel: initialGridFilters,
         globalSearch: initialSearch,
         sortModel: initialSort,
         columnVisibility: initialColumnVisibility,

@@ -20,6 +20,7 @@ export interface AGGridState {
     isFilterDrawerOpen: boolean;
     isMobile: boolean;
     activeFilters: Record<string, any>;
+    gridFilterModel?: Record<string, any> | null;
     globalSearch: string;
     sortModel: Array<{ colId: string; sort: "asc" | "desc" | null }>;
     columnVisibility: Record<string, boolean>;
@@ -35,6 +36,7 @@ export interface AGGridState {
 export interface PersistedGridState {
     viewMode: ViewMode;
     activeFilters: Record<string, any>;
+    gridFilterModel?: Record<string, any> | null;
     globalSearch: string;
     sortModel: Array<{ colId: string; sort: "asc" | "desc" | null }>;
     columnVisibility: Record<string, boolean>;
