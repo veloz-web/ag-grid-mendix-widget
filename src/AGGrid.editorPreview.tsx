@@ -1,5 +1,7 @@
 import { ReactElement } from "react";
 import { AGGridPreviewProps } from "../typings/AGGridProps";
+import { evaluateTemplate } from "./utils/renderers";
+import { ValueStatus } from "mendix";
 
 export function preview(props: AGGridPreviewProps): ReactElement {
     const {
@@ -70,6 +72,15 @@ export function preview(props: AGGridPreviewProps): ReactElement {
     );
 
     const hasFormatterErrors = columnsWithInvalidFormatters.length > 0;
+
+    // Prepare preview columns for template rendering
+    const previewColumns = (columns || []).map((c: any) => ({
+        header: c.header,
+        attribute: {
+            id: c.attribute,
+            get: (_: any) => ({ status: ValueStatus.Available, value: `Sample ${c.attribute}` })
+        }
+    }));
 
     return (
         <div className="aggrid-preview-container" style={{ padding: "10px" }}>
@@ -381,6 +392,90 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                 the actual grid with real data.
             </div>
 
+            {/* Card Template Preview */}
+            {hasCardTemplate && (
+                <div
+                    style={{
+                        marginTop: "10px",
+                        padding: "8px 12px",
+                        backgroundColor: "#f3e5f5",
+                        border: "1px solid #ba68c8",
+                        borderRadius: "4px",
+                        fontSize: "12px"
+                    }}
+                >
+                    <strong style={{ color: "#6a1b9a" }}>Card Template Preview:</strong>
+                    <div
+                        style={{
+                            marginTop: "8px",
+                            padding: "8px",
+                            backgroundColor: "#fff",
+                            border: "1px solid #e1bee7",
+                            borderRadius: "4px"
+                        }}
+                    >
+                        {(() => {
+                            try {
+                                const html = evaluateTemplate(
+                                    customCardTemplate || "",
+                                    {},
+                                    previewColumns as any
+                                );
+                                return <div dangerouslySetInnerHTML={{ __html: html }} />;
+                            } catch (e) {
+                                return (
+                                    <div style={{ color: "#c62828", fontStyle: "italic" }}>
+                                        ⚠️ Invalid template syntax
+                                    </div>
+                                );
+                            }
+                        })()}
+                    </div>
+                </div>
+            )}
+
+            {/* List Template Preview */}
+            {hasListTemplate && (
+                <div
+                    style={{
+                        marginTop: "10px",
+                        padding: "8px 12px",
+                        backgroundColor: "#e8f5e9",
+                        border: "1px solid #81c784",
+                        borderRadius: "4px",
+                        fontSize: "12px"
+                    }}
+                >
+                    <strong style={{ color: "#2e7d32" }}>List Template Preview:</strong>
+                    <div
+                        style={{
+                            marginTop: "8px",
+                            padding: "8px",
+                            backgroundColor: "#fff",
+                            border: "1px solid #c8e6c9",
+                            borderRadius: "4px"
+                        }}
+                    >
+                        {(() => {
+                            try {
+                                const html = evaluateTemplate(
+                                    customListTemplate || "",
+                                    {},
+                                    previewColumns as any
+                                );
+                                return <div dangerouslySetInnerHTML={{ __html: html }} />;
+                            } catch (e) {
+                                return (
+                                    <div style={{ color: "#c62828", fontStyle: "italic" }}>
+                                        ⚠️ Invalid template syntax
+                                    </div>
+                                );
+                            }
+                        })()}
+                    </div>
+                </div>
+            )}
+
             {/* Filter Configuration Status */}
             {(hasDrawerFilters || hasToolbarFilters || enableFilterDrawer) && (
                 <div
@@ -570,8 +665,7 @@ export function preview(props: AGGridPreviewProps): ReactElement {
 
 export function getPreviewCss(): string {
     return `
-        @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
-        
+       
         .aggrid-preview-container {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Helvetica Neue", Arial, sans-serif;
         }

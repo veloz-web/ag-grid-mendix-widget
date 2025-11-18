@@ -21,6 +21,9 @@ interface GridViewProps {
     onFilterChanged?: () => void;
     onColumnMoved?: () => void;
     onColumnPinned?: (event: ColumnPinnedEvent) => void;
+    /** Called when the 'Show/Hide Columns' header menu item is selected */
+    onOpenColumnVisibility?: () => void;
+    onOpenHiddenDrawer?: () => void;
     columnVisibility?: Record<string, boolean>;
     columnOrder?: string[];
     customFormatterRegistry?: CustomFormatterRegistry;
@@ -432,6 +435,42 @@ export function GridView(props: GridViewProps): ReactElement {
                 enableCellTextSelection={true}
                 ensureDomOrder={true}
                 suppressContextMenu={!enableContextMenu}
+                getMainMenuItems={(params) => {
+                    const defaultItems = params.defaultItems || [];
+
+                    // Add our custom entry for column visibility. It will open the drawer
+                    const showHideColumnsItem = {
+                        name: "Show/Hide Columns",
+                        action: () => {
+                            if (typeof props.onOpenHiddenDrawer === "function") {
+                                props.onOpenHiddenDrawer();
+                                return;
+                            }
+
+                            if (typeof props.onOpenColumnVisibility === "function") {
+                                props.onOpenColumnVisibility();
+                            }
+                        }
+                    } as any;
+
+                    // Remove AG Grid's native 'columns' entry if present — we want to use our custom drawer
+                    const filteredDefaults = (defaultItems || []).filter((it: any) => {
+                        if (!it) return false;
+                        // Strings may represent built-in entries; filter known column selectors
+                        if (typeof it === "string") {
+                            const s = it.toLowerCase();
+                            return !(s === "columns" || s.includes("column"));
+                        }
+                        // Items can be objects; if they have a name that includes 'column', filter them
+                        if (it.name && typeof it.name === "string") {
+                            return !it.name.toLowerCase().includes("column");
+                        }
+                        return true;
+                    });
+
+                    // Prepend our item and preserve filtered default items
+                    return [showHideColumnsItem, "separator", ...filteredDefaults];
+                }}
                 suppressMenuHide={false}
                 sideBar={enableSideBar ? true : undefined}
                 statusBar={statusBarConfig}

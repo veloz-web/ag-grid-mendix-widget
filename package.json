@@ -23,13 +23,17 @@
   "devDependencies": {
     "@mendix/pluggable-widgets-tools": "^10.24.0",
     "@types/archiver": "^7.0.0",
-    "archiver": "^7.0.1"
+    "@types/pdfmake": "^0.2.12",
+    "adm-zip": "^0.5.16",
+    "archiver": "^7.0.1",
+    "terser": "^5.44.1"
   },
   "dependencies": {
     "ag-grid-community": "^34.3.1",
     "ag-grid-enterprise": "^34.3.1",
     "ag-grid-react": "^34.3.1",
-    "classnames": "^2.5.1"
+    "classnames": "^2.5.1",
+    "pdfmake": "^0.2.20"
   },
   "pnpm": {
     "overrides": {

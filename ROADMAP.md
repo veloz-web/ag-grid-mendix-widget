@@ -17,22 +17,30 @@ See [LICENSE_SETUP.md](./docs/LICENSE_SETUP.md) for configuration.
 ### Data Export
 **Priority: High**
 
-- [ ] **CSV Export**
+- [x] **CSV Export** ✅ **Implemented!**
   - Export current grid data to CSV file
-  - Respect current filters and sorting
+  - Respects current filters and sorting
   - Include/exclude columns via configuration
   - Custom filename support
+  - Enable via widget properties: `enableCsvExport`
 
-- [ ] **Excel Export** (Enterprise Only)
-  - Export to .xlsx format
-  - Preserve formatting and styles
-  - Custom headers and footers
-  - Multi-sheet support
+- [x] **Excel Export** ✅ **Implemented!** (Enterprise Only)
+  - Export to .xlsx format with AG Grid Enterprise
+  - Respects current filters and sorting
+  - Include/exclude columns via configuration
+  - Custom filename support
+  - Enable via widget properties: `enableExcelExport`
+  - Requires valid AG Grid Enterprise license
 
-- [ ] **PDF Export**
-  - Export grid data to PDF
-  - Custom page layouts
-  - Headers and footers support
+- [x] **PDF Export** ✅ **Implemented!**
+  - Export grid data to PDF using pdfMake
+  - Respects current filters and sorting
+  - Custom filename support
+  - Configurable page orientation (portrait/landscape)
+  - Optional document title
+  - Styled table with alternating row colors
+  - Automatic page numbers and timestamp
+  - Enable via widget properties: `enablePdfExport`
 
 ### Row Grouping
 **Priority: High**

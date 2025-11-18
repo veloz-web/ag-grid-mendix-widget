@@ -4,113 +4,230 @@ A powerful Mendix pluggable widget that integrates AG Grid into your Mendix appl
 
 ## ✨ Key Features
 
-- **AG Grid Enterprise Ready**: Built with Enterprise modules - just add your license key
-- **Advanced Filtering**: Set filters, multi-filters, text/number/date filters included
-- **Server-Side Row Model**: Handle large datasets with server-side operations
+- **AG Grid Enterprise Support**: Configure your Enterprise license through widget properties
 - **Multiple View Modes**: Switch between Grid, Cards, and List views
 - **Custom Formatters**: Define reusable formatters in widget config (no code changes needed!)
 - **Responsive Design**: Automatic view switching based on device (desktop/mobile)
 - **Filter Drawer**: Slide-out filter panel with Apply Changes button for staged updates
 - **Rich Formatters**: 16+ built-in formatters including status badges with JSON mapping
-- **Data Polling**: Auto-detect and notify users of new data
+- **AG Grid Core**: Full power of AG Grid (Community or Enterprise) with sorting, filtering, pagination
 - **Theme Support**: 4 modern themes (Alpine, Balham, Material, Quartz)
 - **Design-Time Preview**: See your grid in Mendix Studio Pro without running the app
 - **Touch-Friendly**: Optimized for both desktop and mobile interactions
 
-## 📚 Documentation Index
+## � Documentation Index
 
 ### Getting Started
-- **[GETTING_STARTED.md](./docs/GETTING_STARTED.md)** - 📸 Visual walkthrough with screenshots
-- **[QUICK_SETUP_GUIDE.md](./docs/QUICK_SETUP_GUIDE.md)** - Quick reference guide
-- **[DEPLOYMENT_STEPS.md](./docs/DEPLOYMENT_STEPS.md)** - How to deploy the widget
-- **[CONFIGURATION_EXAMPLES.md](./docs/CONFIGURATION_EXAMPLES.md)** - Real-world examples
+- **[QUICK_SETUP_GUIDE.md](./QUICK_SETUP_GUIDE.md)** - Get started in minutes
+- **[DEPLOYMENT_STEPS.md](./DEPLOYMENT_STEPS.md)** - How to deploy the widget to Mendix
+- **[CONFIGURATION_EXAMPLES.md](./CONFIGURATION_EXAMPLES.md)** - Real-world configuration examples
 
 ### Features & Configuration
-- **[VIEW_MODES_GUIDE.md](./docs/VIEW_MODES_GUIDE.md)** - Grid, Cards, and List views
-- **[CUSTOM_FORMATTERS_GUIDE.md](./docs/CUSTOM_FORMATTERS_GUIDE.md)** - Define custom formatters
-- **[CUSTOM_TEMPLATES_README.md](./docs/CUSTOM_TEMPLATES_README.md)** - Custom card/list templates
-- **[DATE_FORMATTING_GUIDE.md](./docs/DATE_FORMATTING_GUIDE.md)** - Date formatting options
-- **[DEFAULT_SORT_GUIDE.md](./docs/DEFAULT_SORT_GUIDE.md)** - Configure default sorting
-- **[TEXT_ALIGNMENT_GUIDE.md](./docs/TEXT_ALIGNMENT_GUIDE.md)** - Align text in columns
-- **[COLUMN_WIDTH_CONFIGURATION.md](./docs/COLUMN_WIDTH_CONFIGURATION.md)** - Column width options
-- **[POLLING_GUIDE.md](./docs/POLLING_GUIDE.md)** - Auto-detect new data
-- **[ACCESSIBILITY.md](./docs/ACCESSIBILITY.md)** - Keyboard navigation & accessibility
+- **[VIEW_MODES_GUIDE.md](./VIEW_MODES_GUIDE.md)** - Grid, Cards, and List views
+- **[CUSTOM_FORMATTERS_GUIDE.md](./CUSTOM_FORMATTERS_GUIDE.md)** - Define custom formatters
+- **[CUSTOM_TEMPLATES_README.md](./CUSTOM_TEMPLATES_README.md)** - Custom card/list templates
+- **[DATE_FORMATTING_GUIDE.md](./DATE_FORMATTING_GUIDE.md)** - Date formatting options
+- **[DEFAULT_SORT_GUIDE.md](./DEFAULT_SORT_GUIDE.md)** - Configure default sorting
+- **[TEXT_ALIGNMENT_GUIDE.md](./TEXT_ALIGNMENT_GUIDE.md)** - Align text in columns
+- **[COLUMN_WIDTH_CONFIGURATION.md](./COLUMN_WIDTH_CONFIGURATION.md)** - Column width options
+- **[POLLING_GUIDE.md](./POLLING_GUIDE.md)** - Auto-detect new data
+- **[ACCESSIBILITY.md](./ACCESSIBILITY.md)** - Keyboard navigation & accessibility
 
 ### Troubleshooting
-- **[ACTIONS_TROUBLESHOOTING.md](./docs/ACTIONS_TROUBLESHOOTING.md)** - Fix row click action issues
-- **[ROW_CLICK_ACTIONS.md](./docs/ROW_CLICK_ACTIONS.md)** - Configure row click behavior
-- **[SORT_FILTER_TROUBLESHOOTING.md](./docs/SORT_FILTER_TROUBLESHOOTING.md)** - Sort & filter debugging
+- **[ACTIONS_TROUBLESHOOTING.md](./ACTIONS_TROUBLESHOOTING.md)** - Fix row click action issues
+- **[ROW_CLICK_ACTIONS.md](./ROW_CLICK_ACTIONS.md)** - Configure row click behavior
+- **[SORT_FILTER_TROUBLESHOOTING.md](./SORT_FILTER_TROUBLESHOOTING.md)** - Sort & filter debugging
 
 ### Advanced
-- **[LICENSE_SETUP.md](./docs/LICENSE_SETUP.md)** - AG Grid Enterprise license configuration
+- **[LICENSE_SETUP.md](./LICENSE_SETUP.md)** - AG Grid Enterprise license configuration
 
-### Project Info
-- **[ROADMAP.md](./ROADMAP.md)** - Planned features and future enhancements
-
-## 🔑 AG Grid Enterprise License
+## �🔑 AG Grid Enterprise License
 
 This widget supports both **AG Grid Community** (free) and **AG Grid Enterprise** (paid license).
 
 **To use Enterprise features:**
 1. Configure your license key in the widget properties (Grid Options section)
-2. See [LICENSE_SETUP.md](./docs/LICENSE_SETUP.md) for setup guide
+2. See [LICENSE_SETUP.md](./LICENSE_SETUP.md) for setup guide
 
 **Using Community Edition:**
 - No configuration needed
 - Leave license key empty
 - All basic features work perfectly
 
-## 📋 Requirements
+## Prerequisites
 
-**For using the widget:**
 - Mendix 10.18.6 or higher
+- Node.js 18 LTS (recommended)
+- npm or yarn
 
-**For building from source:**
-- Node.js 18 LTS
-- npm or pnpm
+## Installation
 
-## 🚀 Quick Start
+### Building the Widget
 
-### For Mendix Users
+1. Clone or download this widget source code
+2. Navigate to the widget directory
+3. Install dependencies:
+   ```bash
+   npm install
+   ```
+4. Build the widget:
+   ```bash
+   npm run release
+   ```
+5. The compiled widget will be in `dist/1.0.0/mendix.aggrid.AGGrid.mpk`
+6. Import the `.mpk` file into your Mendix project
 
-No code required! Configure the widget through Mendix Studio Pro:
+### Development Mode
 
-1. **Add widget** to your page from the toolbox
-2. **Select datasource** (Database, Microflow, or Nanoflow)
-3. **Add columns** and map to your entity attributes
-4. **Run** and see your data grid!
+To run in development mode with hot reloading:
+```bash
+npm start
+```
 
-👉 **[Visual Walkthrough](./docs/GETTING_STARTED.md)** - Step-by-step guide with screenshots
+## Quick Start
 
-### For Developers
+### Basic Configuration
 
-Build the widget from source:
-- `npm install` - Install dependencies
-- `npm run release` - Build production .mpk file
-- `npm start` - Development mode with hot reload
+```xml
+<AGGrid 
+    dataSource="YourEntityList"
+    enableViewSelector="true"
+    defaultView="grid"
+    mobileDefaultView="cards"
+    theme="material"
+    height="600">
+    
+    <columns>
+        <column 
+            header="Name"
+            attribute="Name"
+            includeInCardView="true"
+            includeInFilters="true" />
+        
+        <column 
+            header="Status"
+            attribute="Status"
+            formatter="none"
+            includeInCardView="true"
+            includeInFilters="true"
+            statusMapping='[
+                {"value":1,"label":"Active","className":"badge-success"},
+                {"value":2,"label":"Inactive","className":"badge-secondary"}
+            ]' />
+    </columns>
+</AGGrid>
+```
 
-## 🎨 Key Capabilities
+## View Modes
 
-### Multiple View Modes
-- **Grid View**: Traditional table with full AG Grid features
-- **Cards View**: Mobile-friendly card layout
-- **List View**: Compact format for simple browsing
+The widget supports multiple view modes with intelligent fallback behavior:
 
-**View selector adapts automatically** based on your configuration. Users can switch views with one click.
+### Grid View (Always Available)
+Traditional table layout with full AG Grid features - best for desktop and data-heavy applications. This view is always available and serves as the default fallback.
 
-See **[VIEW_MODES_GUIDE.md](./docs/VIEW_MODES_GUIDE.md)** for details.
+### Cards View (Conditional)
+Responsive card grid perfect for mobile devices and visual layouts. 
 
-### Data Source Flexibility
+**How it works:**
+- **With Custom Template**: Provide HTML in the `Custom Card Template (HTML)` property with `{{FieldName}}` placeholders
+- **Without Template**: Automatically shows fields marked with `includeInCardView="true"` using the built-in `DynamicView` component
+- **View Selector**: Cards option only appears if at least one of the above is configured
 
-Works with any Mendix data source:
-- Database entities (with optional XPath filtering)
-- Microflows (custom logic and calculations)
-- Nanoflows (client-side data)
-- Associations (related entities)
+**Example Custom Template:**
+```html
+<div class="my-card">
+  <h3>{{Name}}</h3>
+  <p>Status: {{Status}}</p>
+  <p>{{Description}}</p>
+</div>
+```
 
-**No ListView or DataGrid2 required** - the widget handles data directly.
+### List View (Conditional)
+Compact list format ideal for master-detail patterns and simple data browsing.
 
-See **[CONFIGURATION_EXAMPLES.md](./docs/CONFIGURATION_EXAMPLES.md)** for real-world examples.
+**How it works:**
+- **With Custom Template**: Provide HTML in the `Custom List Template (HTML)` property with `{{FieldName}}` placeholders
+- **Without Template**: Falls back to the built-in `ListView` component
+- **View Selector**: List option only appears if a custom template is provided
+
+**Example Custom Template:**
+```html
+<span class="list-item">
+  <strong>{{Name}}</strong> - {{Status}} | {{Date}}
+</span>
+```
+
+### Smart View Selector Behavior
+
+The view selector intelligently adapts based on your configuration:
+
+| Configuration | Views Shown | Notes |
+|--------------|-------------|-------|
+| No templates | Grid only | View selector hidden - only grid available |
+| Card template only | Grid, Cards | Two-option selector |
+| List template only | Grid, List | Two-option selector |
+| Both templates | Grid, Cards, List | Full three-option selector |
+
+**localStorage Safety**: If a user previously selected Cards or List view but you later remove the template, the widget automatically resets to Grid view on next load.
+
+**See [UI_REFERENCE.md](./UI_REFERENCE.md) for visual examples and [CONFIGURATION_EXAMPLES.md](./CONFIGURATION_EXAMPLES.md) for detailed configurations.**
+
+## How the Data Source Works
+
+### Understanding Mendix Data Sources
+
+The AG Grid widget uses Mendix's **data source** property, which can pull data from:
+
+1. **Database** - Direct entity retrieval
+2. **Microflow** - Custom logic to prepare data
+3. **Nanoflow** - Client-side data preparation
+4. **Association** - Related entities
+
+### It Does NOT Require a View
+
+Unlike some Mendix widgets, this AG Grid widget **does not require a ListView or DataGrid2**. It works directly with:
+
+- **Single Entity**: Yes ✅
+- **List of Entities**: Yes ✅ (most common)
+- **Association**: Yes ✅
+- **View/DataView context**: Optional (can use context entity for associations)
+
+### Data Source Configuration Examples
+
+#### Example 1: Direct Database Query (Most Common)
+
+```
+Page Structure:
+└── AG Grid Widget
+    └── Data Source: Database
+        └── Entity: MyModule.Customer
+        └── XPath: [Active = true]
+```
+
+**Configuration in Studio Pro:**
+1. Add the AG Grid widget to your page
+2. In the widget properties:
+   - **Data Source** → Select "Database"
+   - **Entity** → Select your entity (e.g., `Customer`)
+   - **XPath Constraint** (optional) → `[Active = true]`
+
+#### Example 2: Using a Microflow
+
+This is useful when you need custom logic, calculations, or data from multiple sources.
+
+```
+Page Structure:
+└── AG Grid Widget
+    └── Data Source: Microflow
+        └── Microflow: ACT_GetCustomerList
+```
+
+**Microflow Example (ACT_GetCustomerList):**
+```
+Input: (none) or (context object)
+Output: List of Customer
+
+Steps:
 1. Retrieve Customer list from database
 2. Apply custom filtering/sorting logic
 3. Add calculated attributes

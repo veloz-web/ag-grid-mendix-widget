@@ -3,6 +3,7 @@ import {
     ClientSideRowModelModule,
     ModuleRegistry,
     ColumnApiModule,
+    CsvExportModule,
     QuickFilterModule
 } from "ag-grid-community";
 import {
@@ -16,7 +17,8 @@ import {
     TextFilterModule,
     NumberFilterModule,
     DateFilterModule,
-    MultiFilterModule
+    MultiFilterModule,
+    ExcelExportModule
 } from "ag-grid-enterprise";
 
 // Register only the modules we need for optimal bundle size
@@ -24,6 +26,7 @@ ModuleRegistry.registerModules([
     ClientSideRowModelModule,
     ClientSideRowModelApiModule,
     ServerSideRowModelModule, // Remove if not using server-side row model
+    CsvExportModule,
     QuickFilterModule,
     ColumnApiModule,
     PaginationModule,
@@ -34,5 +37,6 @@ ModuleRegistry.registerModules([
     TextFilterModule,
     NumberFilterModule,
     DateFilterModule,
-    MultiFilterModule
+    MultiFilterModule,
+    ExcelExportModule
 ]);

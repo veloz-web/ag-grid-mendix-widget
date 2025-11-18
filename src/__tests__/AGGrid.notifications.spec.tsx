@@ -58,7 +58,17 @@ describe("AGGrid - Toast Notifications", () => {
             enableSideBar: false,
             enableStatusBar: false,
             enableContextMenu: false,
-            enableToolbarFilterSearch: false
+            enableToolbarFilterSearch: false,
+            enableCsvExport: false,
+            csvFileName: "export",
+            csvExportAllColumns: false,
+            enableExcelExport: false,
+            excelFileName: "export",
+            excelExportAllColumns: false,
+            enablePdfExport: false,
+            pdfFileName: "export",
+            pdfPageOrientation: "landscape" as any,
+            pdfDocumentTitle: ""
         };
     });
 

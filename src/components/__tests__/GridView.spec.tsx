@@ -16,7 +16,22 @@ jest.mock("ag-grid-react", () => ({
                     }
                 });
             }
-        }, [onGridReady]);
+            // If a header menu hook is provided, call it to simulate a user selecting the custom action
+            if (_props.getMainMenuItems) {
+                try {
+                    const menuItems = _props.getMainMenuItems({ defaultItems: [] });
+                    // If our custom 'Show/Hide Columns' item exists call its action
+                    const showHide =
+                        menuItems &&
+                        menuItems.find((it: any) => it && it.name === "Show/Hide Columns");
+                    if (showHide && typeof showHide.action === "function") {
+                        showHide.action();
+                    }
+                } catch (e) {
+                    // ignore in tests
+                }
+            }
+        }, [onGridReady, _props]);
 
         return (
             <div
@@ -297,6 +312,15 @@ describe("GridView Component", () => {
             // This test will fail until we add sort change event handling
             // TODO: Implement sort change event verification
             expect(true).toBe(true); // Placeholder assertion
+        });
+
+        it("adds Show/Hide Columns menu item and executes action", () => {
+            const mockOpen = jest.fn();
+            render(<GridView {...mockProps} onOpenColumnVisibility={mockOpen} />);
+
+            // Our mocked AG Grid immediately calls the header menu action from the mock
+            // so the handler should have been executed by now.
+            expect(mockOpen).toHaveBeenCalled();
         });
 
         it("calls onFilterChanged when filter changes", () => {

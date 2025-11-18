@@ -54,6 +54,29 @@ export interface ToolbarProps {
     // Column visibility props
     isColumnVisibilityOpen: boolean;
     onToggleColumnVisibility: () => void;
+
+    // CSV Export props
+    enableCsvExport: boolean;
+    onCsvExport: () => void;
+    csvFileName?: string;
+
+    // Excel Export props
+    enableExcelExport: boolean;
+    onExcelExport: () => void;
+    excelFileName?: string;
+
+    // PDF Export props
+    enablePdfExport: boolean;
+    onPdfExport: () => void;
+    pdfFileName?: string;
+    // Consolidated export callback
+    onExportRequest?: (req: {
+        format: "csv" | "excel" | "pdf";
+        fileName: string;
+        allColumns: boolean;
+        pageOrientation?: "landscape" | "portrait";
+        title?: string;
+    }) => void;
 }
 
 export const Toolbar: React.FC<ToolbarProps> = ({
@@ -84,7 +107,17 @@ export const Toolbar: React.FC<ToolbarProps> = ({
     filterButtonRef,
     onToggleFilterDrawer,
     isColumnVisibilityOpen,
-    onToggleColumnVisibility
+    onToggleColumnVisibility,
+    enableCsvExport,
+    onCsvExport,
+    csvFileName,
+    enableExcelExport,
+    onExcelExport,
+    excelFileName,
+    enablePdfExport,
+    onPdfExport,
+    pdfFileName,
+    onExportRequest
 }) => {
     // Check if there are any active toolbar filters or search
     const hasActiveToolbarFilters = toolbarFilters.some(
@@ -266,6 +299,80 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                             <span className="filter-badge">{activeFilterCount}</span>
                         )}
                     </button>
+                )}
+
+                {/* Consolidated export: if more than one export is enabled show a single Export control */}
+
+                {/* If exactly one export is enabled, show the specific button for it */}
+                {[enableCsvExport, enableExcelExport, enablePdfExport].filter(Boolean).length ===
+                    1 &&
+                    enableCsvExport && (
+                        <button
+                            type="button"
+                            className="aggrid-csv-export-btn"
+                            onClick={onCsvExport}
+                            title="Export to CSV"
+                            aria-label="Export data to CSV file"
+                        >
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z" />
+                            </svg>
+                            <span className="btn-text">CSV</span>
+                        </button>
+                    )}
+
+                {[enableCsvExport, enableExcelExport, enablePdfExport].filter(Boolean).length ===
+                    1 &&
+                    enableExcelExport && (
+                        <button
+                            type="button"
+                            className="aggrid-excel-export-btn"
+                            onClick={onExcelExport}
+                            title="Export to Excel"
+                            aria-label="Export data to Excel file (.xlsx)"
+                        >
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z" />
+                            </svg>
+                            <span className="btn-text">XLSX</span>
+                        </button>
+                    )}
+
+                {[enableCsvExport, enableExcelExport, enablePdfExport].filter(Boolean).length ===
+                    1 &&
+                    enablePdfExport && (
+                        <button
+                            type="button"
+                            className="aggrid-pdf-export-btn"
+                            onClick={onPdfExport}
+                            title="Export to PDF"
+                            aria-label="Export data to PDF file"
+                        >
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z" />
+                            </svg>
+                            <span className="btn-text">PDF</span>
+                        </button>
+                    )}
+
+                {/* Render ExportMenu after the buttons so CSS/DOM structure remains stable */}
+                {[enableCsvExport, enableExcelExport, enablePdfExport].filter(Boolean).length >
+                    1 && (
+                    <div style={{ display: "inline-block" }}>
+                        {/* Defer import to keep file small; static import used here */}
+                        {/* eslint-disable-next-line @typescript-eslint/no-var-requires */}
+                        {React.createElement(require("./ExportMenu").default, {
+                            enableCsv: enableCsvExport,
+                            enableExcel: enableExcelExport,
+                            enablePdf: enablePdfExport,
+                            csvFileName: csvFileName,
+                            excelFileName: excelFileName,
+                            pdfFileName: pdfFileName,
+                            defaultFormat: undefined,
+                            defaultAllColumns: true,
+                            onExportRequest: onExportRequest
+                        })}
+                    </div>
                 )}
 
                 <div style={{ position: "relative" }}>

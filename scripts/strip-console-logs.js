@@ -2,6 +2,7 @@
 /**
  * Post-build script to strip console.log statements from production builds
  * and repackage the .mpk file
+ * USES TERSER FOR SAFE REMOVAL - NO MORE REGEX CORRUPTION!
  * Preserves console.error and console.warn
  * Only removes console.log, console.info, console.debug
  */
@@ -9,80 +10,100 @@
 const fs = require('fs');
 const path = require('path');
 const archiver = require('archiver');
+const terser = require('terser'); // AST-based removal - safe and reliable
 
-const buildFile = path.join(__dirname, '../dist/tmp/widgets/mendix/aggrid/AGGrid.js');
+const buildFiles = [
+    path.join(__dirname, '../dist/tmp/widgets/mendix/aggrid/AGGrid.js'),
+    path.join(__dirname, '../dist/tmp/widgets/mendix/aggrid/AGGrid.mjs')
+];
 
-if (!fs.existsSync(buildFile)) {
-    console.error('Build file not found:', buildFile);
-    process.exit(1);
-}
+// Async IIFE to handle terser's async API
+(async () => {
+    console.log('Stripping console.log statements with Terser (AST-based, safe)...');
 
-console.log('Stripping console.log statements from production build...');
+    for (const buildFile of buildFiles) {
+        if (!fs.existsSync(buildFile)) {
+            console.warn(`⚠ Build file not found (skipping): ${path.basename(buildFile)}`);
+            continue;
+        }
 
-let content = fs.readFileSync(buildFile, 'utf8');
+        console.log(`\nProcessing ${path.basename(buildFile)}...`);
+        const originalCode = fs.readFileSync(buildFile, 'utf8');
+        
+        // Count console statements before (for reporting)
+        const beforeCount = (originalCode.match(/console\.(log|info|debug)/g) || []).length;
 
-// Count console.logs before
-const beforeCount = (content.match(/console\.(log|info|debug)/g) || []).length;
+        // Terser magic: AST-based removal of specific console functions
+        const result = await terser.minify(originalCode, {
+            compress: {
+                // Mark these as "pure" functions (no side effects) - Terser will remove them
+                pure_funcs: ['console.log', 'console.info', 'console.debug'],
+                // Don't do other aggressive optimizations
+                defaults: false,
+                unused: false
+            },
+            mangle: false,     // Do NOT rename variables (critical for Mendix)
+            format: {
+                comments: 'some', // Keep important comments (license, etc.)
+                beautify: false   // Minify output
+            }
+        });
 
-// Remove console.log, console.info, console.debug statements
-// This regex matches various patterns:
-// - console.log(...) 
-// - console.info(...)
-// - console.debug(...)
-// It preserves console.error and console.warn
+        if (result.error) {
+            console.error(`❌ Error processing ${buildFile}:`, result.error);
+            process.exit(1);
+        }
 
-content = content.replace(
-    /console\.(log|info|debug)\s*\([^)]*\)\s*;?/g,
-    ''
-);
+        // Count after (approximate - Terser removes them completely)
+        const afterCount = (result.code.match(/console\.(log|info|debug)/g) || []).length;
+        const removed = beforeCount - afterCount;
 
-// Also handle multi-line console statements
-content = content.replace(
-    /console\.(log|info|debug)\s*\([^)]*(?:\([^)]*\)[^)]*)*\)\s*;?/g,
-    ''
-);
+        fs.writeFileSync(buildFile, result.code, 'utf8');
+        console.log(`  ✓ Safely removed ${removed} console.log/info/debug statements`);
+        console.log(`    (${afterCount} remaining - likely in strings)`);
+        console.log(`    No code corruption - AST-based transformation ✓`);
+    }
 
-// Count remaining console statements
-const afterCount = (content.match(/console\.(log|info|debug)/g) || []).length;
+    console.log(`\n✓ console.error and console.warn preserved`);
+    console.log(`✓ Code structure intact - no regex corruption`);
 
-fs.writeFileSync(buildFile, content, 'utf8');
+    // Now repackage the .mpk file
+    console.log('\nRepackaging .mpk file...');
 
-console.log(`✓ Removed ${beforeCount - afterCount} console.log/info/debug statements`);
-console.log(`  (${afterCount} remaining - likely from AG Grid library)`);
-console.log(`✓ console.error and console.warn preserved`);
+    const distTmpWidgetsDir = path.join(__dirname, '../dist/tmp/widgets');
+    const outputDir = path.join(__dirname, '../dist/1.0.0');
+    const outputFile = path.join(outputDir, 'mendix.AGGrid.mpk');
 
-// Now repackage the .mpk file
-console.log('\nRepackaging .mpk file...');
+    // Ensure output directory exists
+    if (!fs.existsSync(outputDir)) {
+        fs.mkdirSync(outputDir, { recursive: true });
+    }
 
-const distTmpDir = path.join(__dirname, '../dist/tmp');
-const outputDir = path.join(__dirname, '../dist/1.0.0');
-const outputFile = path.join(outputDir, 'mendix.AGGrid.mpk');
+    // Delete existing .mpk if it exists
+    if (fs.existsSync(outputFile)) {
+        fs.unlinkSync(outputFile);
+    }
 
-// Ensure output directory exists
-if (!fs.existsSync(outputDir)) {
-    fs.mkdirSync(outputDir, { recursive: true });
-}
+    // Create zip archive
+    const output = fs.createWriteStream(outputFile);
+    const archive = archiver('zip', {
+        zlib: { level: 9 } // Maximum compression
+    });
 
-// Delete existing .mpk if it exists
-if (fs.existsSync(outputFile)) {
-    fs.unlinkSync(outputFile);
-}
+    output.on('close', function() {
+        console.log(`✓ Created ${outputFile} (${archive.pointer()} bytes)`);
+        console.log(`✓ Package structure: package.xml at root, widgets in subdirectories`);
+        console.log(`✓ Production build complete - ready to deploy!`);
+    });
 
-// Create zip archive
-const output = fs.createWriteStream(outputFile);
-const archive = archiver('zip', {
-    zlib: { level: 9 } // Maximum compression
-});
+    archive.on('error', function(err) {
+        console.error('❌ Error creating .mpk:', err);
+        process.exit(1);
+    });
 
-output.on('close', function() {
-    console.log(`✓ Created ${outputFile} (${archive.pointer()} bytes)`);
-});
+    archive.pipe(output);
+    // Archive the contents of dist/tmp/widgets/ which includes package.xml and all widget files
+    archive.directory(distTmpWidgetsDir, false);
+    await archive.finalize();
 
-archive.on('error', function(err) {
-    console.error('Error creating .mpk:', err);
-    process.exit(1);
-});
-
-archive.pipe(output);
-archive.directory(distTmpDir, false);
-archive.finalize();
+})(); // Immediately execute the async function

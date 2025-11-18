@@ -2,6 +2,7 @@ const mendixConfig = require("@mendix/pluggable-widgets-tools/test-config/jest.e
 
 module.exports = {
   ...mendixConfig,
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   snapshotSerializers: [], // Remove enzyme-to-json serializer
   collectCoverage: false,
   // Disable problematic pretty-format features

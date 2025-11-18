@@ -389,12 +389,16 @@
     background: #2447a6;
 }
 
-/* Filter Button Styles */
-.aggrid-filter-btn {
+/* Filter Button & Export Button Styles */
+.aggrid-filter-btn,
+.aggrid-csv-export-btn,
+.aggrid-excel-export-btn,
+.aggrid-pdf-export-btn {
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 6px;
     padding: 8px 12px;
     border: 1px solid #ddd;
     background: white;
@@ -404,16 +408,99 @@
     transition: all 0.2s ease;
 }
 
-.aggrid-filter-btn:hover {
+/* Consolidated Export Menu styles */
+.aggrid-export-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    background: white;
+    cursor: pointer;
+    border-radius: 6px;
+    color: #666;
+}
+
+.export-popover {
+    position: absolute;
+    right: 0;
+    top: 44px;
+    width: 320px;
+    background: #fff;
+    border: 1px solid #ddd;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+    border-radius: 8px;
+    padding: 12px;
+    z-index: 1200;
+}
+
+.export-section {
+    margin-bottom: 10px;
+}
+
+.export-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.export-formats {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.export-format-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.toolbar-input {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid #cfd4e0;
+    border-radius: 6px;
+}
+
+.toolbar-button {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #cfd4e0;
+    background: #f5f5f5;
+    cursor: pointer;
+}
+
+.toolbar-button.primary {
+    background: #1f4bbf;
+    color: white;
+    border-color: #1f4bbf;
+}
+
+.aggrid-filter-btn:hover,
+.aggrid-csv-export-btn:hover,
+.aggrid-excel-export-btn:hover,
+.aggrid-pdf-export-btn:hover {
     background: #f0f0f0;
     color: #333;
     border-color: #999;
 }
 
-.aggrid-filter-btn:focus-visible {
+.aggrid-filter-btn:focus-visible,
+.aggrid-csv-export-btn:focus-visible,
+.aggrid-excel-export-btn:focus-visible,
+.aggrid-pdf-export-btn:focus-visible {
     outline: 3px solid #1f4bbf;
     outline-offset: 2px;
     box-shadow: 0 0 0 2px rgba(31, 75, 191, 0.25);
+}
+
+.aggrid-csv-export-btn .btn-text,
+.aggrid-excel-export-btn .btn-text,
+.aggrid-pdf-export-btn .btn-text {
+    font-size: 13px;
+    font-weight: 500;
 }
 
 .filter-badge {

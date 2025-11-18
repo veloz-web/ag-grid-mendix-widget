@@ -377,6 +377,52 @@
                 <description>How often to check for new data (in seconds). Minimum 10 seconds.</description>
             </property>
         </propertyGroup>
+        <propertyGroup caption="Data Export">
+            <property key="enableCsvExport" type="boolean" defaultValue="false">
+                <caption>Enable CSV Export</caption>
+                <description>Show CSV export button in the toolbar. Exports current grid data (respects filters and sorting).</description>
+            </property>
+            <property key="csvFileName" type="string" defaultValue="export">
+                <caption>CSV File Name</caption>
+                <description>Default filename for CSV export (without .csv extension)</description>
+            </property>
+            <property key="csvExportAllColumns" type="boolean" defaultValue="true">
+                <caption>Export All Columns</caption>
+                <description>Export all columns. Disable to only export visible columns.</description>
+            </property>
+            <property key="enableExcelExport" type="boolean" defaultValue="false">
+                <caption>Enable Excel Export</caption>
+                <description>Show Excel export button in the toolbar. Exports to .xlsx format. Requires AG Grid Enterprise license.</description>
+            </property>
+            <property key="excelFileName" type="string" defaultValue="export">
+                <caption>Excel File Name</caption>
+                <description>Default filename for Excel export (without .xlsx extension)</description>
+            </property>
+            <property key="excelExportAllColumns" type="boolean" defaultValue="true">
+                <caption>Export All Columns (Excel)</caption>
+                <description>Export all columns to Excel. Disable to only export visible columns.</description>
+            </property>
+            <property key="enablePdfExport" type="boolean" defaultValue="false">
+                <caption>Enable PDF Export</caption>
+                <description>Show PDF export button in the toolbar. Exports to PDF format using pdfMake.</description>
+            </property>
+            <property key="pdfFileName" type="string" defaultValue="export">
+                <caption>PDF File Name</caption>
+                <description>Default filename for PDF export (without .pdf extension)</description>
+            </property>
+            <property key="pdfPageOrientation" type="enumeration" defaultValue="landscape">
+                <caption>PDF Page Orientation</caption>
+                <description>Page orientation for PDF export</description>
+                <enumerationValues>
+                    <enumerationValue key="landscape">Landscape</enumerationValue>
+                    <enumerationValue key="portrait">Portrait</enumerationValue>
+                </enumerationValues>
+            </property>
+            <property key="pdfDocumentTitle" type="string" defaultValue="Report" required="false">
+                <caption>PDF Document Title</caption>
+                <description>Optional title to display at the top of the PDF document (leave empty for no title)</description>
+            </property>
+        </propertyGroup>
         <propertyGroup caption="Notifications">
             <property key="enableNotifications" type="boolean" defaultValue="false">
                 <caption>Enable Notifications</caption>

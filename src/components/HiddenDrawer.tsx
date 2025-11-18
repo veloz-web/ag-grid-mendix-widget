@@ -7,6 +7,7 @@ interface HiddenDrawerProps {
     columnVisibility: Record<string, boolean>;
     onClose: () => void;
     onToggleColumn: (columnId: string, visible: boolean) => void;
+    onResetToDefault?: () => void;
 }
 
 export function HiddenDrawer(props: HiddenDrawerProps): ReactElement | null {
@@ -97,6 +98,15 @@ export function HiddenDrawer(props: HiddenDrawerProps): ReactElement | null {
                             role="group"
                             aria-label="Column visibility options"
                         >
+                            {/* Search bar */}
+                            <div style={{ padding: "8px 0" }}>
+                                <input
+                                    aria-label="Search columns"
+                                    placeholder="Search columns..."
+                                    type="text"
+                                    style={{ width: "100%", padding: "6px 8px" }}
+                                />
+                            </div>
                             {visibleColumns.map((col) => {
                                 const columnId = col.attribute!.id;
                                 const isVisible = columnVisibility[columnId] !== false;
@@ -135,6 +145,33 @@ export function HiddenDrawer(props: HiddenDrawerProps): ReactElement | null {
                                 No columns available for visibility control.
                             </p>
                         )}
+
+                        <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                            <button
+                                type="button"
+                                aria-label="Select all visible columns"
+                                onClick={() =>
+                                    visibleColumns.forEach((col) => {
+                                        const columnId = col.attribute?.id;
+                                        if (columnId) onToggleColumn(columnId, true);
+                                    })
+                                }
+                            >
+                                Select All
+                            </button>
+                            <button
+                                type="button"
+                                aria-label="Deselect all visible columns"
+                                onClick={() =>
+                                    visibleColumns.forEach((col) => {
+                                        const columnId = col.attribute?.id;
+                                        if (columnId) onToggleColumn(columnId, false);
+                                    })
+                                }
+                            >
+                                Select None
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <div className="filter-drawer-footer">
@@ -144,6 +181,17 @@ export function HiddenDrawer(props: HiddenDrawerProps): ReactElement | null {
                     <button className="apply-filters-btn" onClick={onClose} type="button">
                         Done
                     </button>
+                    {typeof props.onResetToDefault === "function" && (
+                        <button
+                            className="reset-settings-btn"
+                            onClick={props.onResetToDefault}
+                            aria-label="Reset column visibility to default settings"
+                            type="button"
+                            style={{ marginLeft: 12 }}
+                        >
+                            Reset to Default
+                        </button>
+                    )}
                 </div>
             </div>
         </div>

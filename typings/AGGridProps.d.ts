@@ -73,6 +73,8 @@ export type ThemeEnum = "alpine" | "balham" | "material" | "quartz";
 
 export type ThemeVariantEnum = "auto" | "light" | "dark";
 
+export type PdfPageOrientationEnum = "landscape" | "portrait";
+
 export type ToastPositionEnum = "topLeft" | "topCenter" | "topRight" | "bottomLeft" | "bottomCenter" | "bottomRight";
 
 export interface ColumnsPreviewType {
@@ -148,6 +150,16 @@ export interface AGGridContainerProps {
     themeVariant: ThemeVariantEnum;
     enablePolling: boolean;
     pollingInterval: number;
+    enableCsvExport: boolean;
+    csvFileName: string;
+    csvExportAllColumns: boolean;
+    enableExcelExport: boolean;
+    excelFileName: string;
+    excelExportAllColumns: boolean;
+    enablePdfExport: boolean;
+    pdfFileName: string;
+    pdfPageOrientation: PdfPageOrientationEnum;
+    pdfDocumentTitle: string;
     enableNotifications: boolean;
     toastPosition: ToastPositionEnum;
     autoHideDuration: number;
@@ -191,6 +203,16 @@ export interface AGGridPreviewProps {
     themeVariant: ThemeVariantEnum;
     enablePolling: boolean;
     pollingInterval: number | null;
+    enableCsvExport: boolean;
+    csvFileName: string;
+    csvExportAllColumns: boolean;
+    enableExcelExport: boolean;
+    excelFileName: string;
+    excelExportAllColumns: boolean;
+    enablePdfExport: boolean;
+    pdfFileName: string;
+    pdfPageOrientation: PdfPageOrientationEnum;
+    pdfDocumentTitle: string;
     enableNotifications: boolean;
     toastPosition: ToastPositionEnum;
     autoHideDuration: number | null;

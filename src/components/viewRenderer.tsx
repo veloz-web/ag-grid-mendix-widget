@@ -28,7 +28,9 @@ export const ViewRenderer = ({
     enableColumnMenus,
     enableHeaderFilterButtons,
     enableFloatingFilters,
-    onRowClick // Pass onRowClick to custom views
+    onRowClick, // Pass onRowClick to custom views
+    onOpenColumnVisibility,
+    onOpenHiddenDrawer
 }) => {
     if (currentView === "grid") {
         return (
@@ -54,6 +56,8 @@ export const ViewRenderer = ({
                 enableColumnMenus={enableColumnMenus}
                 enableHeaderFilterButtons={enableHeaderFilterButtons}
                 enableFloatingFilters={enableFloatingFilters}
+                onOpenColumnVisibility={onOpenColumnVisibility}
+                onOpenHiddenDrawer={onOpenHiddenDrawer}
             />
         );
     }

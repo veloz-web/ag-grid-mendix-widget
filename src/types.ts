@@ -24,6 +24,8 @@ export interface AGGridState {
     sortModel: Array<{ colId: string; sort: "asc" | "desc" | null }>;
     columnVisibility: Record<string, boolean>;
     isColumnVisibilityOpen: boolean;
+    // Controls the HiddenDrawer opened from the header menu action (separate from toolbar popover)
+    isHiddenDrawerOpen?: boolean;
     columnOrder: string[];
     columnPinned: Record<string, ColumnPinnedState>;
     prefersDarkScheme: boolean;
@@ -38,4 +40,12 @@ export interface PersistedGridState {
     columnVisibility: Record<string, boolean>;
     columnOrder?: string[];
     columnPinned?: Record<string, ColumnPinnedState>;
+    // Persist user's preferred export format and options
+    preferredExportFormat?: "csv" | "excel" | "pdf";
+    preferredExportOptions?: {
+        fileName?: string;
+        allColumns?: boolean;
+        pageOrientation?: "landscape" | "portrait";
+        title?: string;
+    };
 }
