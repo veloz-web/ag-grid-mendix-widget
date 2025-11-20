@@ -11,15 +11,172 @@ import {
 import { exportToPDF } from "../utils/pdfExport";
 import { AGGridState, ColumnPinnedState, PersistedGridState } from "../types";
 import { debugLog } from "../utils/logger";
+import {
+    isDateRangeValue,
+    normalizeDateRangeValue,
+    isRelativeDateRangeKey,
+    resolveRelativeDateRange
+} from "../utils/dateRange";
 
-type FilterModel = Record<string, any> | null;
+type GridFilterModel = Record<string, any> | null;
 
 type ExtendedGridApi = GridApi & {
     setQuickFilter: (value: string) => void;
-    setFilterModel: (model: FilterModel) => void;
-    getFilterModel: () => FilterModel;
+    setFilterModel: (model: GridFilterModel) => void;
+    getFilterModel: () => GridFilterModel;
     setSortModel: (model: AGGridState["sortModel"]) => void;
     getSortModel: () => AGGridState["sortModel"];
+    getFilterInstance?: (colId: string) => unknown;
+};
+
+interface ApiMethodOptions {
+    logMissing?: boolean;
+}
+
+const getApiFunction = <T extends (...args: any[]) => any>(
+    api: ExtendedGridApi | null | undefined,
+    methodName: string,
+    options: ApiMethodOptions = {}
+): T | undefined => {
+    const { logMissing = true } = options;
+    if (!api) {
+        if (logMissing) {
+            console.warn(`[AGGrid] Grid API unavailable for method ${methodName}`);
+        }
+        return undefined;
+    }
+
+    const isDestroyed = typeof api.isDestroyed === "function" ? api.isDestroyed() : false;
+    if (isDestroyed) {
+        if (logMissing) {
+            console.warn(`[AGGrid] Grid API destroyed before calling ${methodName}`);
+        }
+        return undefined;
+    }
+
+    const fn = (api as unknown as Record<string, any>)[methodName];
+    if (typeof fn !== "function") {
+        if (logMissing) {
+            console.warn(`[AGGrid] Grid API method ${methodName} is unavailable in this build`);
+        }
+        return undefined;
+    }
+
+    return fn.bind(api) as T;
+};
+
+const ensureValidFilterModel = (model: GridFilterModel): GridFilterModel => {
+    if (!model) {
+        return null;
+    }
+
+    const validEntries = Object.entries(model).reduce<Record<string, any>>(
+        (acc, [colId, entry]) => {
+            if (entry && typeof entry === "object" && "filterType" in entry) {
+                acc[colId] = entry;
+            }
+            return acc;
+        },
+        {}
+    );
+
+    return Object.keys(validEntries).length > 0 ? validEntries : null;
+};
+
+const buildFilterModel = (
+    filters: Record<string, any>,
+    api: ExtendedGridApi | null
+): GridFilterModel => {
+    if (!filters || Object.keys(filters).length === 0) {
+        return null;
+    }
+
+    const filterModel: Record<string, any> = {};
+
+    Object.entries(filters).forEach(([colId, value]) => {
+        if (value === undefined || value === null) {
+            return;
+        }
+
+        let candidateValue = value;
+
+        if (typeof candidateValue === "string" && isRelativeDateRangeKey(candidateValue)) {
+            candidateValue = resolveRelativeDateRange(candidateValue) ?? candidateValue;
+        }
+
+        if (isDateRangeValue(candidateValue)) {
+            const range = normalizeDateRangeValue(candidateValue);
+            if (!range) {
+                return;
+            }
+
+            const { from, to } = range;
+
+            if (from && to) {
+                filterModel[colId] = {
+                    filterType: "date",
+                    type: "inRange",
+                    dateFrom: from,
+                    dateTo: to
+                };
+            } else if (from) {
+                filterModel[colId] = {
+                    filterType: "date",
+                    type: "greaterThanOrEqual",
+                    dateFrom: from
+                };
+            } else if (to) {
+                filterModel[colId] = {
+                    filterType: "date",
+                    type: "lessThanOrEqual",
+                    dateTo: to
+                };
+            }
+
+            return;
+        }
+
+        if (candidateValue === "") {
+            return;
+        }
+
+        const normalizedValues = (
+            Array.isArray(candidateValue) ? candidateValue : [candidateValue]
+        ).filter((entry) => entry !== undefined && entry !== null && entry !== "");
+
+        if (!normalizedValues.length) {
+            return;
+        }
+
+        const filterInstance = api?.getFilterInstance?.(colId) as
+            | { getFilterType?: () => string }
+            | undefined;
+        const filterType = filterInstance?.getFilterType?.() ?? "set";
+
+        if (filterType === "set") {
+            filterModel[colId] = {
+                filterType: "set",
+                values: normalizedValues
+            };
+            return;
+        }
+
+        if (filterType === "text" || filterType === "number") {
+            filterModel[colId] = {
+                filterType,
+                type: "equals",
+                filter: normalizedValues[0]
+            };
+            return;
+        }
+
+        filterModel[colId] = {
+            filterType: "set",
+            values: normalizedValues
+        };
+    });
+
+    return Object.keys(filterModel).length > 0 ? filterModel : null;
 };
 
 const normalizePinnedValue = (value?: ColumnPinnedState): "left" | "right" | null => {
@@ -32,7 +189,7 @@ const normalizePinnedValue = (value?: ColumnPinnedState): "left" | "right" | nul
 const areJsonEqual = (left: unknown, right: unknown): boolean =>
     JSON.stringify(left ?? null) === JSON.stringify(right ?? null);
 
-const cloneFilterModel = (model: FilterModel): FilterModel => {
+const cloneFilterModel = (model: GridFilterModel): GridFilterModel => {
     if (!model) {
         return null;
     }
@@ -57,13 +214,27 @@ export const useGridApi = (
     const applyGridSortModel = useCallback(
         (sortModel: Array<{ colId: string; sort: "asc" | "desc" }>) => {
             const api = gridApiRef.current;
-            if (!api || api.isDestroyed()) {
-                console.warn("[AGGrid] Grid API unavailable for setSortModel");
+            const setSortModel = getApiFunction<(model: typeof sortModel) => void>(
+                api,
+                "setSortModel",
+                { logMissing: false }
+            );
+
+            if (setSortModel) {
+                setSortModel(sortModel);
                 return;
             }
-            // AG Grid events will fire, but we check event.source in the listener
-            // to prevent infinite loops, removing the need for setTimeout flags.
-            api.setSortModel(sortModel);
+
+            console.warn(
+                "[AGGrid] setSortModel is unavailable on the current Grid API, attempting setGridOption fallback"
+            );
+            const setGridOption = getApiFunction<(key: string, value: unknown) => void>(
+                api,
+                "setGridOption"
+            );
+            if (setGridOption) {
+                setGridOption("sortModel", sortModel);
+            }
         },
         []
     );
@@ -71,15 +242,48 @@ export const useGridApi = (
     const applyFiltersToGrid = useCallback(
         (filters: Record<string, any>, search: string) => {
             const api = gridApiRef.current;
-            if (!api || api.isDestroyed()) return;
+            if (!api) return;
 
-            const hasFilters = Boolean(filters && Object.keys(filters).length > 0);
-            const normalizedFilters = hasFilters ? filters : null;
+            const filterModel = buildFilterModel(filters, api);
+            const setQuickFilter = getApiFunction<(value: string) => void>(api, "setQuickFilter", {
+                logMissing: false
+            });
+            if (setQuickFilter) {
+                setQuickFilter(search || "");
+            } else {
+                const setGridOption = getApiFunction<(key: string, value: unknown) => void>(
+                    api,
+                    "setGridOption",
+                    { logMissing: false }
+                );
+                if (setGridOption) {
+                    setGridOption("quickFilterText", search || "");
+                }
+            }
 
-            api.setQuickFilter(search || "");
-            api.setFilterModel(normalizedFilters);
+            const setFilterModel = getApiFunction<(model: GridFilterModel) => void>(
+                api,
+                "setFilterModel",
+                { logMissing: false }
+            );
+            if (setFilterModel) {
+                setFilterModel(filterModel);
+            } else {
+                const setGridOption = getApiFunction<(key: string, value: unknown) => void>(
+                    api,
+                    "setGridOption",
+                    { logMissing: false }
+                );
+                if (setGridOption) {
+                    setGridOption("filterModel", filterModel);
+                } else if (filterModel) {
+                    console.warn(
+                        "[AGGrid] Unable to apply filter model; setFilterModel is unavailable"
+                    );
+                }
+            }
 
-            const clonedModel = cloneFilterModel(normalizedFilters);
+            const clonedModel = cloneFilterModel(filterModel);
             setState((prev) => ({ ...prev, gridFilterModel: clonedModel }));
             savePersistedState({ gridFilterModel: clonedModel });
         },
@@ -87,16 +291,23 @@ export const useGridApi = (
     );
 
     const applyGlobalSearch = useCallback((search: string) => {
-        if (!gridApiRef.current) return;
-        gridApiRef.current.setQuickFilter(search || "");
+        const setQuickFilter = getApiFunction<(value: string) => void>(
+            gridApiRef.current,
+            "setQuickFilter"
+        );
+        if (setQuickFilter) {
+            setQuickFilter(search || "");
+        }
     }, []);
 
     // --- Internal State Synchronization Helper ---
 
     const syncColumnStateFromGrid = useCallback(() => {
-        if (!gridApiRef.current) return;
+        const api = gridApiRef.current;
+        const getColumnState = getApiFunction<() => ColumnState[]>(api, "getColumnState");
+        if (!getColumnState) return;
 
-        const columnState = gridApiRef.current.getColumnState();
+        const columnState = getColumnState();
         const columnOrder = columnState.map((c) => c.colId);
 
         const columnPinned = columnState.reduce((acc: Record<string, ColumnPinnedState>, col) => {
@@ -129,9 +340,17 @@ export const useGridApi = (
      */
     useEffect(() => {
         const api = gridApiRef.current;
-        if (!api || api.isDestroyed()) return;
+        if (!api) return;
 
-        const currentColumnState = api.getColumnState();
+        const getColumnState = getApiFunction<() => ColumnState[]>(api, "getColumnState");
+        const applyColumnState = getApiFunction<
+            (params: { state: ColumnState[]; applyOrder?: boolean }) => void
+        >(api, "applyColumnState");
+        if (!getColumnState || !applyColumnState) {
+            return;
+        }
+
+        const currentColumnState = getColumnState();
         const desiredOrder = columnOrder ?? [];
         const desiredPinned = columnPinned ?? {};
         const hasDesiredOrder = Array.isArray(desiredOrder) && desiredOrder.length > 0;
@@ -169,31 +388,79 @@ export const useGridApi = (
                 });
             });
 
-            api.applyColumnState({ state: orderedState, applyOrder: true });
+            applyColumnState({ state: orderedState, applyOrder: true });
         } else if (!hasDesiredOrder && pinnedDiffers) {
             const pinnedOnlyState: ColumnState[] = currentColumnState.map((col) => ({
                 colId: col.colId,
                 pinned: normalizePinnedValue(desiredPinned[col.colId]) ?? undefined
             }));
-            api.applyColumnState({ state: pinnedOnlyState });
+            applyColumnState({ state: pinnedOnlyState });
         }
 
         const desiredSort = sortModel ?? [];
-        const currentSort = api.getSortModel() ?? [];
+        const getSortModel = getApiFunction<() => AGGridState["sortModel"]>(api, "getSortModel", {
+            logMissing: false
+        });
+        const setSortModelFn = getApiFunction<(model: AGGridState["sortModel"]) => void>(
+            api,
+            "setSortModel",
+            { logMissing: false }
+        );
+        const currentSort = getSortModel ? getSortModel() ?? [] : [];
         if (!areJsonEqual(currentSort, desiredSort)) {
-            api.setSortModel(desiredSort);
+            if (setSortModelFn) {
+                setSortModelFn(desiredSort);
+            } else {
+                const setGridOption = getApiFunction<(key: string, value: unknown) => void>(
+                    api,
+                    "setGridOption",
+                    { logMissing: false }
+                );
+                if (setGridOption) {
+                    console.warn(
+                        "[AGGrid] setSortModel unavailable during state sync, using setGridOption fallback"
+                    );
+                    setGridOption("sortModel", desiredSort);
+                }
+            }
         }
 
         if (globalSearch !== undefined) {
-            api.setQuickFilter(globalSearch || "");
+            const setQuickFilter = getApiFunction<(value: string) => void>(api, "setQuickFilter", {
+                logMissing: false
+            });
+            if (setQuickFilter) {
+                setQuickFilter(globalSearch || "");
+            }
         }
 
-        const desiredFilters = gridFilterModel ?? null;
-        const normalizedDesiredFilters =
-            desiredFilters && Object.keys(desiredFilters).length > 0 ? desiredFilters : null;
-        const currentFilters = api.getFilterModel() ?? null;
-        if (!areJsonEqual(currentFilters, normalizedDesiredFilters)) {
-            api.setFilterModel(normalizedDesiredFilters);
+        const desiredFilters = ensureValidFilterModel(gridFilterModel ?? null);
+        const getFilterModel = getApiFunction<() => GridFilterModel>(api, "getFilterModel", {
+            logMissing: false
+        });
+        const currentFilters = getFilterModel
+            ? ensureValidFilterModel(getFilterModel() ?? null)
+            : null;
+
+        if (!areJsonEqual(currentFilters, desiredFilters)) {
+            const setFilterModel = getApiFunction<(model: GridFilterModel) => void>(
+                api,
+                "setFilterModel",
+                { logMissing: false }
+            );
+
+            if (setFilterModel) {
+                setFilterModel(desiredFilters);
+            } else {
+                const setGridOption = getApiFunction<(key: string, value: unknown) => void>(
+                    api,
+                    "setGridOption",
+                    { logMissing: false }
+                );
+                if (setGridOption) {
+                    setGridOption("filterModel", desiredFilters);
+                }
+            }
         }
     }, [columnOrder, columnPinned, sortModel, globalSearch, gridFilterModel]);
     // Dependency array is specific properties to avoid re-running on unrelated state changes
@@ -207,7 +474,13 @@ export const useGridApi = (
             // If source is 'api', it means *we* triggered it via setSortModel, so ignore it.
             if (params.source === "api") return;
             const api = params.api as ExtendedGridApi;
-            const sortModel = api.getSortModel();
+            const getSortModel = getApiFunction<() => AGGridState["sortModel"]>(
+                api,
+                "getSortModel",
+                { logMissing: false }
+            );
+            if (!getSortModel) return;
+            const sortModel = getSortModel();
             setState((s) => ({ ...s, sortModel }));
             savePersistedState({ sortModel });
         },
@@ -219,7 +492,11 @@ export const useGridApi = (
             if (params.source === "api") return;
 
             const api = params.api as ExtendedGridApi;
-            const filterModel = cloneFilterModel(api.getFilterModel() ?? null);
+            const getFilterModel = getApiFunction<() => GridFilterModel>(api, "getFilterModel", {
+                logMissing: false
+            });
+            if (!getFilterModel) return;
+            const filterModel = ensureValidFilterModel(cloneFilterModel(getFilterModel() ?? null));
             debugLog("[AGGrid] Filter changed (User initiated):", filterModel);
             setState((prev) => ({ ...prev, gridFilterModel: filterModel }));
             savePersistedState({ gridFilterModel: filterModel });

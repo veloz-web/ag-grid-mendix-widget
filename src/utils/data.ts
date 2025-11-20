@@ -113,6 +113,64 @@ export const getDistinctValuesForColumn = (
     return Array.from(values).sort();
 };
 
+export interface ToolbarFilterDefinition {
+    columnId: string;
+    label: string;
+    options: string[];
+    selectedValues: string[];
+}
+
+const isToolbarFilterColumn = (col: any): boolean => {
+    if (!col) {
+        return false;
+    }
+
+    if (col.filterLocation) {
+        return col.filterLocation === "toolbar";
+    }
+
+    if (typeof col.includeInToolbarFilters === "boolean") {
+        return col.includeInToolbarFilters;
+    }
+
+    return col.showInToolbar === true;
+};
+
+export const buildToolbarFilters = (
+    columns: any[] = [],
+    rowData: any[] = [],
+    activeFilters: Record<string, string[] | string> = {}
+): ToolbarFilterDefinition[] => {
+    return columns
+        .filter(isToolbarFilterColumn)
+        .map((col) => {
+            const columnId = col.attribute?.id;
+            if (!columnId) {
+                return null;
+            }
+
+            const options = getDistinctValuesForColumn(rowData, columns, columnId);
+            const filterValue = activeFilters[columnId];
+
+            let selectedValues: string[];
+            if (filterValue === undefined) {
+                selectedValues = [...options];
+            } else if (Array.isArray(filterValue)) {
+                selectedValues = filterValue.map(String);
+            } else {
+                selectedValues = [String(filterValue)];
+            }
+
+            return {
+                columnId,
+                label: col.header?.value || columnId,
+                options,
+                selectedValues
+            };
+        })
+        .filter((filter): filter is ToolbarFilterDefinition => Boolean(filter));
+};
+
 /**
  * Performs manual filtering and sorting for non-grid views (Cards, List).
  * @param {Array} rowData - The raw row data.

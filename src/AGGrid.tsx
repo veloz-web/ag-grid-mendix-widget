@@ -30,7 +30,14 @@ import { HiddenDrawer } from "./components/HiddenDrawer";
 import { ToastContainer } from "./components/ToastContainer";
 
 // Import Utils
-import { getRowData, getFilterableColumns, getFilteredData, getRowSignature } from "./utils/data";
+import {
+    getRowData,
+    getFilterableColumns,
+    getFilteredData,
+    getRowSignature,
+    getDistinctValuesForColumn,
+    buildToolbarFilters
+} from "./utils/data";
 import { getInitialState } from "./utils/initialState";
 import { getThemeClassName } from "./utils/theme";
 import { CustomFormatterRegistry } from "./utils/customFormatters";
@@ -251,11 +258,29 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
 
     const handleToolbarFilterChange = useCallback(
         (columnId: string, values: string[]) => {
-            const newFilters = { ...activeFilters, [columnId]: values };
+            if (!columnId) {
+                return;
+            }
+
+            const options = getDistinctValuesForColumn(
+                rowDataCacheRef.current.data,
+                props.columns || [],
+                columnId
+            );
+            const normalizedValues = values.map(String);
+            const newFilters = { ...activeFilters };
+
+            if (normalizedValues.length === options.length) {
+                delete newFilters[columnId];
+            } else {
+                newFilters[columnId] = normalizedValues;
+            }
+
             setState((s) => ({ ...s, activeFilters: newFilters }));
+            applyFiltersToGrid(newFilters, globalSearch);
             savePersistedState({ activeFilters: newFilters });
         },
-        [activeFilters, savePersistedState]
+        [activeFilters, applyFiltersToGrid, globalSearch, props.columns, savePersistedState]
     );
 
     const handleToolbarSortChange = useCallback(
@@ -340,25 +365,11 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
             ? allRowData // Grid handles its own filtering
             : getFilteredData(allRowData, props.columns || [], state);
 
-    const filterableColumns = getFilterableColumns(props.columns || [], allRowData);
+    const filterableColumns = getFilterableColumns(props.columns || [], activeFilters);
     const activeFilterCount = Object.keys(activeFilters).length + (globalSearch ? 1 : 0);
 
     // Toolbar filters - map to correct type with options and selectedValues
-    const toolbarFilters = filterableColumns
-        .filter((col: any) => col.includeInToolbarFilters)
-        .map((col: any) => {
-            const distinctValues = Array.from(
-                new Set(allRowData.map((row: any) => row[col.attribute]))
-            )
-                .filter((v) => v != null)
-                .map(String);
-            return {
-                columnId: col.attribute,
-                label: col.header,
-                options: distinctValues,
-                selectedValues: activeFilters[col.attribute] || []
-            };
-        });
+    const toolbarFilters = buildToolbarFilters(props.columns || [], allRowData, activeFilters);
 
     // Sortable columns
     const sortableColumns = (props.columns || []).filter((c: any) => c.includeInSortOptions);
@@ -463,13 +474,9 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
                 activeFilters={activeFilters}
                 globalSearch={globalSearch}
                 sortModel={sortModel}
-                getDistinctValues={(columnId: string) => {
-                    const col = (props.columns || []).find((c: any) => c.attribute === columnId);
-                    if (!col) return [];
-                    return Array.from(new Set(allRowData.map((row: any) => row[columnId])))
-                        .filter((v) => v != null)
-                        .map(String);
-                }}
+                getDistinctValues={(columnId: string) =>
+                    getDistinctValuesForColumn(allRowData, props.columns || [], columnId)
+                }
                 onClose={closeFilterDrawerAndFocus}
                 onApplyFilters={applyFiltersFromDrawer}
                 onClearFilters={clearFilters}

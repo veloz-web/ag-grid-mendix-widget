@@ -3,7 +3,8 @@ import {
     getRowData,
     getFilterableColumns,
     getDistinctValuesForColumn,
-    getFilteredData
+    getFilteredData,
+    buildToolbarFilters
 } from "../data";
 import { ValueStatus } from "mendix";
 
@@ -105,6 +106,55 @@ describe("getDistinctValuesForColumn", () => {
 
     it("returns empty array when column is missing", () => {
         expect(getDistinctValuesForColumn([], columns as any, "missing")).toEqual([]);
+    });
+});
+
+describe("buildToolbarFilters", () => {
+    const columns = [
+        {
+            attribute: {
+                id: "status",
+                get: (item: any) => ({ status: ValueStatus.Available, value: item.status })
+            },
+            header: { value: "Status" },
+            filterLocation: "toolbar"
+        },
+        {
+            attribute: {
+                id: "owner",
+                get: (item: any) => ({ status: ValueStatus.Available, value: item.owner })
+            },
+            header: { value: "Owner" },
+            includeInToolbarFilters: true
+        },
+        {
+            attribute: {
+                id: "drawer",
+                get: (item: any) => ({ status: ValueStatus.Available, value: item.drawer })
+            },
+            header: { value: "Drawer" },
+            filterLocation: "drawer"
+        }
+    ];
+
+    const rowData = [
+        { status: "Open", owner: "Alice" },
+        { status: "Closed", owner: "Bob" },
+        { status: "Open", owner: "Alice" }
+    ];
+
+    it("builds toolbar filters for supported columns", () => {
+        const filters = buildToolbarFilters(columns as any, rowData, {});
+        expect(filters).toHaveLength(2);
+        expect(filters.map((f) => f.columnId)).toEqual(["status", "owner"]);
+        expect(filters[0].options).toEqual(["Closed", "Open"]);
+        expect(filters[0].selectedValues).toEqual(filters[0].options);
+    });
+
+    it("respects active filters for selected values", () => {
+        const filters = buildToolbarFilters(columns as any, rowData, { owner: ["Alice"] });
+        const ownerFilter = filters.find((filter) => filter.columnId === "owner");
+        expect(ownerFilter?.selectedValues).toEqual(["Alice"]);
     });
 });
 
