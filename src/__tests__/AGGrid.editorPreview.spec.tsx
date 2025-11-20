@@ -1,9 +1,10 @@
 // React import not needed here (older React auto-imports JSX), keep for compatibility if required
 /* eslint-disable no-template-curly-in-string */
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import "@testing-library/jest-dom";
 // No user interaction in preview tests - static rendering is asserted
 import { preview } from "../AGGrid.editorPreview";
+import * as renderers from "../utils/renderers";
 
 // Mock Mendix ValueStatus for preview templates
 jest.mock("mendix", () => ({
@@ -50,7 +51,7 @@ describe("AGGrid Editor Preview templates", () => {
         expect(card).toBeTruthy();
     });
 
-    it("changes view when clicking Cards/List in preview", async () => {
+    it("renders both card and list preview sections when configured", async () => {
         const props: any = {
             className: "",
             class: "",
@@ -80,10 +81,8 @@ describe("AGGrid Editor Preview templates", () => {
         render(preview(props));
         // No user interactions required for this preview test
 
-        // In static preview we render both card and list templates when configured
-        const rows = await screen.findAllByText(/Sample name/i);
-        // Expect at least one card + 3 list rows => >= 4 total
-        expect(rows.length).toBeGreaterThanOrEqual(4);
+        expect(await screen.findByText(/Card Template Preview/i)).toBeInTheDocument();
+        expect(await screen.findByText(/List Template Preview/i)).toBeInTheDocument();
     });
 
     it("renders list template rows with sample values", async () => {
@@ -114,8 +113,150 @@ describe("AGGrid Editor Preview templates", () => {
         render(preview(props));
         // No user interactions required for this preview test
 
-        // List template rows are visible in preview by default
-        const matches = await screen.findAllByText(/Sample name/i);
-        expect(matches.length).toBeGreaterThanOrEqual(3);
+        const listTemplate = await screen.findByText(/List Template Preview/i);
+        expect(listTemplate).toBeInTheDocument();
+        expect(await screen.findByText(/Sample name/i)).toBeInTheDocument();
+    });
+});
+
+describe("AGGrid Editor Preview indicators", () => {
+    const baseProps: any = {
+        className: "",
+        class: "",
+        style: "",
+        styleObject: {},
+        readOnly: true,
+        renderMode: "design",
+        translate: (t: string) => t,
+        dataSource: null,
+        columns: [],
+        customCardTemplate: "",
+        customListTemplate: "",
+        enableViewSelector: false,
+        enableFilterDrawer: false,
+        customFormatters: [],
+        pagination: false,
+        pageSize: 20,
+        height: 400,
+        theme: "alpine",
+        enablePolling: false,
+        pollingInterval: 5000,
+        enableNotifications: false
+    };
+
+    it("shows custom formatter warning banner for unknown names", () => {
+        const props = {
+            ...baseProps,
+            columns: [
+                {
+                    header: "Status",
+                    attribute: "status",
+                    formatter: "none",
+                    customFormatterName: "MissingFormatter"
+                }
+            ],
+            customFormatters: [
+                {
+                    formatterName: "AvailableFormatter",
+                    formatterType: "javascript",
+                    formatterCode: "return value;",
+                    formatterConfig: ""
+                }
+            ]
+        };
+
+        render(preview(props));
+
+        expect(screen.getByText(/Custom Formatter Errors/i)).toBeInTheDocument();
+        const warningContainer = screen.getByText(/Custom Formatter Errors/i).closest("div");
+        expect(warningContainer).not.toBeNull();
+        const warning = warningContainer as HTMLElement;
+
+        expect(
+            within(warning).getByText((_, element) =>
+                Boolean(
+                    element &&
+                        element.tagName === "LI" &&
+                        element.textContent &&
+                        element.textContent.replace(/\s+/g, " ").includes(
+                            'Column "Status" references formatter "MissingFormatter"'
+                        )
+                )
+            )
+        ).toBeInTheDocument();
+        expect(within(warning).getByText(/Available formatters:/i)).toHaveTextContent(
+            /Available formatters:\s+AvailableFormatter/i
+        );
+    });
+
+    it("renders filter drawer button and status counts", () => {
+        const props = {
+            ...baseProps,
+            enableFilterDrawer: true,
+            columns: [
+                {
+                    header: "Priority",
+                    attribute: "priority",
+                    filter: true,
+                    filterLocation: "drawer"
+                },
+                {
+                    header: "Region",
+                    attribute: "region",
+                    filter: true,
+                    filterLocation: "toolbar"
+                }
+            ]
+        };
+
+        render(preview(props));
+
+        expect(
+            screen.getByTitle(/Filter drawer with 1 filterable column: Priority/i)
+        ).toBeInTheDocument();
+        const filterStatusContainer = screen
+            .getByText(/Filter Configuration Status/i)
+            .closest("div") as HTMLElement;
+        const drawerRow = within(filterStatusContainer).getByText((_, element) =>
+            Boolean(
+                element &&
+                    element.tagName === "LI" &&
+                    element.textContent &&
+                    element.textContent.includes("Filter Drawer:")
+            )
+        );
+        const toolbarRow = within(filterStatusContainer).getByText((_, element) =>
+            Boolean(
+                element &&
+                    element.tagName === "LI" &&
+                    element.textContent &&
+                    element.textContent.includes("Toolbar Filters:")
+            )
+        );
+        expect(drawerRow.textContent).toContain("✓ Available (1 column)");
+        expect(toolbarRow.textContent).toContain("✓ 1 column configured");
+        expect(within(filterStatusContainer).getByText(/Drawer columns:/i)).toHaveTextContent(/Priority/i);
+        expect(within(filterStatusContainer).getByText(/Toolbar columns:/i)).toHaveTextContent(/Region/i);
+    });
+
+    it("shows template error message when evaluateTemplate throws", () => {
+        const spy = jest.spyOn(renderers, "evaluateTemplate").mockImplementation(() => {
+            throw new Error("invalid template");
+        });
+        const props = {
+            ...baseProps,
+            columns: [
+                {
+                    header: "Name",
+                    attribute: "name"
+                }
+            ],
+            customCardTemplate: "<div>${name</div>"
+        };
+
+        render(preview(props));
+
+        expect(screen.getByText(/Invalid template syntax/i)).toBeInTheDocument();
+        spy.mockRestore();
     });
 });

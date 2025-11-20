@@ -44,12 +44,16 @@ export function preview(props: AGGridPreviewProps): ReactElement {
     const hasToolbarFilters = toolbarFilters.length > 0;
 
     // Validate custom formatter references in columns
-    const formatterNames = new Set(
-        (customFormatters || []).map((f) => f.formatterName).filter(Boolean)
-    );
+    const formatterNames: string[] = [];
+    (customFormatters || []).forEach((formatter) => {
+        const name = ((formatter && formatter.formatterName) || "").trim();
+        if (name && formatterNames.indexOf(name) === -1) {
+            formatterNames.push(name);
+        }
+    });
 
     // Debug logging
-    console.log("EditorPreview - Available formatters:", Array.from(formatterNames));
+    console.log("EditorPreview - Available formatters:", formatterNames);
     console.log(
         "EditorPreview - Columns:",
         (columns || []).map((c) => ({
@@ -60,8 +64,8 @@ export function preview(props: AGGridPreviewProps): ReactElement {
     );
 
     const columnsWithInvalidFormatters = (columns || []).filter((col) => {
-        const name = col.customFormatterName?.trim();
-        return name && name.length > 0 && !formatterNames.has(name);
+        const name = (col.customFormatterName || "").trim();
+        return name && formatterNames.indexOf(name) === -1;
     });
     console.log(
         "EditorPreview - Columns with invalid formatters:",
@@ -110,8 +114,8 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                     </ul>
                     <div style={{ marginTop: "8px", fontStyle: "italic", fontSize: "12px" }}>
                         💡 Tip: Check the &quot;Custom Formatters&quot; tab. Available formatters:{" "}
-                        {formatterNames.size > 0
-                            ? Array.from(formatterNames).join(", ")
+                        {formatterNames.length > 0
+                            ? formatterNames.join(", ")
                             : "(none configured)"}
                     </div>
                 </div>
