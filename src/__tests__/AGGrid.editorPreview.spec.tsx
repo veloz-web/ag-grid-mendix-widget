@@ -178,9 +178,9 @@ describe("AGGrid Editor Preview indicators", () => {
                     element &&
                         element.tagName === "LI" &&
                         element.textContent &&
-                        element.textContent.replace(/\s+/g, " ").includes(
-                            'Column "Status" references formatter "MissingFormatter"'
-                        )
+                        element.textContent
+                            .replace(/\s+/g, " ")
+                            .includes('Column "Status" references formatter "MissingFormatter"')
                 )
             )
         ).toBeInTheDocument();
@@ -235,8 +235,12 @@ describe("AGGrid Editor Preview indicators", () => {
         );
         expect(drawerRow.textContent).toContain("✓ Available (1 column)");
         expect(toolbarRow.textContent).toContain("✓ 1 column configured");
-        expect(within(filterStatusContainer).getByText(/Drawer columns:/i)).toHaveTextContent(/Priority/i);
-        expect(within(filterStatusContainer).getByText(/Toolbar columns:/i)).toHaveTextContent(/Region/i);
+        expect(within(filterStatusContainer).getByText(/Drawer columns:/i)).toHaveTextContent(
+            /Priority/i
+        );
+        expect(within(filterStatusContainer).getByText(/Toolbar columns:/i)).toHaveTextContent(
+            /Region/i
+        );
     });
 
     it("shows template error message when evaluateTemplate throws", () => {
