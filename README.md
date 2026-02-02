@@ -7,6 +7,8 @@ A powerful Mendix pluggable widget that integrates AG Grid into your Mendix appl
 - **AG Grid Enterprise Ready**: Built with Enterprise modules - just add your license key
 - **Advanced Filtering**: Set filters, multi-filters, text/number/date filters included
 - **Server-Side Row Model**: Handle large datasets with server-side operations
+- **Data Export**: Export to Excel (.xlsx), CSV, and PDF with configurable options
+- **Column Pinning**: Pin columns to left or right side for better data visibility
 - **Multiple View Modes**: Switch between Grid, Cards, and List views
 - **Custom Formatters**: Define reusable formatters in widget config (no code changes needed!)
 - **Responsive Design**: Automatic view switching based on device (desktop/mobile)
@@ -33,6 +35,8 @@ A powerful Mendix pluggable widget that integrates AG Grid into your Mendix appl
 - **[DEFAULT_SORT_GUIDE.md](./docs/DEFAULT_SORT_GUIDE.md)** - Configure default sorting
 - **[TEXT_ALIGNMENT_GUIDE.md](./docs/TEXT_ALIGNMENT_GUIDE.md)** - Align text in columns
 - **[COLUMN_WIDTH_CONFIGURATION.md](./docs/COLUMN_WIDTH_CONFIGURATION.md)** - Column width options
+- **[ROW_GROUPING_GUIDE.md](./ROW_GROUPING_GUIDE.md)** - Hierarchical data grouping
+- **[AGGREGATIONS_GUIDE.md](./AGGREGATIONS_GUIDE.md)** - Column footers with sum, avg, count
 - **[POLLING_GUIDE.md](./docs/POLLING_GUIDE.md)** - Auto-detect new data
 - **[ACCESSIBILITY.md](./docs/ACCESSIBILITY.md)** - Keyboard navigation & accessibility
 
@@ -461,14 +465,17 @@ src/
 
 ## Feature Roadmap
 
-Future enhancements planned:
-- [ ] Cell editing capabilities
-- [ ] Export to Excel/CSV
-- [ ] Column pinning
-- [ ] Row grouping
-- [ ] Master-detail view
-- [ ] Custom cell renderers
-- [ ] Server-side row model for very large datasets
+### ✅ Implemented Features
+- [x] **Export to Excel/CSV/PDF** - Full export functionality with configurable options
+- [x] **Column pinning** - Pin columns to left or right, with user-configurable pinning via menu
+- [x] **Custom cell renderers** - Via custom formatters and template system
+- [x] **Server-side row model** - Handle very large datasets with server-side operations
+- [x] **Advanced aggregations** - Sum, count, avg, min, max in column footers and group rows
+- [x] **Row grouping** - Hierarchical data display with multi-level grouping (see [ROW_GROUPING_GUIDE.md](./ROW_GROUPING_GUIDE.md))
+
+### 🚧 Future Enhancements
+- [ ] Cell editing capabilities (inline editing)
+- [ ] Master-detail view (expandable row details)
 
 ## License
 

@@ -36,7 +36,9 @@ import {
     getFilteredData,
     getRowSignature,
     getDistinctValuesForColumn,
-    buildToolbarFilters
+    buildToolbarFilters,
+    applyDefaultSortToData,
+    validateSortConfiguration
 } from "./utils/data";
 import { getInitialState } from "./utils/initialState";
 import { getThemeClassName } from "./utils/theme";
@@ -120,7 +122,7 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
         applyFiltersToGrid,
         applyGlobalSearch,
         handleExportRequest
-    } = useGridApi(state, setState, savePersistedState, props.columns);
+    } = useGridApi(state, setState, savePersistedState, props);
 
     // Data polling
     useDataPolling(props, showToast, gridApiRef);
@@ -339,19 +341,31 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
     // --- 7. Render Logic ---
     const { dataSource, height, pagination, pageSize } = props;
 
+    // Validate sort configuration
+    const sortValidation = useMemo(
+        () => validateSortConfiguration(props.columns || []),
+        [props.columns]
+    );
+
     // Get row data (only update reference when data actually changes)
     const latestRowData = getRowData(dataSource);
     const latestRowSignature = useMemo(() => getRowSignature(latestRowData), [latestRowData]);
     const allRowData = useMemo(() => {
         if (rowDataCacheRef.current.signature !== latestRowSignature) {
+            // Apply default sort to the raw data based on column sortIndex and defaultSort
+            const sortedData = applyDefaultSortToData(
+                latestRowData,
+                props.columns || [],
+                sortModel
+            );
             rowDataCacheRef.current = {
                 signature: latestRowSignature,
-                data: latestRowData
+                data: sortedData
             };
         }
 
         return rowDataCacheRef.current.data;
-    }, [latestRowData, latestRowSignature]);
+    }, [latestRowData, latestRowSignature, props.columns, sortModel]);
 
     // Loading states
     if (!dataSource || dataSource.status === ValueStatus.Loading) {
@@ -360,6 +374,26 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
     if (dataSource.status === ValueStatus.Unavailable) {
         return <div className="aggrid-loading">No data source available</div>;
     }
+
+    // Validation error for sort configuration
+    if (!sortValidation.valid) {
+        return (
+            <div
+                className="aggrid-error"
+                style={{
+                    padding: "20px",
+                    color: "#d32f2f",
+                    border: "2px solid #d32f2f",
+                    borderRadius: "4px",
+                    margin: "10px"
+                }}
+            >
+                <strong>Configuration Error:</strong>
+                <p>{sortValidation.error}</p>
+            </div>
+        );
+    }
+
     const filteredData =
         currentView === "grid"
             ? allRowData // Grid handles its own filtering
@@ -461,10 +495,16 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
                 enableContextMenu={Boolean(props.enableContextMenu)}
                 enableSideBar={Boolean(props.enableSideBar)}
                 enableStatusBar={Boolean(props.enableStatusBar)}
+                enableAggregationFooter={Boolean(props.enableAggregationFooter)}
+                enableRowGrouping={Boolean(props.enableRowGrouping)}
+                groupDefaultExpanded={props.groupDefaultExpanded ?? -1}
+                showGroupRowsOnSeparateLine={Boolean(props.showGroupRowsOnSeparateLine)}
+                suppressAggregationOnGroupRows={Boolean(props.suppressAggregationOnGroupRows)}
                 enableColumnMenus={Boolean(props.enableColumnMenus)}
                 enableHeaderFilterButtons={Boolean(props.enableHeaderFilterButtons)}
                 enableFloatingFilters={Boolean(props.enableFloatingFilters)}
                 onRowClick={props.onRowClick}
+                rowModelType={props.rowModelType}
             />
 
             <FilterDrawer

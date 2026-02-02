@@ -30,9 +30,15 @@ interface GridViewProps {
     enableContextMenu: boolean;
     enableSideBar: boolean;
     enableStatusBar: boolean;
+    enableAggregationFooter: boolean;
+    enableRowGrouping: boolean;
+    groupDefaultExpanded: number;
+    showGroupRowsOnSeparateLine: boolean;
+    suppressAggregationOnGroupRows: boolean;
     enableColumnMenus: boolean;
     enableHeaderFilterButtons: boolean;
     enableFloatingFilters: boolean;
+    rowModelType?: "clientSide" | "serverSide";
 }
 
 // --- Helper function moved outside the component for memoization ---
@@ -121,6 +127,22 @@ export function mapMendixColumnToColDef(
             }
         }
     };
+
+    // Add aggregation function if enabled
+    if (col.enableAggregation && col.aggregationFunction) {
+        colDef.aggFunc = col.aggregationFunction;
+    }
+
+    // Add row grouping if enabled
+    if (col.enableRowGroup) {
+        colDef.rowGroup = true;
+        if (col.rowGroupIndex !== undefined && col.rowGroupIndex !== 999) {
+            colDef.rowGroupIndex = col.rowGroupIndex;
+        }
+        if (col.showRowGroup) {
+            colDef.showRowGroup = true;
+        }
+    }
 
     if (explicitDataType) {
         if (explicitDataType === "string") {
@@ -364,6 +386,11 @@ export function GridView(props: GridViewProps): ReactElement {
         enableContextMenu,
         enableSideBar,
         enableStatusBar,
+        enableAggregationFooter,
+        enableRowGrouping,
+        groupDefaultExpanded,
+        showGroupRowsOnSeparateLine,
+        suppressAggregationOnGroupRows,
         enableColumnMenus,
         enableHeaderFilterButtons,
         enableFloatingFilters
@@ -383,6 +410,69 @@ export function GridView(props: GridViewProps): ReactElement {
             ]
         };
     }, [enableStatusBar]);
+
+    // --- Calculate aggregation footer row ---
+    const pinnedBottomRowData = useMemo(() => {
+        if (!enableAggregationFooter || !rowData || rowData.length === 0) {
+            return undefined;
+        }
+
+        const aggregationRow: Record<string, any> = {};
+        let hasAnyAggregation = false;
+
+        columns.forEach((col) => {
+            if (col.enableAggregation && col.aggregationFunction && col.attribute?.id) {
+                hasAnyAggregation = true;
+                const values = rowData
+                    .map((item) => {
+                        const value = col.attribute?.get(item);
+                        if (value?.status === ValueStatus.Available) {
+                            return value.value;
+                        }
+                        return null;
+                    })
+                    .filter((v) => v !== null && v !== undefined);
+
+                const numericValues = values.filter((v) => typeof v === "number");
+
+                switch (col.aggregationFunction) {
+                    case "sum":
+                        aggregationRow[col.attribute.id] = numericValues.reduce(
+                            (sum, val) => sum + val,
+                            0
+                        );
+                        break;
+                    case "avg":
+                        aggregationRow[col.attribute.id] =
+                            numericValues.length > 0
+                                ? numericValues.reduce((sum, val) => sum + val, 0) /
+                                  numericValues.length
+                                : 0;
+                        break;
+                    case "min":
+                        aggregationRow[col.attribute.id] =
+                            numericValues.length > 0 ? Math.min(...numericValues) : null;
+                        break;
+                    case "max":
+                        aggregationRow[col.attribute.id] =
+                            numericValues.length > 0 ? Math.max(...numericValues) : null;
+                        break;
+                    case "count":
+                        aggregationRow[col.attribute.id] = values.length;
+                        break;
+                    case "first":
+                        aggregationRow[col.attribute.id] = values.length > 0 ? values[0] : null;
+                        break;
+                    case "last":
+                        aggregationRow[col.attribute.id] =
+                            values.length > 0 ? values[values.length - 1] : null;
+                        break;
+                }
+            }
+        });
+
+        return hasAnyAggregation ? [aggregationRow] : undefined;
+    }, [enableAggregationFooter, rowData, columns]);
 
     // --- IMPROVEMENT: Memoize column definitions ---
     // This expensive calculation will only run when these specific props change.
@@ -422,6 +512,7 @@ export function GridView(props: GridViewProps): ReactElement {
                 // theme={theme} // <-- Removed: Theme is now on the wrapper
                 columnDefs={columnDefs} // <-- Removed 'as any'
                 rowData={rowData}
+                pinnedBottomRowData={pinnedBottomRowData}
                 pagination={pagination}
                 paginationPageSize={pageSize}
                 onGridReady={onGridReady} // <-- Removed 'as any'
@@ -430,6 +521,24 @@ export function GridView(props: GridViewProps): ReactElement {
                 onFilterChanged={onFilterChanged}
                 onColumnMoved={onColumnMoved}
                 onColumnPinned={onColumnPinned}
+                rowModelType={props.rowModelType}
+                // Row Grouping Configuration
+                groupDisplayType={
+                    enableRowGrouping && showGroupRowsOnSeparateLine ? "singleColumn" : "groupRows"
+                }
+                groupDefaultExpanded={enableRowGrouping ? groupDefaultExpanded : undefined}
+                suppressAggFuncInHeader={suppressAggregationOnGroupRows}
+                autoGroupColumnDef={
+                    enableRowGrouping
+                        ? {
+                              headerName: "Group",
+                              minWidth: 200,
+                              cellRendererParams: {
+                                  suppressCount: false
+                              }
+                          }
+                        : undefined
+                }
                 animateRows={true}
                 suppressCellFocus={false}
                 enableCellTextSelection={true}

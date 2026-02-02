@@ -1,7 +1,7 @@
 {
   "name": "aggrid",
   "widgetName": "AGGrid",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "AG Grid integration for Mendix",
   "license": "Apache-2.0",
   "author": "Your Name",

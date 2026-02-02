@@ -172,6 +172,78 @@ export const buildToolbarFilters = (
 };
 
 /**
+ * Validates sort configuration - enforces "all or nothing" rule.
+ * Either ALL sortable columns must have sortIndex defined (not 999), or ALL must be at default (999).
+ * @param {Array} columns - The widget's column props.
+ * @returns {{ valid: boolean, error: string | null }} Validation result.
+ */
+export const validateSortConfiguration = (columns = []) => {
+    const sortableColumns = columns.filter((col) => col.includeInSort !== false);
+
+    if (sortableColumns.length === 0) {
+        return { valid: true, error: null };
+    }
+
+    const columnsWithCustomIndex = sortableColumns.filter(
+        (col) => col.sortIndex !== undefined && col.sortIndex !== 999
+    );
+
+    // All or nothing rule
+    if (columnsWithCustomIndex.length === 0) {
+        // All at default - OK
+        return { valid: true, error: null };
+    } else if (columnsWithCustomIndex.length === sortableColumns.length) {
+        // All have custom values - OK
+        return { valid: true, error: null };
+    } else {
+        // Partial configuration - ERROR
+        return {
+            valid: false,
+            error: `Sort Priority configuration error: ${columnsWithCustomIndex.length} of ${sortableColumns.length} sortable columns have custom sortIndex. Either assign sortIndex to ALL sortable columns, or leave ALL at default (999).`
+        };
+    }
+};
+
+/**
+ * Applies sorting to raw data based on the current sort model.
+ * This ensures the data is sorted when it first loads and when the datasource updates.
+ * @param {Array} rowData - The raw row data.
+ * @param {Array} columns - The widget's column props.
+ * @param {Array} sortModel - The current sort model.
+ * @returns {Array} The sorted data.
+ */
+export const applyDefaultSortToData = (rowData = [], columns = [], sortModel = []) => {
+    if (!sortModel || sortModel.length === 0 || rowData.length === 0) {
+        return rowData;
+    }
+
+    const currentSort = sortModel[0];
+    if (!currentSort || !currentSort.colId || !currentSort.sort) {
+        return rowData;
+    }
+
+    const sortColumn = columns.find((col) => col.attribute?.id === currentSort.colId);
+    if (!sortColumn || !sortColumn.attribute) {
+        return rowData;
+    }
+
+    const directionMultiplier = currentSort.sort === "desc" ? -1 : 1;
+
+    return [...rowData].sort((a, b) => {
+        const aValue = sortColumn.attribute.get(a);
+        const bValue = sortColumn.attribute.get(b);
+        const aComparable = aValue && aValue.status === ValueStatus.Available ? aValue.value : null;
+        const bComparable = bValue && bValue.status === ValueStatus.Available ? bValue.value : null;
+
+        if (aComparable === null && bComparable === null) return 0;
+        if (aComparable === null) return 1;
+        if (bComparable === null) return -1;
+
+        return compareValuesForSort(aComparable, bComparable) * directionMultiplier;
+    });
+};
+
+/**
  * Performs manual filtering and sorting for non-grid views (Cards, List).
  * @param {Array} rowData - The raw row data.
  * @param {Array} columns - The widget's column props.

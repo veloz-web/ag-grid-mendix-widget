@@ -18,7 +18,8 @@ import {
     NumberFilterModule,
     DateFilterModule,
     MultiFilterModule,
-    ExcelExportModule
+    ExcelExportModule,
+    RowGroupingModule
 } from "ag-grid-enterprise";
 
 // Register only the modules we need for optimal bundle size
@@ -38,5 +39,6 @@ ModuleRegistry.registerModules([
     NumberFilterModule,
     DateFilterModule,
     MultiFilterModule,
-    ExcelExportModule
+    ExcelExportModule,
+    RowGroupingModule
 ]);

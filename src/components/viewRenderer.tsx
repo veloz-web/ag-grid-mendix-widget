@@ -25,12 +25,18 @@ export const ViewRenderer = ({
     enableContextMenu,
     enableSideBar,
     enableStatusBar,
+    enableAggregationFooter,
+    enableRowGrouping,
+    groupDefaultExpanded,
+    showGroupRowsOnSeparateLine,
+    suppressAggregationOnGroupRows,
     enableColumnMenus,
     enableHeaderFilterButtons,
     enableFloatingFilters,
     onRowClick, // Pass onRowClick to custom views
     onOpenColumnVisibility,
-    onOpenHiddenDrawer
+    onOpenHiddenDrawer,
+    rowModelType
 }) => {
     if (currentView === "grid") {
         return (
@@ -53,11 +59,17 @@ export const ViewRenderer = ({
                 enableContextMenu={enableContextMenu}
                 enableSideBar={enableSideBar}
                 enableStatusBar={enableStatusBar}
+                enableAggregationFooter={enableAggregationFooter}
+                enableRowGrouping={enableRowGrouping}
+                groupDefaultExpanded={groupDefaultExpanded}
+                showGroupRowsOnSeparateLine={showGroupRowsOnSeparateLine}
+                suppressAggregationOnGroupRows={suppressAggregationOnGroupRows}
                 enableColumnMenus={enableColumnMenus}
                 enableHeaderFilterButtons={enableHeaderFilterButtons}
                 enableFloatingFilters={enableFloatingFilters}
                 onOpenColumnVisibility={onOpenColumnVisibility}
                 onOpenHiddenDrawer={onOpenHiddenDrawer}
+                rowModelType={rowModelType}
             />
         );
     }
@@ -107,6 +119,11 @@ export const ViewRenderer = ({
                 enableContextMenu={enableContextMenu}
                 enableSideBar={enableSideBar}
                 enableStatusBar={enableStatusBar}
+                enableAggregationFooter={enableAggregationFooter}
+                enableRowGrouping={enableRowGrouping}
+                groupDefaultExpanded={groupDefaultExpanded}
+                showGroupRowsOnSeparateLine={showGroupRowsOnSeparateLine}
+                suppressAggregationOnGroupRows={suppressAggregationOnGroupRows}
                 enableColumnMenus={enableColumnMenus}
                 enableHeaderFilterButtons={enableHeaderFilterButtons}
                 enableFloatingFilters={enableFloatingFilters}
@@ -135,6 +152,11 @@ export const ViewRenderer = ({
                 enableContextMenu={enableContextMenu}
                 enableSideBar={enableSideBar}
                 enableStatusBar={enableStatusBar}
+                enableAggregationFooter={enableAggregationFooter}
+                enableRowGrouping={enableRowGrouping}
+                groupDefaultExpanded={groupDefaultExpanded}
+                showGroupRowsOnSeparateLine={showGroupRowsOnSeparateLine}
+                suppressAggregationOnGroupRows={suppressAggregationOnGroupRows}
                 enableColumnMenus={enableColumnMenus}
                 enableHeaderFilterButtons={enableHeaderFilterButtons}
                 enableFloatingFilters={enableFloatingFilters}

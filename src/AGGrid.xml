@@ -13,6 +13,26 @@
                 <description>The data source for the grid</description>
             </property>
         </propertyGroup>
+        <propertyGroup caption="Data Mode">
+            <property key="rowModelType" type="enumeration" defaultValue="clientSide">
+                <caption>Row Model</caption>
+                <description>Choose Client-Side for small datasets or Server-Side for large datasets.</description>
+                <enumerationValues>
+                    <enumerationValue key="clientSide">Client-Side (Standard)</enumerationValue>
+                    <enumerationValue key="serverSide">Server-Side (Large Data)</enumerationValue>
+                </enumerationValues>
+            </property>
+        </propertyGroup>
+        <propertyGroup caption="Server-Side Configuration">
+            <property key="serverSideMicroflow" type="string" required="false">
+                <caption>Data Loader Microflow</caption>
+                <description>Name of the Microflow (e.g. 'MyModule.DS_GetGridData') that accepts an AG Grid Request JSON and returns a Response JSON.</description>
+            </property>
+            <property key="entityName" type="string" required="false">
+                <caption>Entity Name</caption>
+                <description>The entity type being retrieved (helper for OQL generation).</description>
+            </property>
+        </propertyGroup>
         <propertyGroup caption="Columns">
             <property key="columns" type="object" isList="true" required="true">
                 <caption>Columns</caption>
@@ -126,7 +146,7 @@
                         </property>
                         <property key="sortIndex" type="integer" defaultValue="999">
                             <caption>Sort Priority</caption>
-                            <description>Order for multi-column sorting (0 = first, 1 = second, etc.). Use high number like 999 if not using multi-sort.</description>
+                            <description>Order for multi-column sorting (0 = first, 1 = second, etc.). ALL or NOTHING: Either assign sortIndex to ALL sortable columns, or leave ALL at default (999). Partial configuration will show an error.</description>
                         </property>
                         <property key="includeInSort" type="boolean" defaultValue="true">
                             <caption>Include in Sort Options</caption>
@@ -156,6 +176,39 @@
                         <property key="floatingFilter" type="boolean" defaultValue="false">
                             <caption>Floating Filter</caption>
                             <description>Show the filter below the column header.</description>
+                        </property>
+                    </propertyGroup>
+                    <propertyGroup caption="Aggregation">
+                        <property key="enableAggregation" type="boolean" defaultValue="false">
+                            <caption>Enable Aggregation</caption>
+                            <description>Enable aggregation for this column. Aggregations appear in the status bar when rows are selected, and in column footers when enabled.</description>
+                        </property>
+                        <property key="aggregationFunction" type="enumeration" defaultValue="sum">
+                            <caption>Aggregation Function</caption>
+                            <description>The aggregation function to use for this column</description>
+                            <enumerationValues>
+                                <enumerationValue key="sum">Sum (total of all values)</enumerationValue>
+                                <enumerationValue key="min">Min (smallest value)</enumerationValue>
+                                <enumerationValue key="max">Max (largest value)</enumerationValue>
+                                <enumerationValue key="avg">Avg (average of all values)</enumerationValue>
+                                <enumerationValue key="count">Count (number of rows)</enumerationValue>
+                                <enumerationValue key="first">First (first value)</enumerationValue>
+                                <enumerationValue key="last">Last (last value)</enumerationValue>
+                            </enumerationValues>
+                        </property>
+                    </propertyGroup>
+                    <propertyGroup caption="Row Grouping">
+                        <property key="enableRowGroup" type="boolean" defaultValue="false">
+                            <caption>Enable Row Group</caption>
+                            <description>Enable this column for row grouping. When enabled, rows will be grouped by the values in this column.</description>
+                        </property>
+                        <property key="rowGroupIndex" type="integer" defaultValue="999">
+                            <caption>Row Group Index</caption>
+                            <description>Order for multi-level grouping (0 = first level, 1 = second level, etc.). Lower values group first.</description>
+                        </property>
+                        <property key="showRowGroup" type="boolean" defaultValue="false">
+                            <caption>Show in Group Column</caption>
+                            <description>Display this column's values in the auto-generated group column instead of its own column.</description>
                         </property>
                     </propertyGroup>
                     <propertyGroup caption="Formatting &amp; Display">
@@ -314,6 +367,26 @@
             <property key="enableStatusBar" type="boolean" defaultValue="false">
                 <caption>Enable Status Bar</caption>
                 <description>Show the AG Grid status bar with row counts and selection information.</description>
+            </property>
+            <property key="enableAggregationFooter" type="boolean" defaultValue="false">
+                <caption>Enable Aggregation Footer</caption>
+                <description>Show a pinned bottom row displaying column aggregations (sum, avg, count, etc.). Configure aggregation per column in the Aggregation section.</description>
+            </property>
+            <property key="enableRowGrouping" type="boolean" defaultValue="false">
+                <caption>Enable Row Grouping</caption>
+                <description>Enable hierarchical row grouping. Configure which columns to group by in the Row Grouping section of each column.</description>
+            </property>
+            <property key="groupDefaultExpanded" type="integer" defaultValue="-1">
+                <caption>Group Default Expanded</caption>
+                <description>Number of group levels to expand by default. -1 = expand all, 0 = collapse all, 1 = expand first level, etc.</description>
+            </property>
+            <property key="showGroupRowsOnSeparateLine" type="boolean" defaultValue="false">
+                <caption>Show Groups on Separate Line</caption>
+                <description>Display group rows on a separate line above the data rows. When disabled, groups appear inline with data.</description>
+            </property>
+            <property key="suppressAggregationOnGroupRows" type="boolean" defaultValue="false">
+                <caption>Suppress Aggregation on Group Rows</caption>
+                <description>Hide aggregation values on group rows. Useful if you only want to show aggregations in the footer.</description>
             </property>
         </propertyGroup>
         <propertyGroup caption="Grid Options">

@@ -6,10 +6,12 @@ import {
     FilterChangedEvent,
     ColumnMovedEvent,
     ColumnPinnedEvent,
-    ColumnState
+    ColumnState,
+    IServerSideDatasource,
+    IServerSideGetRowsParams
 } from "ag-grid-community";
 import { exportToPDF } from "../utils/pdfExport";
-import { AGGridState, ColumnPinnedState, PersistedGridState } from "../types";
+import { AGGridState, ColumnPinnedState, PersistedGridState, AGGridContainerProps } from "../types";
 import { debugLog } from "../utils/logger";
 import {
     isDateRangeValue,
@@ -204,7 +206,7 @@ export const useGridApi = (
     state: AGGridState,
     setState: React.Dispatch<React.SetStateAction<AGGridState>>,
     savePersistedState: (state: Partial<PersistedGridState>) => void,
-    _columns: any // Kept for signature compatibility, though ideally typed
+    props: AGGridContainerProps
 ) => {
     const gridApiRef = useRef<ExtendedGridApi | null>(null);
     const { columnOrder, columnPinned, sortModel, globalSearch, gridFilterModel } = state;
@@ -322,16 +324,69 @@ export const useGridApi = (
         savePersistedState(newStateUpdate);
     }, [setState, savePersistedState]);
 
+    // --- Server Side Datasource ---
+    const createServerSideDatasource = useCallback((mxMicroflow: string): IServerSideDatasource => {
+        return {
+            getRows: async (params: IServerSideGetRowsParams) => {
+                const { startRow, endRow, sortModel, filterModel } = params.request;
+                const requestJson = JSON.stringify({
+                    startRow,
+                    endRow,
+                    sortModel,
+                    filterModel,
+                    groupKeys: params.request.groupKeys
+                });
+
+                try {
+                    const responseJson = await new Promise<string>((resolve, reject) => {
+                        if (window.mx && window.mx.data && window.mx.data.action) {
+                            window.mx.data.action({
+                                params: {
+                                    actionname: mxMicroflow,
+                                    applyto: "none",
+                                    args: {
+                                        requestJson: requestJson
+                                    }
+                                },
+                                callback: (res: string) => resolve(res),
+                                error: (err: any) => reject(err)
+                            });
+                        } else {
+                            reject(new Error("Mendix client API (mx.data.action) not available"));
+                        }
+                    });
+
+                    const response = JSON.parse(responseJson);
+                    params.success({
+                        rowData: response.rowData,
+                        rowCount: response.lastRow
+                    });
+                } catch (error) {
+                    console.error("[AGGrid] Error fetching server-side data", error);
+                    params.fail();
+                }
+            }
+        };
+    }, []);
+
     // --- Grid Event Callbacks ---
 
-    const onGridReady = useCallback((params: GridReadyEvent) => {
-        gridApiRef.current = params.api as ExtendedGridApi;
-        debugLog("[AGGrid] Grid ready, API available");
+    const onGridReady = useCallback(
+        (params: GridReadyEvent) => {
+            gridApiRef.current = params.api as ExtendedGridApi;
+            debugLog("[AGGrid] Grid ready, API available");
 
-        // NOTE: We do NOT apply state here anymore.
-        // We rely on the useEffect below to sync `state` -> `grid`.
-        // This separates "Initialization" from "State Synchronization".
-    }, []);
+            if (props.rowModelType === "serverSide" && props.serverSideMicroflow) {
+                const datasource = createServerSideDatasource(props.serverSideMicroflow);
+                params.api.setGridOption("serverSideDatasource", datasource);
+            }
+
+            // NOTE: We do NOT apply state here anymore.
+            // We rely on the useEffect below to sync `state` -> `grid`.
+            // This separates "Initialization" from "State Synchronization".
+        },
+        [props.rowModelType, props.serverSideMicroflow, createServerSideDatasource]
+    );
 
     /**
      * Effect: Sync External State -> Grid
@@ -588,6 +643,7 @@ export const useGridApi = (
         applyFiltersToGrid,
         applyGlobalSearch,
         handleExportRequest,
-        syncColumnStateFromGrid
+        syncColumnStateFromGrid,
+        createServerSideDatasource
     };
 };

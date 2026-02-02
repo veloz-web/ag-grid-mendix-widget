@@ -7,6 +7,8 @@ import { CSSProperties } from "react";
 import { DynamicValue, ListValue, ListActionValue, ListAttributeValue } from "mendix";
 import { Big } from "big.js";
 
+export type RowModelTypeEnum = "clientSide" | "serverSide";
+
 export type DataTypeEnum = "auto" | "boolean" | "date" | "number" | "string";
 
 export type AlignmentEnum = "auto" | "left" | "center" | "right";
@@ -18,6 +20,8 @@ export type PinnedEnum = "none" | "left" | "right";
 export type DefaultSortEnum = "none" | "asc" | "desc";
 
 export type FilterLocationEnum = "none" | "drawer" | "toolbar";
+
+export type AggregationFunctionEnum = "sum" | "min" | "max" | "avg" | "count" | "first" | "last";
 
 export type FormatterEnum = "none" | "currency" | "currencyEUR" | "currencyGBP" | "percentage" | "number" | "decimal2" | "dateShort" | "dateLong" | "dateISO" | "dateDMY" | "dateMDY" | "dateYMD" | "dateTime" | "time" | "yesNo" | "trueFalse" | "uppercase" | "lowercase" | "capitalize" | "customPrefix" | "link";
 
@@ -45,6 +49,11 @@ export interface ColumnsType {
     useDateRange: boolean;
     useRelativeRange: boolean;
     floatingFilter: boolean;
+    enableAggregation: boolean;
+    aggregationFunction: AggregationFunctionEnum;
+    enableRowGroup: boolean;
+    rowGroupIndex: number;
+    showRowGroup: boolean;
     formatter: FormatterEnum;
     customFormatterName: string;
     customPrefix: string;
@@ -101,6 +110,11 @@ export interface ColumnsPreviewType {
     useDateRange: boolean;
     useRelativeRange: boolean;
     floatingFilter: boolean;
+    enableAggregation: boolean;
+    aggregationFunction: AggregationFunctionEnum;
+    enableRowGroup: boolean;
+    rowGroupIndex: number | null;
+    showRowGroup: boolean;
     formatter: FormatterEnum;
     customFormatterName: string;
     customPrefix: string;
@@ -125,6 +139,9 @@ export interface AGGridContainerProps {
     style?: CSSProperties;
     tabIndex?: number;
     dataSource: ListValue;
+    rowModelType: RowModelTypeEnum;
+    serverSideMicroflow: string;
+    entityName: string;
     columns: ColumnsType[];
     enableColumnMenus: boolean;
     enableHeaderFilterButtons: boolean;
@@ -138,6 +155,11 @@ export interface AGGridContainerProps {
     customFormatters: CustomFormattersType[];
     enableSideBar: boolean;
     enableStatusBar: boolean;
+    enableAggregationFooter: boolean;
+    enableRowGrouping: boolean;
+    groupDefaultExpanded: number;
+    showGroupRowsOnSeparateLine: boolean;
+    suppressAggregationOnGroupRows: boolean;
     licenseKey: string;
     enableContextMenu: boolean;
     useLocalStorage: boolean;
@@ -178,6 +200,9 @@ export interface AGGridPreviewProps {
     renderMode: "design" | "xray" | "structure";
     translate: (text: string) => string;
     dataSource: {} | { caption: string } | { type: string } | null;
+    rowModelType: RowModelTypeEnum;
+    serverSideMicroflow: string;
+    entityName: string;
     columns: ColumnsPreviewType[];
     enableColumnMenus: boolean;
     enableHeaderFilterButtons: boolean;
@@ -191,6 +216,11 @@ export interface AGGridPreviewProps {
     customFormatters: CustomFormattersPreviewType[];
     enableSideBar: boolean;
     enableStatusBar: boolean;
+    enableAggregationFooter: boolean;
+    enableRowGrouping: boolean;
+    groupDefaultExpanded: number | null;
+    showGroupRowsOnSeparateLine: boolean;
+    suppressAggregationOnGroupRows: boolean;
     licenseKey: string;
     enableContextMenu: boolean;
     useLocalStorage: boolean;

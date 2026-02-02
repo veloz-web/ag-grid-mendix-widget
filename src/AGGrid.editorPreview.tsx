@@ -2,6 +2,7 @@ import { ReactElement } from "react";
 import { AGGridPreviewProps } from "../typings/AGGridProps";
 import { evaluateTemplate } from "./utils/renderers";
 import { ValueStatus } from "mendix";
+import { validateSortConfiguration } from "./utils/data";
 
 export function preview(props: AGGridPreviewProps): ReactElement {
     const {
@@ -77,6 +78,9 @@ export function preview(props: AGGridPreviewProps): ReactElement {
 
     const hasFormatterErrors = columnsWithInvalidFormatters.length > 0;
 
+    // Validate sort configuration
+    const sortValidation = validateSortConfiguration(columns || []);
+
     // Prepare preview columns for template rendering
     const previewColumns = (columns || []).map((c: any) => ({
         header: c.header,
@@ -88,6 +92,24 @@ export function preview(props: AGGridPreviewProps): ReactElement {
 
     return (
         <div className="aggrid-preview-container" style={{ padding: "10px" }}>
+            {/* Sort Configuration Validation - TOP PRIORITY */}
+            {!sortValidation.valid && (
+                <div
+                    style={{
+                        marginBottom: "10px",
+                        padding: "12px 16px",
+                        backgroundColor: "#ffebee",
+                        border: "2px solid #d32f2f",
+                        borderRadius: "4px",
+                        fontSize: "13px",
+                        color: "#c62828"
+                    }}
+                >
+                    <strong>🚫 Sort Configuration Error:</strong>
+                    <p style={{ margin: "8px 0 0 0" }}>{sortValidation.error}</p>
+                </div>
+            )}
+
             {/* Custom Formatter Validation - MOVED TO TOP FOR VISIBILITY */}
             {hasFormatterErrors && (
                 <div
