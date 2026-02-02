@@ -1,0 +1,132 @@
+/**
+ * Grid Configuration Types
+ *
+ * Semantic grouping of grid configuration to reduce prop drilling and improve
+ * maintainability. Instead of passing 39+ individual props, we group related
+ * configuration into logical units.
+ */
+
+import type { GridReadyEvent, ColumnPinnedEvent } from "ag-grid-community";
+import { ColumnsType } from "../../typings/AGGridProps";
+import { CustomFormatterRegistry } from "../utils/customFormatters";
+import { ReactNode } from "react";
+
+/**
+ * Data-related configuration
+ */
+export interface GridDataConfig {
+    /** Row data to display */
+    rowData: any[];
+    /** Column configurations */
+    columns: ColumnsType[];
+    /** Column visibility state */
+    columnVisibility?: Record<string, boolean>;
+    /** Column ordering */
+    columnOrder?: string[];
+    /** Custom formatter registry */
+    customFormatterRegistry?: CustomFormatterRegistry;
+}
+
+/**
+ * Display/appearance configuration
+ */
+export interface GridDisplayConfig {
+    /** AG Grid theme class name */
+    themeClassName: string;
+    /** Grid height in pixels */
+    height: number;
+    /** Enable pagination */
+    pagination: boolean;
+    /** Page size (rows per page) */
+    pageSize: number;
+}
+
+/**
+ * Feature flags for UI components
+ */
+export interface GridUIFeatures {
+    /** Show right-click context menu */
+    enableContextMenu: boolean;
+    /** Show side bar (columns/filters panel) */
+    enableSideBar: boolean;
+    /** Show status bar (row counts) */
+    enableStatusBar: boolean;
+    /** Show column header menus */
+    enableColumnMenus: boolean;
+    /** Show filter buttons in headers */
+    enableHeaderFilterButtons: boolean;
+    /** Show floating filters below headers */
+    enableFloatingFilters: boolean;
+}
+
+/**
+ * Advanced features configuration
+ */
+export interface GridAdvancedFeatures {
+    /** Enable aggregation footer row */
+    enableAggregationFooter: boolean;
+    /** Row model type */
+    rowModelType?: "clientSide" | "serverSide";
+}
+
+/**
+ * Row grouping configuration
+ */
+export interface GridGroupingConfig {
+    /** Enable row grouping */
+    enabled: boolean;
+    /** Number of levels to expand by default (-1 = all, 0 = none) */
+    defaultExpanded: number;
+    /** Display groups on separate lines vs inline */
+    showOnSeparateLine: boolean;
+    /** Hide aggregations on group rows */
+    suppressAggregationOnRows: boolean;
+}
+
+/**
+ * Grid event callbacks
+ */
+export interface GridCallbacks {
+    /** Called when grid is ready */
+    onGridReady: (params: GridReadyEvent) => void;
+    /** Called when a row is clicked */
+    onRowClicked: (event: any) => void;
+    /** Called when sort changes */
+    onSortChanged?: (event: any) => void;
+    /** Called when filter changes */
+    onFilterChanged?: (event: any) => void;
+    /** Called when column is moved */
+    onColumnMoved?: (event: any) => void;
+    /** Called when column is pinned */
+    onColumnPinned?: (event: ColumnPinnedEvent) => void;
+    /** Called when column visibility menu is requested */
+    onOpenColumnVisibility?: () => void;
+    /** Called when hidden drawer is requested */
+    onOpenHiddenDrawer?: () => void;
+    /** Called when row is clicked (for custom views) - Mendix action */
+    onRowClick?: any;
+}
+
+/**
+ * Custom template configuration
+ */
+export interface GridTemplateConfig {
+    /** Custom card template for card view */
+    customCardTemplate?: ReactNode;
+    /** Custom list template for list view */
+    customListTemplate?: ReactNode;
+}
+
+/**
+ * Complete grid configuration combining all config groups
+ */
+export interface GridConfig {
+    data: GridDataConfig;
+    display: GridDisplayConfig;
+    uiFeatures: GridUIFeatures;
+    advancedFeatures: GridAdvancedFeatures;
+    grouping: GridGroupingConfig;
+    callbacks: GridCallbacks;
+    templates: GridTemplateConfig;
+    rowModelType?: "clientSide" | "serverSide";
+}

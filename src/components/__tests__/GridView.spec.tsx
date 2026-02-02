@@ -1,7 +1,8 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import { GridView, mapMendixColumnToColDef } from "../GridView";
+import { GridView } from "../GridView";
+import { mapMendixColumnToColDef } from "../../utils/column/mapping";
 
 // Mock AG Grid
 jest.mock("ag-grid-react", () => ({
@@ -147,6 +148,11 @@ describe("GridView Component", () => {
         enableContextMenu: false,
         enableSideBar: false,
         enableStatusBar: false,
+        enableAggregationFooter: false,
+        enableRowGrouping: false,
+        groupDefaultExpanded: 0,
+        showGroupRowsOnSeparateLine: false,
+        suppressAggregationOnGroupRows: false,
         enableColumnMenus: true,
         enableHeaderFilterButtons: true,
         enableFloatingFilters: false

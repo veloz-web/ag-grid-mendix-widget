@@ -1,132 +1,134 @@
-// src/components/ViewRenderer.js
+// src/components/ViewRenderer.tsx
 import { GridView } from "./GridView";
-import { DynamicView } from "./CardView"; // Assuming CardView is DynamicView
+import { DynamicView } from "./CardView";
 import { CustomTemplateView } from "./CustomTemplateView";
+import type {
+    GridDataConfig,
+    GridDisplayConfig,
+    GridUIFeatures,
+    GridAdvancedFeatures,
+    GridGroupingConfig,
+    GridCallbacks,
+    GridTemplateConfig
+} from "../types/gridConfig";
+import { ViewMode } from "../types";
+
+export interface ViewRendererProps {
+    currentView: ViewMode;
+    data: GridDataConfig;
+    display: GridDisplayConfig;
+    uiFeatures: GridUIFeatures;
+    advancedFeatures: GridAdvancedFeatures;
+    grouping: GridGroupingConfig;
+    callbacks: GridCallbacks;
+    templates: GridTemplateConfig;
+    rowModelType?: "clientSide" | "serverSide";
+}
 
 export const ViewRenderer = ({
     currentView,
-    rowData,
-    columns,
-    themeClassName,
-    height,
-    pagination,
-    pageSize,
-    onGridReady,
-    onRowClicked,
-    onSortChanged,
-    onFilterChanged,
-    onColumnMoved,
-    onColumnPinned,
-    columnVisibility,
-    columnOrder,
-    customFormatterRegistry,
-    customCardTemplate,
-    customListTemplate,
-    enableContextMenu,
-    enableSideBar,
-    enableStatusBar,
-    enableAggregationFooter,
-    enableRowGrouping,
-    groupDefaultExpanded,
-    showGroupRowsOnSeparateLine,
-    suppressAggregationOnGroupRows,
-    enableColumnMenus,
-    enableHeaderFilterButtons,
-    enableFloatingFilters,
-    onRowClick, // Pass onRowClick to custom views
-    onOpenColumnVisibility,
-    onOpenHiddenDrawer,
+    data,
+    display,
+    uiFeatures,
+    advancedFeatures,
+    grouping,
+    callbacks,
+    templates,
     rowModelType
-}) => {
+}: ViewRendererProps) => {
     if (currentView === "grid") {
         return (
             <GridView
-                rowData={rowData}
-                columns={columns}
-                themeClassName={themeClassName} // <-- Fixed: Pass themeClassName
-                height={height}
-                pagination={pagination}
-                pageSize={pageSize}
-                onGridReady={onGridReady}
-                onRowClicked={onRowClicked}
-                onSortChanged={onSortChanged}
-                onFilterChanged={onFilterChanged}
-                onColumnMoved={onColumnMoved}
-                onColumnPinned={onColumnPinned}
-                columnVisibility={columnVisibility}
-                columnOrder={columnOrder}
-                customFormatterRegistry={customFormatterRegistry}
-                enableContextMenu={enableContextMenu}
-                enableSideBar={enableSideBar}
-                enableStatusBar={enableStatusBar}
-                enableAggregationFooter={enableAggregationFooter}
-                enableRowGrouping={enableRowGrouping}
-                groupDefaultExpanded={groupDefaultExpanded}
-                showGroupRowsOnSeparateLine={showGroupRowsOnSeparateLine}
-                suppressAggregationOnGroupRows={suppressAggregationOnGroupRows}
-                enableColumnMenus={enableColumnMenus}
-                enableHeaderFilterButtons={enableHeaderFilterButtons}
-                enableFloatingFilters={enableFloatingFilters}
-                onOpenColumnVisibility={onOpenColumnVisibility}
-                onOpenHiddenDrawer={onOpenHiddenDrawer}
+                rowData={data.rowData}
+                columns={data.columns}
+                themeClassName={display.themeClassName}
+                height={display.height}
+                pagination={display.pagination}
+                pageSize={display.pageSize}
+                onGridReady={callbacks.onGridReady}
+                onRowClicked={callbacks.onRowClicked}
+                onSortChanged={callbacks.onSortChanged}
+                onFilterChanged={callbacks.onFilterChanged}
+                onColumnMoved={callbacks.onColumnMoved}
+                onColumnPinned={callbacks.onColumnPinned}
+                columnVisibility={data.columnVisibility}
+                columnOrder={data.columnOrder}
+                customFormatterRegistry={data.customFormatterRegistry}
+                enableContextMenu={uiFeatures.enableContextMenu}
+                enableSideBar={uiFeatures.enableSideBar}
+                enableStatusBar={uiFeatures.enableStatusBar}
+                enableAggregationFooter={advancedFeatures.enableAggregationFooter}
+                enableRowGrouping={grouping.enabled}
+                groupDefaultExpanded={grouping.defaultExpanded}
+                showGroupRowsOnSeparateLine={grouping.showOnSeparateLine}
+                suppressAggregationOnGroupRows={grouping.suppressAggregationOnRows}
+                enableColumnMenus={uiFeatures.enableColumnMenus}
+                enableHeaderFilterButtons={uiFeatures.enableHeaderFilterButtons}
+                enableFloatingFilters={uiFeatures.enableFloatingFilters}
+                onOpenColumnVisibility={callbacks.onOpenColumnVisibility}
+                onOpenHiddenDrawer={callbacks.onOpenHiddenDrawer}
                 rowModelType={rowModelType}
             />
         );
     }
 
     if (currentView === "cards") {
-        return customCardTemplate ? (
+        return templates.customCardTemplate ? (
             <CustomTemplateView
-                rowData={rowData}
-                columns={columns}
-                template={customCardTemplate}
-                onRowClick={onRowClick} // <-- Fixed: Pass onRowClick
+                rowData={data.rowData}
+                columns={data.columns}
+                template={templates.customCardTemplate as string}
+                onRowClick={callbacks.onRowClick}
                 className="aggrid-card-view"
-                customFormatterRegistry={customFormatterRegistry}
+                customFormatterRegistry={data.customFormatterRegistry}
             />
         ) : (
-            <DynamicView rowData={rowData} columns={columns} onRowClick={onRowClick} />
+            <DynamicView
+                rowData={data.rowData}
+                columns={data.columns}
+                onRowClick={callbacks.onRowClick}
+            />
         );
     }
 
     if (currentView === "list") {
-        return customListTemplate ? (
+        return templates.customListTemplate ? (
             <CustomTemplateView
-                rowData={rowData}
-                columns={columns}
-                template={customListTemplate}
-                onRowClick={onRowClick} // <-- Fixed: Pass onRowClick
+                rowData={data.rowData}
+                columns={data.columns}
+                template={templates.customListTemplate as string}
+                onRowClick={callbacks.onRowClick}
                 className="aggrid-list-view"
-                customFormatterRegistry={customFormatterRegistry}
+                customFormatterRegistry={data.customFormatterRegistry}
             />
         ) : (
             <GridView
-                rowData={rowData}
-                columns={columns}
-                themeClassName={themeClassName} // <-- Fixed: Pass themeClassName
-                height={height}
-                pagination={pagination}
-                pageSize={pageSize}
-                onGridReady={onGridReady}
-                onRowClicked={onRowClicked}
-                onSortChanged={onSortChanged}
-                onFilterChanged={onFilterChanged}
-                onColumnMoved={onColumnMoved}
-                onColumnPinned={onColumnPinned}
-                columnVisibility={columnVisibility}
-                columnOrder={columnOrder}
-                customFormatterRegistry={customFormatterRegistry}
-                enableContextMenu={enableContextMenu}
-                enableSideBar={enableSideBar}
-                enableStatusBar={enableStatusBar}
-                enableAggregationFooter={enableAggregationFooter}
-                enableRowGrouping={enableRowGrouping}
-                groupDefaultExpanded={groupDefaultExpanded}
-                showGroupRowsOnSeparateLine={showGroupRowsOnSeparateLine}
-                suppressAggregationOnGroupRows={suppressAggregationOnGroupRows}
-                enableColumnMenus={enableColumnMenus}
-                enableHeaderFilterButtons={enableHeaderFilterButtons}
-                enableFloatingFilters={enableFloatingFilters}
+                rowData={data.rowData}
+                columns={data.columns}
+                themeClassName={display.themeClassName}
+                height={display.height}
+                pagination={display.pagination}
+                pageSize={display.pageSize}
+                onGridReady={callbacks.onGridReady}
+                onRowClicked={callbacks.onRowClicked}
+                onSortChanged={callbacks.onSortChanged}
+                onFilterChanged={callbacks.onFilterChanged}
+                onColumnMoved={callbacks.onColumnMoved}
+                onColumnPinned={callbacks.onColumnPinned}
+                columnVisibility={data.columnVisibility}
+                columnOrder={data.columnOrder}
+                customFormatterRegistry={data.customFormatterRegistry}
+                enableContextMenu={uiFeatures.enableContextMenu}
+                enableSideBar={uiFeatures.enableSideBar}
+                enableStatusBar={uiFeatures.enableStatusBar}
+                enableAggregationFooter={advancedFeatures.enableAggregationFooter}
+                enableRowGrouping={grouping.enabled}
+                groupDefaultExpanded={grouping.defaultExpanded}
+                showGroupRowsOnSeparateLine={grouping.showOnSeparateLine}
+                suppressAggregationOnGroupRows={grouping.suppressAggregationOnRows}
+                enableColumnMenus={uiFeatures.enableColumnMenus}
+                enableHeaderFilterButtons={uiFeatures.enableHeaderFilterButtons}
+                enableFloatingFilters={uiFeatures.enableFloatingFilters}
             />
         );
     }
@@ -134,32 +136,32 @@ export const ViewRenderer = ({
     if (currentView === "harden") {
         return (
             <GridView
-                rowData={rowData}
-                columns={columns}
-                themeClassName={themeClassName} // <-- Fixed: Pass themeClassName
-                height={height}
-                pagination={pagination}
-                pageSize={pageSize}
-                onGridReady={onGridReady}
-                onRowClicked={onRowClicked}
-                onSortChanged={onSortChanged}
-                onFilterChanged={onFilterChanged}
-                onColumnMoved={onColumnMoved}
-                onColumnPinned={onColumnPinned}
-                columnVisibility={columnVisibility}
-                columnOrder={columnOrder}
-                customFormatterRegistry={customFormatterRegistry}
-                enableContextMenu={enableContextMenu}
-                enableSideBar={enableSideBar}
-                enableStatusBar={enableStatusBar}
-                enableAggregationFooter={enableAggregationFooter}
-                enableRowGrouping={enableRowGrouping}
-                groupDefaultExpanded={groupDefaultExpanded}
-                showGroupRowsOnSeparateLine={showGroupRowsOnSeparateLine}
-                suppressAggregationOnGroupRows={suppressAggregationOnGroupRows}
-                enableColumnMenus={enableColumnMenus}
-                enableHeaderFilterButtons={enableHeaderFilterButtons}
-                enableFloatingFilters={enableFloatingFilters}
+                rowData={data.rowData}
+                columns={data.columns}
+                themeClassName={display.themeClassName}
+                height={display.height}
+                pagination={display.pagination}
+                pageSize={display.pageSize}
+                onGridReady={callbacks.onGridReady}
+                onRowClicked={callbacks.onRowClicked}
+                onSortChanged={callbacks.onSortChanged}
+                onFilterChanged={callbacks.onFilterChanged}
+                onColumnMoved={callbacks.onColumnMoved}
+                onColumnPinned={callbacks.onColumnPinned}
+                columnVisibility={data.columnVisibility}
+                columnOrder={data.columnOrder}
+                customFormatterRegistry={data.customFormatterRegistry}
+                enableContextMenu={uiFeatures.enableContextMenu}
+                enableSideBar={uiFeatures.enableSideBar}
+                enableStatusBar={uiFeatures.enableStatusBar}
+                enableAggregationFooter={advancedFeatures.enableAggregationFooter}
+                enableRowGrouping={grouping.enabled}
+                groupDefaultExpanded={grouping.defaultExpanded}
+                showGroupRowsOnSeparateLine={grouping.showOnSeparateLine}
+                suppressAggregationOnGroupRows={grouping.suppressAggregationOnRows}
+                enableColumnMenus={uiFeatures.enableColumnMenus}
+                enableHeaderFilterButtons={uiFeatures.enableHeaderFilterButtons}
+                enableFloatingFilters={uiFeatures.enableFloatingFilters}
             />
         );
     }

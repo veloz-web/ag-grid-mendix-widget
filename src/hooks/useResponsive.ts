@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 
 const checkIsMobile = () => window.innerWidth < 768;
 
-export const useResponsive = (onMobileChange) => {
+export const useResponsive = (onMobileChange?: (isMobile: boolean) => void) => {
     const [isMobile, setIsMobile] = useState(checkIsMobile);
     const [prefersDarkScheme, setPrefersDarkScheme] = useState(() =>
         window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)").matches : false
@@ -20,7 +20,7 @@ export const useResponsive = (onMobileChange) => {
             }
         };
 
-        const handlePrefersColorSchemeChange = (event) => {
+        const handlePrefersColorSchemeChange = (event: MediaQueryListEvent) => {
             setPrefersDarkScheme(event.matches);
         };
 

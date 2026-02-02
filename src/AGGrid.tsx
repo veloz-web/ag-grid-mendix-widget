@@ -1,13 +1,5 @@
 // src/AGGrid.tsx - Functional Component
-import {
-    ChangeEvent,
-    ReactElement,
-    useRef,
-    useState,
-    useMemo,
-    useEffect,
-    useCallback
-} from "react";
+import { ChangeEvent, ReactElement, useRef, useMemo, useCallback } from "react";
 
 // Import module registration (runs the code)
 import "./agGridModules";
@@ -19,7 +11,7 @@ import { LicenseManager } from "ag-grid-enterprise";
 import { ValueStatus } from "mendix";
 
 // Import types
-import { AGGridContainerProps, ViewMode } from "./types";
+import { AGGridContainerProps } from "./types";
 
 // Import UI Components
 import { Toolbar } from "./components/Toolbar";
@@ -40,10 +32,8 @@ import {
     applyDefaultSortToData,
     validateSortConfiguration
 } from "./utils/data";
-import { getInitialState } from "./utils/initialState";
 import { getThemeClassName } from "./utils/theme";
 import { CustomFormatterRegistry } from "./utils/customFormatters";
-import { getDefaultColumnVisibility } from "./utils/state";
 
 // Import Custom Hooks
 import { useToast } from "./hooks/useToast";
@@ -51,6 +41,9 @@ import { useResponsive } from "./hooks/useResponsive";
 import { usePersistence } from "./hooks/usePersistence";
 import { useGridApi } from "./hooks/useGridApi";
 import { useDataPolling } from "./hooks/useDataPolling";
+import { useGridState } from "./hooks/useGridState";
+import { useColumnManagement } from "./hooks/useColumnManagement";
+import { useFilterManagement } from "./hooks/useFilterManagement";
 
 // Import base styles
 import "./ui/AGGrid.css";
@@ -67,47 +60,56 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
 
     // --- 2. Refs ---
     const filterButtonRef = useRef<HTMLButtonElement>(null);
-
-    // --- 3. Initialize State ---
-    // Keep the initial state in a ref so we can pass it to `usePersistence.resetSettings` later
-    const initialStateRef = useRef(getInitialState(props));
     const rowDataCacheRef = useRef<{ signature: string; data: any[] }>({
         signature: "",
         data: []
     });
-    const [state, setState] = useState(initialStateRef.current);
 
-    const {
-        currentView,
-        isFilterDrawerOpen,
-        activeFilters,
-        globalSearch,
-        sortModel,
-        columnVisibility,
-        columnOrder
-    } = state;
-
-    // --- 4. Custom Hooks ---
+    // --- 3. Custom Hooks ---
 
     // Toast notifications
     const { toastNotifications, showToast, dismissToast } = useToast(props.autoHideDuration);
 
     // Responsive behavior
-    const { isMobile, prefersDarkScheme } = useResponsive((newIsMobile) => {
-        setState((s) => ({ ...s, isMobile: newIsMobile }));
-    });
-
-    // Update state when responsive values change
-    useEffect(() => {
-        setState((s) => ({ ...s, isMobile, prefersDarkScheme }));
-    }, [isMobile, prefersDarkScheme]);
+    const { prefersDarkScheme } = useResponsive();
 
     // Persistence (localStorage)
     const { savePersistedState, resetSettings } = usePersistence(
         props,
+        undefined, // Will be updated to use gridState
+        undefined,
+        undefined
+    );
+
+    // Grid state management
+    const gridState = useGridState(props, savePersistedState);
+    const {
         state,
-        setState,
-        initialStateRef.current
+        currentView,
+        setCurrentView,
+        isFilterDrawerOpen,
+        openFilterDrawer: _openFilterDrawerBase,
+        closeFilterDrawer,
+        toggleFilterDrawer,
+        activeFilters,
+        globalSearch,
+        sortModel,
+        columnVisibility,
+        columnOrder,
+        isHiddenDrawerOpen,
+        updateState
+    } = gridState;
+
+    // Wrapper for setState compatibility with useGridApi
+    const setStateCompat = useCallback(
+        (action: React.SetStateAction<typeof state>) => {
+            if (typeof action === "function") {
+                updateState(action(state));
+            } else {
+                updateState(action);
+            }
+        },
+        [state, updateState]
     );
 
     // Grid API and events
@@ -122,12 +124,34 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
         applyFiltersToGrid,
         applyGlobalSearch,
         handleExportRequest
-    } = useGridApi(state, setState, savePersistedState, props);
+    } = useGridApi(state, setStateCompat, savePersistedState, props);
+
+    // Column management
+    const columnManagement = useColumnManagement({
+        columns: props.columns || [],
+        columnVisibility,
+        columnOrder,
+        isHiddenDrawerOpen,
+        onUpdateState: updateState
+    });
+
+    // Filter management
+    const filterManagement = useFilterManagement({
+        activeFilters,
+        globalSearch,
+        sortModel,
+        rowData: rowDataCacheRef.current.data,
+        columns: props.columns || [],
+        onUpdateState: updateState,
+        applyGridSortModel,
+        applyFiltersToGrid,
+        applyGlobalSearch
+    });
 
     // Data polling
     useDataPolling(props, showToast, gridApiRef);
 
-    // --- 5. Computed Values ---
+    // --- 4. Computed Values ---
     const themeClassName = useMemo(
         () => getThemeClassName(props.theme, props.themeVariant, prefersDarkScheme),
         [props.theme, props.themeVariant, prefersDarkScheme]
@@ -141,19 +165,10 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
         return registry;
     }, [props.customFormatters]);
 
-    // --- 6. Event Handlers ---
+    // --- 5. Event Handlers (using hooks) ---
 
-    // View toggling
-    const toggleView = useCallback(
-        (newView: ViewMode) => {
-            setState((s) => ({ ...s, currentView: newView }));
-            savePersistedState({ viewMode: newView });
-        },
-        [savePersistedState]
-    );
-
-    // Filter drawer
-    const openFilterDrawer = useCallback(() => {
+    // Enhanced filter drawer opener that syncs sort model from grid
+    const _openFilterDrawer = useCallback(() => {
         // Safely get current sort model from grid if available
         let currentSortModel = sortModel;
         if (gridApiRef.current && typeof gridApiRef.current.getSortModel === "function") {
@@ -163,162 +178,65 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
                 console.warn("[AGGrid] Could not get sort model from grid API:", error);
             }
         }
-        setState((s) => ({ ...s, isFilterDrawerOpen: true, sortModel: currentSortModel }));
-    }, [gridApiRef, sortModel, setState]);
+        updateState({ isFilterDrawerOpen: true, sortModel: currentSortModel });
+    }, [gridApiRef, sortModel, updateState]);
 
-    const closeFilterDrawer = useCallback((returnFocus = false) => {
-        setState((s) => ({ ...s, isFilterDrawerOpen: false }));
-        if (returnFocus && filterButtonRef.current) {
-            filterButtonRef.current.focus();
-        }
-    }, []);
+    // Close drawer with focus management
+    const closeFilterDrawerWithFocus = useCallback(
+        (returnFocus = false) => {
+            closeFilterDrawer(returnFocus);
+            if (returnFocus && filterButtonRef.current) {
+                filterButtonRef.current.focus();
+            }
+        },
+        [closeFilterDrawer]
+    );
 
     const closeFilterDrawerAndFocus = useCallback(() => {
-        closeFilterDrawer(true);
-    }, [closeFilterDrawer]);
+        closeFilterDrawerWithFocus(true);
+    }, [closeFilterDrawerWithFocus]);
 
-    const toggleFilterDrawer = useCallback(() => {
-        if (isFilterDrawerOpen) {
-            closeFilterDrawer();
-        } else {
-            openFilterDrawer();
-        }
-    }, [isFilterDrawerOpen, closeFilterDrawer, openFilterDrawer]);
-
-    // Apply filters from drawer
-    const applyFiltersFromDrawer = useCallback(
-        (
-            filters: Record<string, any>,
-            search: string,
-            sort: Array<{ colId: string; sort: "asc" | "desc" }>
-        ) => {
-            applyGridSortModel(sort);
-            applyFiltersToGrid(filters, search);
-            applyGlobalSearch(search);
-            setState((s) => ({
-                ...s,
-                activeFilters: filters,
-                globalSearch: search,
-                sortModel: sort
-            }));
-            savePersistedState({ activeFilters: filters, globalSearch: search, sortModel: sort });
-        },
-        [applyGridSortModel, applyFiltersToGrid, applyGlobalSearch, savePersistedState]
-    );
-
-    // Clear filters
-    const clearFilters = useCallback(() => {
-        applyGridSortModel([]);
-        applyFiltersToGrid({}, "");
-        applyGlobalSearch("");
-        setState((s) => ({ ...s, activeFilters: {}, globalSearch: "", sortModel: [] }));
-        savePersistedState({ activeFilters: {}, globalSearch: "", sortModel: [] });
-    }, [applyGridSortModel, applyFiltersToGrid, applyGlobalSearch, savePersistedState]);
-
-    // Column visibility
-    const toggleColumnVisibility = useCallback(() => {
-        // Toolbar column visibility opens the same HiddenDrawer
-        setState((s) => ({ ...s, isHiddenDrawerOpen: !s.isHiddenDrawerOpen }));
-    }, []);
-
-    // Hidden drawer (open from header menu)
-    const toggleHiddenDrawer = useCallback(() => {
-        setState((s) => ({ ...s, isHiddenDrawerOpen: !s.isHiddenDrawerOpen }));
-    }, []);
-
-    const toggleColumnVisibilityItem = useCallback(
-        (columnId: string, visible: boolean) => {
-            const newVisibility = { ...columnVisibility, [columnId]: visible };
-            setState((s) => ({ ...s, columnVisibility: newVisibility }));
-            savePersistedState({ columnVisibility: newVisibility });
-        },
-        [columnVisibility, savePersistedState]
-    );
-
-    const resetColumnVisibilityToDefault = useCallback(() => {
-        const defaultVisibility = getDefaultColumnVisibility(props.columns);
-        setState((s) => ({ ...s, columnVisibility: defaultVisibility }));
-        savePersistedState({ columnVisibility: defaultVisibility });
-    }, [props.columns, savePersistedState]);
-
-    // Toolbar handlers
+    // Toolbar handlers (delegating to filter management hook)
     const handleToolbarSearchChange = useCallback(
         (event: ChangeEvent<HTMLInputElement>) => {
-            const search = event.target.value;
-            applyGlobalSearch(search);
-            setState((s) => ({ ...s, globalSearch: search }));
-            savePersistedState({ globalSearch: search });
+            filterManagement.handleSearchChange(event);
         },
-        [applyGlobalSearch, savePersistedState]
+        [filterManagement]
     );
 
     const clearToolbarSearch = useCallback(() => {
-        applyGlobalSearch("");
-        setState((s) => ({ ...s, globalSearch: "" }));
-        savePersistedState({ globalSearch: "" });
-    }, [applyGlobalSearch, savePersistedState]);
+        filterManagement.clearSearch();
+    }, [filterManagement]);
 
     const handleToolbarFilterChange = useCallback(
         (columnId: string, values: string[]) => {
-            if (!columnId) {
-                return;
-            }
-
-            const options = getDistinctValuesForColumn(
-                rowDataCacheRef.current.data,
-                props.columns || [],
-                columnId
-            );
-            const normalizedValues = values.map(String);
-            const newFilters = { ...activeFilters };
-
-            if (normalizedValues.length === options.length) {
-                delete newFilters[columnId];
-            } else {
-                newFilters[columnId] = normalizedValues;
-            }
-
-            setState((s) => ({ ...s, activeFilters: newFilters }));
-            applyFiltersToGrid(newFilters, globalSearch);
-            savePersistedState({ activeFilters: newFilters });
+            filterManagement.setFilter(columnId, values);
         },
-        [activeFilters, applyFiltersToGrid, globalSearch, props.columns, savePersistedState]
+        [filterManagement]
     );
 
     const handleToolbarSortChange = useCallback(
         (event: ChangeEvent<HTMLSelectElement>) => {
             const columnId = event.target.value;
             if (!columnId) {
-                const emptySort: Array<{ colId: string; sort: "asc" | "desc" }> = [];
-                setState((s) => ({ ...s, sortModel: emptySort }));
-                applyGridSortModel(emptySort);
-                savePersistedState({ sortModel: emptySort });
-                return;
+                filterManagement.setSort([]);
+            } else {
+                filterManagement.setSortColumn(columnId);
             }
-
-            const newSort = [{ colId: columnId, sort: "asc" as const }];
-            setState((s) => ({ ...s, sortModel: newSort }));
-            applyGridSortModel(newSort);
-            savePersistedState({ sortModel: newSort });
         },
-        [applyGridSortModel, savePersistedState]
+        [filterManagement]
     );
 
     const handleToolbarSortDirectionChange = useCallback(
         (direction: "asc" | "desc") => {
-            if (sortModel.length === 0) return;
-
-            const newSort = [{ ...sortModel[0], sort: direction }];
-            setState((s) => ({ ...s, sortModel: newSort }));
-            applyGridSortModel(newSort);
-            savePersistedState({ sortModel: newSort });
+            filterManagement.setSortDirection(direction);
         },
-        [sortModel, applyGridSortModel, savePersistedState]
+        [filterManagement]
     );
 
     const handleToolbarResetFilters = useCallback(() => {
-        clearFilters();
-    }, [clearFilters]);
+        filterManagement.clearFilters();
+    }, [filterManagement]);
 
     // Row click handler
     const { onRowClick } = props;
@@ -338,7 +256,7 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
         [onRowClick]
     );
 
-    // --- 7. Render Logic ---
+    // --- 6. Render Logic ---
     const { dataSource, height, pagination, pageSize } = props;
 
     // Validate sort configuration
@@ -434,7 +352,7 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
                 enableViewSelector={showViewSelector}
                 currentView={currentView}
                 storageKey={storageKey}
-                onViewChange={toggleView}
+                onViewChange={setCurrentView}
                 hasCardTemplate={hasCardTemplate}
                 hasListTemplate={hasListTemplate}
                 toolbarFilters={toolbarFilters}
@@ -457,8 +375,8 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
                 activeFilterCount={activeFilterCount}
                 filterButtonRef={filterButtonRef}
                 onToggleFilterDrawer={toggleFilterDrawer}
-                isColumnVisibilityOpen={!!state.isHiddenDrawerOpen}
-                onToggleColumnVisibility={toggleColumnVisibility}
+                isColumnVisibilityOpen={!!isHiddenDrawerOpen}
+                onToggleColumnVisibility={columnManagement.toggleColumnVisibility}
                 enableCsvExport={Boolean(props.enableCsvExport)}
                 onCsvExport={() => undefined} // Not used, we use onExportRequest
                 csvFileName={props.csvFileName}
@@ -473,38 +391,52 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
 
             <ViewRenderer
                 currentView={currentView}
-                rowData={filteredData}
-                columns={props.columns || []}
-                themeClassName={themeClassName}
-                height={height}
-                pagination={pagination}
-                pageSize={pageSize}
-                onGridReady={onGridReady}
-                onRowClicked={onRowClickHandler}
-                onSortChanged={onSortChanged}
-                onFilterChanged={onFilterChanged}
-                onColumnMoved={onColumnMoved}
-                onColumnPinned={onColumnPinned}
-                onOpenColumnVisibility={toggleColumnVisibility}
-                onOpenHiddenDrawer={toggleHiddenDrawer}
-                columnVisibility={columnVisibility}
-                columnOrder={columnOrder}
-                customFormatterRegistry={customFormatterRegistry}
-                customCardTemplate={props.customCardTemplate}
-                customListTemplate={props.customListTemplate}
-                enableContextMenu={Boolean(props.enableContextMenu)}
-                enableSideBar={Boolean(props.enableSideBar)}
-                enableStatusBar={Boolean(props.enableStatusBar)}
-                enableAggregationFooter={Boolean(props.enableAggregationFooter)}
-                enableRowGrouping={Boolean(props.enableRowGrouping)}
-                groupDefaultExpanded={props.groupDefaultExpanded ?? -1}
-                showGroupRowsOnSeparateLine={Boolean(props.showGroupRowsOnSeparateLine)}
-                suppressAggregationOnGroupRows={Boolean(props.suppressAggregationOnGroupRows)}
-                enableColumnMenus={Boolean(props.enableColumnMenus)}
-                enableHeaderFilterButtons={Boolean(props.enableHeaderFilterButtons)}
-                enableFloatingFilters={Boolean(props.enableFloatingFilters)}
-                onRowClick={props.onRowClick}
-                rowModelType={props.rowModelType}
+                data={{
+                    rowData: filteredData,
+                    columns: props.columns || [],
+                    columnVisibility,
+                    columnOrder,
+                    customFormatterRegistry
+                }}
+                display={{
+                    themeClassName,
+                    height,
+                    pagination,
+                    pageSize
+                }}
+                uiFeatures={{
+                    enableContextMenu: Boolean(props.enableContextMenu),
+                    enableSideBar: Boolean(props.enableSideBar),
+                    enableStatusBar: Boolean(props.enableStatusBar),
+                    enableColumnMenus: Boolean(props.enableColumnMenus),
+                    enableHeaderFilterButtons: Boolean(props.enableHeaderFilterButtons),
+                    enableFloatingFilters: Boolean(props.enableFloatingFilters)
+                }}
+                advancedFeatures={{
+                    enableAggregationFooter: Boolean(props.enableAggregationFooter),
+                    rowModelType: props.rowModelType
+                }}
+                grouping={{
+                    enabled: Boolean(props.enableRowGrouping),
+                    defaultExpanded: props.groupDefaultExpanded ?? -1,
+                    showOnSeparateLine: Boolean(props.showGroupRowsOnSeparateLine),
+                    suppressAggregationOnRows: Boolean(props.suppressAggregationOnGroupRows)
+                }}
+                callbacks={{
+                    onGridReady,
+                    onRowClicked: onRowClickHandler,
+                    onSortChanged,
+                    onFilterChanged,
+                    onColumnMoved,
+                    onColumnPinned,
+                    onOpenColumnVisibility: columnManagement.toggleColumnVisibility,
+                    onOpenHiddenDrawer: columnManagement.toggleHiddenDrawer,
+                    onRowClick: props.onRowClick
+                }}
+                templates={{
+                    customCardTemplate: props.customCardTemplate,
+                    customListTemplate: props.customListTemplate
+                }}
             />
 
             <FilterDrawer
@@ -518,8 +450,8 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
                     getDistinctValuesForColumn(allRowData, props.columns || [], columnId)
                 }
                 onClose={closeFilterDrawerAndFocus}
-                onApplyFilters={applyFiltersFromDrawer}
-                onClearFilters={clearFilters}
+                onApplyFilters={filterManagement.applyFilters}
+                onClearFilters={filterManagement.clearFilters}
                 useLocalStorage={props.useLocalStorage !== false}
                 onResetSettings={resetSettings}
             />
@@ -527,12 +459,12 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
             {/* Hidden drawer is used for both toolbar and header menu */}
             {currentView === "grid" && (
                 <HiddenDrawer
-                    isOpen={!!state.isHiddenDrawerOpen}
+                    isOpen={!!isHiddenDrawerOpen}
                     columns={props.columns || []}
                     columnVisibility={columnVisibility}
-                    onClose={toggleHiddenDrawer}
-                    onToggleColumn={toggleColumnVisibilityItem}
-                    onResetToDefault={resetColumnVisibilityToDefault}
+                    onClose={columnManagement.toggleHiddenDrawer}
+                    onToggleColumn={columnManagement.toggleColumnVisibilityItem}
+                    onResetToDefault={columnManagement.resetColumnVisibilityToDefault}
                 />
             )}
         </div>

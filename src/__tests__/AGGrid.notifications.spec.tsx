@@ -25,6 +25,9 @@ describe("AGGrid - Toast Notifications", () => {
                 offset: 0,
                 hasMoreItems: false
             } as any,
+            rowModelType: "clientSide" as const,
+            serverSideMicroflow: "",
+            entityName: "",
             columns: [
                 {
                     header: { value: "Name" },
@@ -57,6 +60,11 @@ describe("AGGrid - Toast Notifications", () => {
             useLocalStorage: false,
             enableSideBar: false,
             enableStatusBar: false,
+            enableAggregationFooter: false,
+            enableRowGrouping: false,
+            groupDefaultExpanded: 0,
+            showGroupRowsOnSeparateLine: false,
+            suppressAggregationOnGroupRows: false,
             enableContextMenu: false,
             enableToolbarFilterSearch: false,
             enableCsvExport: false,
