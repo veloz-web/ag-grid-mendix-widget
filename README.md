@@ -28,17 +28,17 @@ A powerful Mendix pluggable widget that integrates AG Grid into your Mendix appl
 - **[CONFIGURATION_EXAMPLES.md](./docs/CONFIGURATION_EXAMPLES.md)** - Real-world examples
 
 ### Features & Configuration
-- **[VIEW_MODES_GUIDE.md](./docs/VIEW_MODES_GUIDE.md)** - Grid, Cards, and List views
-- **[CUSTOM_FORMATTERS_GUIDE.md](./docs/CUSTOM_FORMATTERS_GUIDE.md)** - Define custom formatters
-- **[CUSTOM_TEMPLATES_README.md](./docs/CUSTOM_TEMPLATES_README.md)** - Custom card/list templates
-- **[DATE_FORMATTING_GUIDE.md](./docs/DATE_FORMATTING_GUIDE.md)** - Date formatting options
-- **[DEFAULT_SORT_GUIDE.md](./docs/DEFAULT_SORT_GUIDE.md)** - Configure default sorting
-- **[TEXT_ALIGNMENT_GUIDE.md](./docs/TEXT_ALIGNMENT_GUIDE.md)** - Align text in columns
-- **[COLUMN_WIDTH_CONFIGURATION.md](./docs/COLUMN_WIDTH_CONFIGURATION.md)** - Column width options
+- **[VIEW_MODES_GUIDE.md](./VIEW_MODES_GUIDE.md)** - Grid, Cards, and List views
+- **[CUSTOM_FORMATTERS_GUIDE.md](./CUSTOM_FORMATTERS_GUIDE.md)** - 📝 Create custom cell formatters with JavaScript
+- **[CUSTOM_TEMPLATES_README.md](./CUSTOM_TEMPLATES_README.md)** - Custom card/list templates
+- **[DATE_FORMATTING_GUIDE.md](./DATE_FORMATTING_GUIDE.md)** - Date formatting options
+- **[DEFAULT_SORT_GUIDE.md](./DEFAULT_SORT_GUIDE.md)** - Configure default sorting
+- **[TEXT_ALIGNMENT_GUIDE.md](./TEXT_ALIGNMENT_GUIDE.md)** - Align text in columns
+- **[COLUMN_WIDTH_CONFIGURATION.md](./COLUMN_WIDTH_CONFIGURATION.md)** - Column width options
 - **[ROW_GROUPING_GUIDE.md](./ROW_GROUPING_GUIDE.md)** - Hierarchical data grouping
 - **[AGGREGATIONS_GUIDE.md](./AGGREGATIONS_GUIDE.md)** - Column footers with sum, avg, count
-- **[POLLING_GUIDE.md](./docs/POLLING_GUIDE.md)** - Auto-detect new data
-- **[ACCESSIBILITY.md](./docs/ACCESSIBILITY.md)** - Keyboard navigation & accessibility
+- **[POLLING_GUIDE.md](./POLLING_GUIDE.md)** - Auto-detect new data
+- **[ACCESSIBILITY.md](./ACCESSIBILITY.md)** - Keyboard navigation & accessibility
 
 ### Troubleshooting
 - **[ACTIONS_TROUBLESHOOTING.md](./docs/ACTIONS_TROUBLESHOOTING.md)** - Fix row click action issues
@@ -378,26 +378,74 @@ For optimal performance with large datasets:
 
 ## Custom Formatters 🎨
 
-**NEW!** Define reusable custom formatters in widget configuration instead of hardcoding them. Perfect for app-specific formatting like status badges, avatars, and more.
+**NEW!** Define custom cell formatters using JavaScript to create status badges, progress bars, icons, and more. Each formatter has two parts:
+- **Formatter Code**: JavaScript function that transforms the cell value
+- **Formatter Configuration**: JSON data passed to your function for customization
 
-### Quick Example
+### How It Works
 
-**Configure in Studio Pro:**
-```
-Custom Formatters > + New
-    Formatter Name: myCustomFormatter
-    Formatter Type: JavaScript Function
-    Formatter Code: [Your custom JavaScript]
-    Formatter Configuration: [JSON configuration]
+Both the **Formatter Code (Function)** and **Formatter Configuration (JSON)** work together:
+- The configuration provides your data (mappings, colors, settings)
+- The function uses that data to render each cell
+
+### Quick Example: Status Badges
+
+**Formatter Code**:
+```javascript
+try {
+    const mappings = config || [];
+    const mapping = mappings.find(m => m.value === value);
+    
+    if (!mapping) {
+        return `<span class="badge badge-secondary">${value}</span>`;
+    }
+    
+    return `<span class="badge ${mapping.className}">${mapping.label}</span>`;
+} catch (e) {
+    console.error("Formatter error:", e);
+    return String(value || "");
+}
 ```
 
-**Use in Templates:**
-```html
-<div class="card" data-status="{{Status}}">
-    {{myCustomFormatter("Status")}}  <!-- Custom formatted value -->
-    {{dateMDY("Date")}}              <!-- Built-in formatter -->
-</div>
+**Formatter Configuration**:
+```json
+[
+    {"value":"Approved","label":"✓ Approved","className":"badge-success"},
+    {"value":"Denied","label":"✗ Denied","className":"badge-danger"},
+    {"value":"Pending","label":"⏳ Pending","className":"badge-warning"}
+]
 ```
+
+**Result**: Your status values automatically render as colored badges with icons!
+
+### Available Variables
+
+Your formatter function receives:
+- `value` - The cell's value
+- `item` - Full row data (access other columns!)
+- `column` - Column configuration
+- `config` - Your JSON configuration (parsed)
+
+### More Examples
+
+See **[CUSTOM_FORMATTERS_GUIDE.md](./CUSTOM_FORMATTERS_GUIDE.md)** for comprehensive examples including:
+- ✅ Status badges with color mapping
+- 📊 Progress bars
+- 🎨 Priority indicators with icons
+- 💰 Currency formatting
+- 👤 Multi-line user cards
+- ⚡ Conditional formatting based on multiple columns
+- And much more!
+
+### Best Practices
+
+1. ✅ **Always use try-catch** - Prevents grid crashes
+2. ✅ **Handle null/undefined** - Data might be missing
+3. ✅ **Keep it fast** - Runs for every cell
+4. ✅ **Validate config** - JSON errors are easy to make
+5. ✅ **Test edge cases** - Empty strings, special characters
+
+👉 **[Read the Complete Guide](./CUSTOM_FORMATTERS_GUIDE.md)** for detailed examples and troubleshooting.
 
 ### Benefits
 - ✅ Reusable across multiple widgets/columns
