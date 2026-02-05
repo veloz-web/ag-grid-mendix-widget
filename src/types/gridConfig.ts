@@ -39,6 +39,10 @@ export interface GridDisplayConfig {
     pagination: boolean;
     /** Page size (rows per page) */
     pageSize: number;
+    /** Extra rows rendered above/below the visible viewport (default: 10) */
+    rowBuffer: number;
+    /** Disable row virtualisation — renders ALL rows in the DOM (default: false) */
+    suppressRowVirtualisation: boolean;
     /** Row height mode: fixed, auto, or custom */
     rowHeightMode: "fixed" | "auto" | "custom";
     /** Row height in pixels (fixed height, or default/min for auto/custom) */
@@ -75,6 +79,12 @@ export interface GridAdvancedFeatures {
     enableAggregationFooter: boolean;
     /** Row model type */
     rowModelType?: "clientSide" | "serverSide";
+    /** Rows fetched per block from the server (server-side only, default: 100) */
+    cacheBlockSize: number;
+    /** Max blocks kept in memory (server-side only, 0 = unlimited) */
+    maxBlocksInCache: number;
+    /** Max simultaneous data requests (server-side only, default: 2) */
+    maxConcurrentRequests: number;
 }
 
 /**

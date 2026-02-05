@@ -418,6 +418,8 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
                     height,
                     pagination,
                     pageSize,
+                    rowBuffer: props.rowBuffer || 10,
+                    suppressRowVirtualisation: Boolean(props.suppressRowVirtualisation),
                     rowHeightMode: props.rowHeightMode || "fixed",
                     rowHeight: props.rowHeight || 40,
                     rowHeightExpression: props.rowHeightExpression || "",
@@ -433,7 +435,10 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
                 }}
                 advancedFeatures={{
                     enableAggregationFooter: Boolean(props.enableAggregationFooter),
-                    rowModelType: props.rowModelType
+                    rowModelType: props.rowModelType,
+                    cacheBlockSize: props.cacheBlockSize || 100,
+                    maxBlocksInCache: props.maxBlocksInCache || 0,
+                    maxConcurrentRequests: props.maxConcurrentRequests || 2
                 }}
                 grouping={{
                     enabled: Boolean(props.enableRowGrouping),

@@ -11,6 +11,12 @@ export function preview(props: AGGridPreviewProps): ReactElement {
         pageSize,
         height,
         theme,
+        rowModelType,
+        rowBuffer,
+        suppressRowVirtualisation,
+        cacheBlockSize,
+        maxBlocksInCache,
+        maxConcurrentRequests,
         enableViewSelector,
         enableFilterDrawer,
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -78,6 +84,13 @@ export function preview(props: AGGridPreviewProps): ReactElement {
 
     const hasFormatterErrors = columnsWithInvalidFormatters.length > 0;
 
+    // Virtual scrolling hints
+    const showVirtualScrollingWarning = Boolean(suppressRowVirtualisation);
+    const showRowBufferHint = typeof rowBuffer === "number" && rowBuffer > 30;
+    const showServerSideCacheHint =
+        rowModelType === "serverSide" &&
+        (typeof cacheBlockSize === "number" || typeof maxBlocksInCache === "number");
+
     // Validate sort configuration
     const sortValidation = validateSortConfiguration(columns || []);
 
@@ -140,6 +153,44 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                             ? formatterNames.join(", ")
                             : "(none configured)"}
                     </div>
+                </div>
+            )}
+
+            {/* Virtual Scrolling Hints */}
+            {(showVirtualScrollingWarning || showRowBufferHint || showServerSideCacheHint) && (
+                <div
+                    style={{
+                        marginBottom: "10px",
+                        padding: "12px 16px",
+                        backgroundColor: "#fff8e1",
+                        border: "1px solid #f9a825",
+                        borderRadius: "4px",
+                        fontSize: "12px",
+                        color: "#6d4c41"
+                    }}
+                >
+                    <strong>⚡ Virtual Scrolling Tips:</strong>
+                    <ul style={{ margin: "8px 0 0 0", paddingLeft: "20px" }}>
+                        {showVirtualScrollingWarning && (
+                            <li>
+                                Row virtualisation is disabled. This renders all rows in the DOM and
+                                is only recommended for small datasets or print layouts.
+                            </li>
+                        )}
+                        {showRowBufferHint && (
+                            <li>
+                                Row Buffer is set to {rowBuffer}. Higher values improve fast
+                                scrolling but increase DOM size and memory usage.
+                            </li>
+                        )}
+                        {showServerSideCacheHint && (
+                            <li>
+                                Server-side cache: block size {cacheBlockSize || 100}, max blocks{" "}
+                                {maxBlocksInCache || 0}, concurrent requests {maxConcurrentRequests || 2}.
+                                Tune these to balance server load vs. scroll smoothness.
+                            </li>
+                        )}
+                    </ul>
                 </div>
             )}
 

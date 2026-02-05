@@ -146,6 +146,9 @@ export interface AGGridContainerProps {
     rowModelType: RowModelTypeEnum;
     serverSideMicroflow: string;
     entityName: string;
+    cacheBlockSize: number;
+    maxBlocksInCache: number;
+    maxConcurrentRequests: number;
     columns: ColumnsType[];
     enableColumnMenus: boolean;
     enableHeaderFilterButtons: boolean;
@@ -175,6 +178,8 @@ export interface AGGridContainerProps {
     enableToolbarFilterSearch: boolean;
     pagination: boolean;
     pageSize: number;
+    rowBuffer: number;
+    suppressRowVirtualisation: boolean;
     height: number;
     theme: ThemeEnum;
     themeVariant: ThemeVariantEnum;
@@ -212,6 +217,9 @@ export interface AGGridPreviewProps {
     rowModelType: RowModelTypeEnum;
     serverSideMicroflow: string;
     entityName: string;
+    cacheBlockSize: number | null;
+    maxBlocksInCache: number | null;
+    maxConcurrentRequests: number | null;
     columns: ColumnsPreviewType[];
     enableColumnMenus: boolean;
     enableHeaderFilterButtons: boolean;
@@ -241,6 +249,8 @@ export interface AGGridPreviewProps {
     enableToolbarFilterSearch: boolean;
     pagination: boolean;
     pageSize: number | null;
+    rowBuffer: number | null;
+    suppressRowVirtualisation: boolean;
     height: number | null;
     theme: ThemeEnum;
     themeVariant: ThemeVariantEnum;

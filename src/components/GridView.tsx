@@ -22,6 +22,16 @@ interface GridViewProps {
     rowHeightExpression?: string;
     /** Maximum row height in pixels (0 = unlimited) */
     maxRowHeight?: number;
+    /** Extra rows rendered above/below viewport (default: 10) */
+    rowBuffer?: number;
+    /** Disable row virtualisation — render ALL rows in DOM (default: false) */
+    suppressRowVirtualisation?: boolean;
+    /** Rows per server-side fetch block (default: 100) */
+    cacheBlockSize?: number;
+    /** Max server-side blocks in memory (0 = unlimited) */
+    maxBlocksInCache?: number;
+    /** Max concurrent server-side requests (default: 2) */
+    maxConcurrentRequests?: number;
     onGridReady: (params: GridReadyEvent) => void;
     onRowClicked: (event: any) => void;
     onRowDoubleClicked?: (event: any) => void;
@@ -63,6 +73,11 @@ export function GridView(props: GridViewProps): ReactElement {
         rowHeight = 40,
         rowHeightExpression,
         maxRowHeight = 0,
+        rowBuffer = 10,
+        suppressRowVirtualisation = false,
+        cacheBlockSize = 100,
+        maxBlocksInCache = 0,
+        maxConcurrentRequests = 2,
         onGridReady,
         onRowClicked,
         onRowDoubleClicked,
@@ -197,6 +212,19 @@ export function GridView(props: GridViewProps): ReactElement {
                 pinnedBottomRowData={pinnedBottomRowData}
                 pagination={pagination}
                 paginationPageSize={pageSize}
+                // Virtual Scrolling Configuration
+                rowBuffer={rowBuffer}
+                suppressRowVirtualisation={suppressRowVirtualisation}
+                // Server-Side Cache Configuration (only effective when rowModelType is serverSide)
+                cacheBlockSize={props.rowModelType === "serverSide" ? cacheBlockSize : undefined}
+                maxBlocksInCache={
+                    props.rowModelType === "serverSide" && maxBlocksInCache > 0
+                        ? maxBlocksInCache
+                        : undefined
+                }
+                maxConcurrentDatasourceRequests={
+                    props.rowModelType === "serverSide" ? maxConcurrentRequests : undefined
+                }
                 // Row Height Configuration
                 rowHeight={effectiveRowHeightMode === "fixed" ? rowHeight : undefined}
                 getRowHeight={effectiveRowHeightMode === "custom" ? getRowHeight : undefined}

@@ -45,6 +45,8 @@ export const ViewRenderer = ({
                 height={display.height}
                 pagination={display.pagination}
                 pageSize={display.pageSize}
+                rowBuffer={display.rowBuffer}
+                suppressRowVirtualisation={display.suppressRowVirtualisation}
                 rowHeightMode={display.rowHeightMode}
                 rowHeight={display.rowHeight}
                 rowHeightExpression={display.rowHeightExpression}
@@ -73,6 +75,9 @@ export const ViewRenderer = ({
                 onOpenColumnVisibility={callbacks.onOpenColumnVisibility}
                 onOpenHiddenDrawer={callbacks.onOpenHiddenDrawer}
                 rowModelType={rowModelType}
+                cacheBlockSize={advancedFeatures.cacheBlockSize}
+                maxBlocksInCache={advancedFeatures.maxBlocksInCache}
+                maxConcurrentRequests={advancedFeatures.maxConcurrentRequests}
             />
         );
     }
@@ -117,6 +122,8 @@ export const ViewRenderer = ({
                 height={display.height}
                 pagination={display.pagination}
                 pageSize={display.pageSize}
+                rowBuffer={display.rowBuffer}
+                suppressRowVirtualisation={display.suppressRowVirtualisation}
                 rowHeightMode={display.rowHeightMode}
                 rowHeight={display.rowHeight}
                 rowHeightExpression={display.rowHeightExpression}
@@ -142,6 +149,10 @@ export const ViewRenderer = ({
                 enableColumnMenus={uiFeatures.enableColumnMenus}
                 enableHeaderFilterButtons={uiFeatures.enableHeaderFilterButtons}
                 enableFloatingFilters={uiFeatures.enableFloatingFilters}
+                rowModelType={rowModelType}
+                cacheBlockSize={advancedFeatures.cacheBlockSize}
+                maxBlocksInCache={advancedFeatures.maxBlocksInCache}
+                maxConcurrentRequests={advancedFeatures.maxConcurrentRequests}
             />
         );
     }
@@ -155,6 +166,8 @@ export const ViewRenderer = ({
                 height={display.height}
                 pagination={display.pagination}
                 pageSize={display.pageSize}
+                rowBuffer={display.rowBuffer}
+                suppressRowVirtualisation={display.suppressRowVirtualisation}
                 rowHeightMode={display.rowHeightMode}
                 rowHeight={display.rowHeight}
                 rowHeightExpression={display.rowHeightExpression}
@@ -180,6 +193,10 @@ export const ViewRenderer = ({
                 enableColumnMenus={uiFeatures.enableColumnMenus}
                 enableHeaderFilterButtons={uiFeatures.enableHeaderFilterButtons}
                 enableFloatingFilters={uiFeatures.enableFloatingFilters}
+                rowModelType={rowModelType}
+                cacheBlockSize={advancedFeatures.cacheBlockSize}
+                maxBlocksInCache={advancedFeatures.maxBlocksInCache}
+                maxConcurrentRequests={advancedFeatures.maxConcurrentRequests}
             />
         );
     }

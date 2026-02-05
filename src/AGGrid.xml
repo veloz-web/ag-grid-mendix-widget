@@ -32,6 +32,18 @@
                 <caption>Entity Name</caption>
                 <description>The entity type being retrieved (helper for OQL generation).</description>
             </property>
+            <property key="cacheBlockSize" type="integer" defaultValue="100">
+                <caption>Cache Block Size</caption>
+                <description>Number of rows fetched per block from the server. Larger values reduce requests but increase memory. Default: 100.</description>
+            </property>
+            <property key="maxBlocksInCache" type="integer" defaultValue="0">
+                <caption>Max Blocks in Cache</caption>
+                <description>Maximum number of blocks kept in memory. 0 = unlimited (keep all fetched blocks). Reduce to limit memory for very large datasets.</description>
+            </property>
+            <property key="maxConcurrentRequests" type="integer" defaultValue="2">
+                <caption>Max Concurrent Requests</caption>
+                <description>Maximum number of simultaneous data requests to the server. Higher values may improve perceived speed but increase server load. Default: 2.</description>
+            </property>
         </propertyGroup>
         <propertyGroup caption="Columns">
             <property key="columns" type="object" isList="true" required="true">
@@ -444,6 +456,14 @@
             <property key="pageSize" type="integer" defaultValue="20">
                 <caption>Page Size</caption>
                 <description>Number of rows per page</description>
+            </property>
+            <property key="rowBuffer" type="integer" defaultValue="10">
+                <caption>Row Buffer</caption>
+                <description>Number of extra rows rendered above and below the visible area. Higher values reduce flicker when scrolling fast but use more memory. Default: 10.</description>
+            </property>
+            <property key="suppressRowVirtualisation" type="boolean" defaultValue="false">
+                <caption>Suppress Row Virtualisation</caption>
+                <description>When enabled, ALL rows are rendered in the DOM at once (disables virtual scrolling). Only use for small datasets or print layouts. NOT recommended for large datasets.</description>
             </property>
             <property key="height" type="integer" defaultValue="500">
                 <caption>Height</caption>

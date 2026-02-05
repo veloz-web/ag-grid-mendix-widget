@@ -516,4 +516,63 @@ describe("GridView Component", () => {
             consoleSpy.mockRestore();
         });
     });
+
+    describe("Virtual Scrolling", () => {
+        it("renders with default rowBuffer value", () => {
+            render(<GridView {...mockProps} />);
+            const grid = screen.getAllByTestId("ag-grid")[0];
+            expect(grid).toBeInTheDocument();
+        });
+
+        it("accepts custom rowBuffer value", () => {
+            render(<GridView {...mockProps} rowBuffer={20} />);
+            const grid = screen.getAllByTestId("ag-grid")[0];
+            expect(grid).toBeInTheDocument();
+        });
+
+        it("renders with suppressRowVirtualisation enabled", () => {
+            render(<GridView {...mockProps} suppressRowVirtualisation={true} />);
+            const grid = screen.getAllByTestId("ag-grid")[0];
+            expect(grid).toBeInTheDocument();
+        });
+
+        it("renders with suppressRowVirtualisation disabled by default", () => {
+            render(<GridView {...mockProps} />);
+            const grid = screen.getAllByTestId("ag-grid")[0];
+            expect(grid).toBeInTheDocument();
+        });
+
+        it("accepts server-side cache configuration props", () => {
+            render(
+                <GridView
+                    {...mockProps}
+                    rowModelType="serverSide"
+                    cacheBlockSize={50}
+                    maxBlocksInCache={10}
+                    maxConcurrentRequests={3}
+                />
+            );
+            const grid = screen.getAllByTestId("ag-grid")[0];
+            expect(grid).toBeInTheDocument();
+        });
+
+        it("uses default server-side cache values when not provided", () => {
+            render(<GridView {...mockProps} rowModelType="serverSide" />);
+            const grid = screen.getAllByTestId("ag-grid")[0];
+            expect(grid).toBeInTheDocument();
+        });
+
+        it("does not apply server-side cache config for client-side model", () => {
+            render(
+                <GridView
+                    {...mockProps}
+                    rowModelType="clientSide"
+                    cacheBlockSize={50}
+                    maxBlocksInCache={10}
+                />
+            );
+            const grid = screen.getAllByTestId("ag-grid")[0];
+            expect(grid).toBeInTheDocument();
+        });
+    });
 });

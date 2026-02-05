@@ -141,8 +141,28 @@ describe("AGGrid Editor Preview indicators", () => {
         theme: "alpine",
         enablePolling: false,
         pollingInterval: 5000,
-        enableNotifications: false
+        enableNotifications: false,
+        rowModelType: "clientSide",
+        rowBuffer: 10,
+        suppressRowVirtualisation: false,
+        cacheBlockSize: 100,
+        maxBlocksInCache: 0,
+        maxConcurrentRequests: 2
     };
+
+    it("shows virtual scrolling warning when virtualisation is suppressed", () => {
+        const props = {
+            ...baseProps,
+            suppressRowVirtualisation: true
+        };
+
+        render(preview(props));
+
+        expect(screen.getByText(/Virtual scrolling tips/i)).toBeInTheDocument();
+        expect(
+            screen.getByText(/virtualisation is disabled/i)
+        ).toBeInTheDocument();
+    });
 
     it("shows custom formatter warning banner for unknown names", () => {
         const props = {
