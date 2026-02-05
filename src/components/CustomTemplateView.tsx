@@ -10,6 +10,7 @@ interface CustomTemplateViewProps {
     columns: ColumnsType[];
     template: string;
     onRowClick?: any;
+    onRowDoubleClick?: any;
     className?: string;
     customFormatterRegistry?: CustomFormatterRegistry;
 }
@@ -20,13 +21,14 @@ export function CustomTemplateView(props: CustomTemplateViewProps): ReactElement
         columns,
         template,
         onRowClick,
+        onRowDoubleClick,
         className = "aggrid-custom-template-view",
         customFormatterRegistry
     } = props;
 
     // If no template provided, render the fallback view
     if (!template || template.trim() === "") {
-        return <DynamicView rowData={rowData} columns={columns} onRowClick={onRowClick} />;
+        return <DynamicView rowData={rowData} columns={columns} onRowClick={onRowClick} onRowDoubleClick={onRowDoubleClick} />;
     }
 
     // Additional safety check: ensure we have valid data
@@ -49,6 +51,20 @@ export function CustomTemplateView(props: CustomTemplateViewProps): ReactElement
         // Check if the action can be executed and execute it
         if (action && action.canExecute) {
             // Defer execution to next tick for React-only mode compatibility
+            setTimeout(() => {
+                action.execute();
+            }, 0);
+        }
+    };
+
+    const handleItemDoubleClick = (item: any) => {
+        if (!onRowDoubleClick) {
+            return;
+        }
+
+        const action = onRowDoubleClick.get(item);
+
+        if (action && action.canExecute) {
             setTimeout(() => {
                 action.execute();
             }, 0);
@@ -411,6 +427,7 @@ export function CustomTemplateView(props: CustomTemplateViewProps): ReactElement
                         key={idx}
                         className="aggrid-custom-item"
                         onClick={() => handleItemClick(item)}
+                        onDoubleClick={() => handleItemDoubleClick(item)}
                         dangerouslySetInnerHTML={{
                             __html: processedHtml
                         }}

@@ -47,6 +47,7 @@ export const ViewRenderer = ({
                 pageSize={display.pageSize}
                 onGridReady={callbacks.onGridReady}
                 onRowClicked={callbacks.onRowClicked}
+                onRowDoubleClicked={callbacks.onRowDoubleClicked}
                 onSortChanged={callbacks.onSortChanged}
                 onFilterChanged={callbacks.onFilterChanged}
                 onColumnMoved={callbacks.onColumnMoved}
@@ -79,6 +80,7 @@ export const ViewRenderer = ({
                 columns={data.columns}
                 template={templates.customCardTemplate as string}
                 onRowClick={callbacks.onRowClick}
+                onRowDoubleClick={callbacks.onRowDoubleClick}
                 className="aggrid-card-view"
                 customFormatterRegistry={data.customFormatterRegistry}
             />
@@ -87,6 +89,7 @@ export const ViewRenderer = ({
                 rowData={data.rowData}
                 columns={data.columns}
                 onRowClick={callbacks.onRowClick}
+                onRowDoubleClick={callbacks.onRowDoubleClick}
             />
         );
     }
@@ -98,6 +101,7 @@ export const ViewRenderer = ({
                 columns={data.columns}
                 template={templates.customListTemplate as string}
                 onRowClick={callbacks.onRowClick}
+                onRowDoubleClick={callbacks.onRowDoubleClick}
                 className="aggrid-list-view"
                 customFormatterRegistry={data.customFormatterRegistry}
             />
@@ -111,6 +115,7 @@ export const ViewRenderer = ({
                 pageSize={display.pageSize}
                 onGridReady={callbacks.onGridReady}
                 onRowClicked={callbacks.onRowClicked}
+                onRowDoubleClicked={callbacks.onRowDoubleClicked}
                 onSortChanged={callbacks.onSortChanged}
                 onFilterChanged={callbacks.onFilterChanged}
                 onColumnMoved={callbacks.onColumnMoved}
@@ -144,6 +149,7 @@ export const ViewRenderer = ({
                 pageSize={display.pageSize}
                 onGridReady={callbacks.onGridReady}
                 onRowClicked={callbacks.onRowClicked}
+                onRowDoubleClicked={callbacks.onRowDoubleClicked}
                 onSortChanged={callbacks.onSortChanged}
                 onFilterChanged={callbacks.onFilterChanged}
                 onColumnMoved={callbacks.onColumnMoved}

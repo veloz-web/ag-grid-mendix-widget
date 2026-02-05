@@ -239,7 +239,7 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
     }, [filterManagement]);
 
     // Row click handler
-    const { onRowClick } = props;
+    const { onRowClick, onRowDoubleClick } = props;
 
     const onRowClickHandler = useCallback(
         (event: any) => {
@@ -254,6 +254,21 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
             }
         },
         [onRowClick]
+    );
+
+    const onRowDoubleClickHandler = useCallback(
+        (event: any) => {
+            if (!onRowDoubleClick || !event.data) {
+                return;
+            }
+            const action = onRowDoubleClick.get(event.data);
+            if (action && action.canExecute) {
+                setTimeout(() => {
+                    action.execute();
+                }, 0);
+            }
+        },
+        [onRowDoubleClick]
     );
 
     // --- 6. Render Logic ---
@@ -425,13 +440,15 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
                 callbacks={{
                     onGridReady,
                     onRowClicked: onRowClickHandler,
+                    onRowDoubleClicked: onRowDoubleClickHandler,
                     onSortChanged,
                     onFilterChanged,
                     onColumnMoved,
                     onColumnPinned,
                     onOpenColumnVisibility: columnManagement.toggleColumnVisibility,
                     onOpenHiddenDrawer: columnManagement.toggleHiddenDrawer,
-                    onRowClick: props.onRowClick
+                    onRowClick: props.onRowClick,
+                    onRowDoubleClick: props.onRowDoubleClick
                 }}
                 templates={{
                     customCardTemplate: props.customCardTemplate,

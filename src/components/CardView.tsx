@@ -7,10 +7,11 @@ interface DynamicViewProps {
     rowData: any[];
     columns: ColumnsType[];
     onRowClick?: any;
+    onRowDoubleClick?: any;
 }
 
 export function DynamicView(props: DynamicViewProps): ReactElement {
-    const { rowData, columns, onRowClick } = props;
+    const { rowData, columns, onRowClick, onRowDoubleClick } = props;
     // Card view now uses templates - just filter out hidden columns
     const cardColumns = columns.filter((col) => !col.hidden);
 
@@ -31,6 +32,20 @@ export function DynamicView(props: DynamicViewProps): ReactElement {
         }
     };
 
+    const handleCardDoubleClick = (item: any) => {
+        if (!onRowDoubleClick) {
+            return;
+        }
+
+        const action = onRowDoubleClick.get(item);
+
+        if (action && action.canExecute) {
+            setTimeout(() => {
+                action.execute();
+            }, 0);
+        }
+    };
+
     return (
         <div className="aggrid-cards-view">
             {rowData.map((item, idx) => {
@@ -44,7 +59,7 @@ export function DynamicView(props: DynamicViewProps): ReactElement {
                 });
 
                 return (
-                    <div key={idx} className="aggrid-card" onClick={() => handleCardClick(item)}>
+                    <div key={idx} className="aggrid-card" onClick={() => handleCardClick(item)} onDoubleClick={() => handleCardDoubleClick(item)}>
                         {availableColumns.map((col, colIdx) => {
                             let rawValue: any;
                             let attributeType: string;

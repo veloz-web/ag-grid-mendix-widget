@@ -523,6 +523,10 @@
                 <caption>On Row Click</caption>
                 <description>Action to execute when a row is clicked</description>
             </property>
+            <property key="onRowDoubleClick" type="action" dataSource="dataSource">
+                <caption>On Row Double Click</caption>
+                <description>Action to execute when a row is double-clicked</description>
+            </property>
         </propertyGroup>
     </properties>
 </widget>

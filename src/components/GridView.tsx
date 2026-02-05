@@ -16,6 +16,7 @@ interface GridViewProps {
     pageSize: number;
     onGridReady: (params: GridReadyEvent) => void;
     onRowClicked: (event: any) => void;
+    onRowDoubleClicked?: (event: any) => void;
     onSortChanged?: (event: any) => void;
     onFilterChanged?: (event: any) => void;
     onColumnMoved?: (event: any) => void;
@@ -52,6 +53,7 @@ export function GridView(props: GridViewProps): ReactElement {
         pageSize,
         onGridReady,
         onRowClicked,
+        onRowDoubleClicked,
         onSortChanged,
         onFilterChanged,
         onColumnMoved,
@@ -122,6 +124,7 @@ export function GridView(props: GridViewProps): ReactElement {
                 paginationPageSize={pageSize}
                 onGridReady={onGridReady} // <-- Removed 'as any'
                 onRowClicked={onRowClicked}
+                onRowDoubleClicked={onRowDoubleClicked}
                 onSortChanged={onSortChanged}
                 onFilterChanged={onFilterChanged}
                 onColumnMoved={onColumnMoved}

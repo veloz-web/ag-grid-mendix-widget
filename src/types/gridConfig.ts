@@ -91,6 +91,8 @@ export interface GridCallbacks {
     onGridReady: (params: GridReadyEvent) => void;
     /** Called when a row is clicked */
     onRowClicked: (event: any) => void;
+    /** Called when a row is double-clicked */
+    onRowDoubleClicked?: (event: any) => void;
     /** Called when sort changes */
     onSortChanged?: (event: any) => void;
     /** Called when filter changes */
@@ -105,6 +107,8 @@ export interface GridCallbacks {
     onOpenHiddenDrawer?: () => void;
     /** Called when row is clicked (for custom views) - Mendix action */
     onRowClick?: any;
+    /** Called when row is double-clicked (for custom views) - Mendix action */
+    onRowDoubleClick?: any;
 }
 
 /**

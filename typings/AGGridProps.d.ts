@@ -23,29 +23,7 @@ export type FilterLocationEnum = "none" | "drawer" | "toolbar";
 
 export type AggregationFunctionEnum = "sum" | "min" | "max" | "avg" | "count" | "first" | "last";
 
-export type FormatterEnum =
-    | "none"
-    | "currency"
-    | "currencyEUR"
-    | "currencyGBP"
-    | "percentage"
-    | "number"
-    | "decimal2"
-    | "dateShort"
-    | "dateLong"
-    | "dateISO"
-    | "dateDMY"
-    | "dateMDY"
-    | "dateYMD"
-    | "dateTime"
-    | "time"
-    | "yesNo"
-    | "trueFalse"
-    | "uppercase"
-    | "lowercase"
-    | "capitalize"
-    | "customPrefix"
-    | "link";
+export type FormatterEnum = "none" | "currency" | "currencyEUR" | "currencyGBP" | "percentage" | "number" | "decimal2" | "dateShort" | "dateLong" | "dateISO" | "dateDMY" | "dateMDY" | "dateYMD" | "dateTime" | "time" | "yesNo" | "trueFalse" | "uppercase" | "lowercase" | "capitalize" | "customPrefix" | "link";
 
 export interface ColumnsType {
     header: DynamicValue<string>;
@@ -106,13 +84,7 @@ export type ThemeVariantEnum = "auto" | "light" | "dark";
 
 export type PdfPageOrientationEnum = "landscape" | "portrait";
 
-export type ToastPositionEnum =
-    | "topLeft"
-    | "topCenter"
-    | "topRight"
-    | "bottomLeft"
-    | "bottomCenter"
-    | "bottomRight";
+export type ToastPositionEnum = "topLeft" | "topCenter" | "topRight" | "bottomLeft" | "bottomCenter" | "bottomRight";
 
 export interface ColumnsPreviewType {
     header: string;
@@ -214,6 +186,7 @@ export interface AGGridContainerProps {
     toastPosition: ToastPositionEnum;
     autoHideDuration: number;
     onRowClick?: ListActionValue;
+    onRowDoubleClick?: ListActionValue;
 }
 
 export interface AGGridPreviewProps {
@@ -275,4 +248,5 @@ export interface AGGridPreviewProps {
     toastPosition: ToastPositionEnum;
     autoHideDuration: number | null;
     onRowClick: {} | null;
+    onRowDoubleClick: {} | null;
 }

@@ -151,7 +151,8 @@ describe("AGGrid Component", () => {
         enableNotifications: false,
         toastPosition: "topRight" as const,
         autoHideDuration: 0,
-        onRowClick: undefined
+        onRowClick: undefined,
+        onRowDoubleClick: undefined
     };
 
     beforeEach(() => {
