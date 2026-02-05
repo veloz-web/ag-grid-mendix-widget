@@ -39,6 +39,14 @@ export interface GridDisplayConfig {
     pagination: boolean;
     /** Page size (rows per page) */
     pageSize: number;
+    /** Row height mode: fixed, auto, or custom */
+    rowHeightMode: "fixed" | "auto" | "custom";
+    /** Row height in pixels (fixed height, or default/min for auto/custom) */
+    rowHeight: number;
+    /** JavaScript expression for custom row height (when mode is 'custom') */
+    rowHeightExpression?: string;
+    /** Maximum row height in pixels (0 = unlimited) */
+    maxRowHeight: number;
 }
 
 /**

@@ -136,6 +136,10 @@ describe("GridView Component", () => {
         height: 400,
         pagination: true,
         pageSize: 20,
+        rowHeightMode: "fixed" as const,
+        rowHeight: 40,
+        rowHeightExpression: "",
+        maxRowHeight: 0,
         onGridReady: jest.fn(),
         onRowClicked: jest.fn(),
         onRowDoubleClicked: jest.fn(),
@@ -425,6 +429,91 @@ describe("GridView Component", () => {
             // This test will fail until we verify column definition updates
             // TODO: Add column definition update verification
             expect(true).toBe(true); // Placeholder assertion
+        });
+    });
+
+    describe("Row Height", () => {
+        it("renders with default fixed row height mode", () => {
+            render(<GridView {...mockProps} />);
+            const grid = screen.getAllByTestId("ag-grid")[0];
+            expect(grid).toBeInTheDocument();
+        });
+
+        it("accepts auto row height mode", () => {
+            render(<GridView {...mockProps} rowHeightMode="auto" rowHeight={40} />);
+            const grid = screen.getAllByTestId("ag-grid")[0];
+            expect(grid).toBeInTheDocument();
+        });
+
+        it("accepts custom row height mode with expression", () => {
+            render(
+                <GridView
+                    {...mockProps}
+                    rowHeightMode="custom"
+                    rowHeight={40}
+                    rowHeightExpression="data && data.type === 'large' ? 80 : 40"
+                />
+            );
+            const grid = screen.getAllByTestId("ag-grid")[0];
+            expect(grid).toBeInTheDocument();
+        });
+
+        it("applies maxRowHeight CSS class when auto mode with maxRowHeight", () => {
+            render(
+                <GridView {...mockProps} rowHeightMode="auto" rowHeight={40} maxRowHeight={200} />
+            );
+            const grid = screen.getAllByTestId("ag-grid")[0];
+            expect(grid.className).toContain("aggrid-max-row-height");
+        });
+
+        it("does not apply maxRowHeight CSS class when maxRowHeight is 0", () => {
+            render(
+                <GridView {...mockProps} rowHeightMode="auto" rowHeight={40} maxRowHeight={0} />
+            );
+            const grid = screen.getAllByTestId("ag-grid")[0];
+            expect(grid.className).not.toContain("aggrid-max-row-height");
+        });
+
+        it("does not apply maxRowHeight CSS class in fixed mode", () => {
+            render(
+                <GridView {...mockProps} rowHeightMode="fixed" rowHeight={40} maxRowHeight={200} />
+            );
+            const grid = screen.getAllByTestId("ag-grid")[0];
+            expect(grid.className).not.toContain("aggrid-max-row-height");
+        });
+
+        it("falls back to fixed mode when auto is used with server-side row model", () => {
+            const consoleSpy = jest.spyOn(console, "warn").mockImplementation();
+            render(
+                <GridView
+                    {...mockProps}
+                    rowHeightMode="auto"
+                    rowHeight={40}
+                    rowModelType="serverSide"
+                />
+            );
+            expect(consoleSpy).toHaveBeenCalledWith(
+                expect.stringContaining("Auto row height is not supported")
+            );
+            consoleSpy.mockRestore();
+        });
+
+        it("handles invalid custom expression gracefully", () => {
+            const consoleSpy = jest.spyOn(console, "error").mockImplementation();
+            render(
+                <GridView
+                    {...mockProps}
+                    rowHeightMode="custom"
+                    rowHeight={40}
+                    rowHeightExpression="this is not valid javascript @@!!"
+                />
+            );
+            expect(consoleSpy).toHaveBeenCalledWith(
+                expect.stringContaining("Invalid row height expression"),
+                expect.anything(),
+                expect.anything()
+            );
+            consoleSpy.mockRestore();
         });
     });
 });

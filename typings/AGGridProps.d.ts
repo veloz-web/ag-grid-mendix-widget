@@ -40,6 +40,7 @@ export interface ColumnsType {
     draggable: boolean;
     pinned: PinnedEnum;
     pinnable: boolean;
+    wrapText: boolean;
     sortable: boolean;
     defaultSort: DefaultSortEnum;
     sortIndex: number;
@@ -78,6 +79,8 @@ export interface CustomFormattersType {
     formatterConfig: string;
 }
 
+export type RowHeightModeEnum = "fixed" | "auto" | "custom";
+
 export type ThemeEnum = "alpine" | "balham" | "material" | "quartz";
 
 export type ThemeVariantEnum = "auto" | "light" | "dark";
@@ -101,6 +104,7 @@ export interface ColumnsPreviewType {
     draggable: boolean;
     pinned: PinnedEnum;
     pinnable: boolean;
+    wrapText: boolean;
     sortable: boolean;
     defaultSort: DefaultSortEnum;
     sortIndex: number | null;
@@ -160,6 +164,10 @@ export interface AGGridContainerProps {
     groupDefaultExpanded: number;
     showGroupRowsOnSeparateLine: boolean;
     suppressAggregationOnGroupRows: boolean;
+    rowHeightMode: RowHeightModeEnum;
+    rowHeight: number;
+    rowHeightExpression: string;
+    maxRowHeight: number;
     licenseKey: string;
     enableContextMenu: boolean;
     useLocalStorage: boolean;
@@ -222,6 +230,10 @@ export interface AGGridPreviewProps {
     groupDefaultExpanded: number | null;
     showGroupRowsOnSeparateLine: boolean;
     suppressAggregationOnGroupRows: boolean;
+    rowHeightMode: RowHeightModeEnum;
+    rowHeight: number | null;
+    rowHeightExpression: string;
+    maxRowHeight: number | null;
     licenseKey: string;
     enableContextMenu: boolean;
     useLocalStorage: boolean;

@@ -182,6 +182,14 @@ export function mapMendixColumnToColDef(
         colDef.hide = true;
     }
 
+    // Handle text wrapping
+    // When wrapText is enabled, AG Grid wraps text within the cell.
+    // autoHeight tells AG Grid to measure the cell and expand the row to fit.
+    if (col.wrapText) {
+        colDef.wrapText = true;
+        colDef.autoHeight = true;
+    }
+
     // Handle template columns
     if (col.template) {
         colDef.sortable = false;

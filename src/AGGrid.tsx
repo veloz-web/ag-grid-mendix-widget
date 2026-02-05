@@ -417,7 +417,11 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
                     themeClassName,
                     height,
                     pagination,
-                    pageSize
+                    pageSize,
+                    rowHeightMode: props.rowHeightMode || "fixed",
+                    rowHeight: props.rowHeight || 40,
+                    rowHeightExpression: props.rowHeightExpression || "",
+                    maxRowHeight: props.maxRowHeight || 0
                 }}
                 uiFeatures={{
                     enableContextMenu: Boolean(props.enableContextMenu),

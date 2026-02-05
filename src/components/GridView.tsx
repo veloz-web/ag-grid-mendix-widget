@@ -1,5 +1,5 @@
 // GridView.tsx
-import React, { ReactElement, useMemo } from "react";
+import React, { ReactElement, useMemo, useCallback } from "react";
 import { AgGridReact } from "ag-grid-react";
 import type { GridReadyEvent, ColumnPinnedEvent } from "ag-grid-community";
 import { ColumnsType } from "../../typings/AGGridProps";
@@ -10,10 +10,18 @@ import { calculatePinnedBottomRow } from "../utils/aggregation/calculator";
 interface GridViewProps {
     rowData: any[];
     columns: ColumnsType[];
-    themeClassName: string; // <-- Changed: from theme: Theme
+    themeClassName: string;
     height: number;
     pagination: boolean;
     pageSize: number;
+    /** Row height mode: fixed, auto, or custom */
+    rowHeightMode?: "fixed" | "auto" | "custom";
+    /** Row height in pixels */
+    rowHeight?: number;
+    /** JavaScript expression for custom row height */
+    rowHeightExpression?: string;
+    /** Maximum row height in pixels (0 = unlimited) */
+    maxRowHeight?: number;
     onGridReady: (params: GridReadyEvent) => void;
     onRowClicked: (event: any) => void;
     onRowDoubleClicked?: (event: any) => void;
@@ -47,10 +55,14 @@ export function GridView(props: GridViewProps): ReactElement {
     const {
         rowData,
         columns,
-        themeClassName, // <-- Changed
+        themeClassName,
         height,
         pagination,
         pageSize,
+        rowHeightMode = "fixed",
+        rowHeight = 40,
+        rowHeightExpression,
+        maxRowHeight = 0,
         onGridReady,
         onRowClicked,
         onRowDoubleClicked,
@@ -108,21 +120,87 @@ export function GridView(props: GridViewProps): ReactElement {
         );
     }, [columns, columnVisibility, columnOrder, customFormatterRegistry]);
 
+    // --- Row height configuration ---
+    // Compile the custom expression once (if provided) for performance
+    const compiledRowHeightFn = useMemo(() => {
+        if (rowHeightMode !== "custom" || !rowHeightExpression || !rowHeightExpression.trim()) {
+            return undefined;
+        }
+        try {
+            // Compile the expression into a function: (data, rowIndex) => number
+            // The expression should return a number (height in px)
+            return new Function("data", "rowIndex", `return (${rowHeightExpression});`) as (
+                data: any,
+                rowIndex: number
+            ) => number;
+        } catch (e) {
+            console.error("[AG Grid] Invalid row height expression:", rowHeightExpression, e);
+            return undefined;
+        }
+    }, [rowHeightMode, rowHeightExpression]);
+
+    // Build the getRowHeight callback for custom mode
+    const getRowHeight = useCallback(
+        (params: any): number | undefined => {
+            if (rowHeightMode === "custom" && compiledRowHeightFn && params.data) {
+                try {
+                    let height = compiledRowHeightFn(params.data, params.rowIndex);
+                    // Apply max row height cap if configured
+                    if (maxRowHeight > 0 && height > maxRowHeight) {
+                        height = maxRowHeight;
+                    }
+                    return height;
+                } catch (e) {
+                    console.error("[AG Grid] Error in getRowHeight:", e);
+                    return rowHeight; // Fallback to default
+                }
+            }
+            return undefined;
+        },
+        [rowHeightMode, compiledRowHeightFn, maxRowHeight, rowHeight]
+    );
+
+    // Warn if auto height is used with server-side row model
+    if (rowHeightMode === "auto" && props.rowModelType === "serverSide") {
+        console.warn(
+            "[AG Grid] Auto row height is not supported with the Server-Side row model. " +
+                "Falling back to fixed row height. Use Fixed or Custom mode instead."
+        );
+    }
+
+    // Determine effective row height mode (fallback for server-side)
+    const effectiveRowHeightMode =
+        rowHeightMode === "auto" && props.rowModelType === "serverSide" ? "fixed" : rowHeightMode;
+
+    // Build wrapper class name
+    const wrapperClassName = [
+        themeClassName,
+        effectiveRowHeightMode === "auto" && maxRowHeight > 0 ? "aggrid-max-row-height" : ""
+    ]
+        .filter(Boolean)
+        .join(" ");
+
+    // Build wrapper style with optional CSS variable for max row height
+    const wrapperStyle: React.CSSProperties = {
+        height: `${height}px`,
+        width: "100%",
+        ...(effectiveRowHeightMode === "auto" && maxRowHeight > 0
+            ? ({ "--ag-max-row-height": `${maxRowHeight}px` } as any)
+            : {})
+    };
+
     return (
-        // --- THEME FIX: Apply theme class to the wrapper div ---
-        <div
-            className={themeClassName}
-            style={{ height: `${height}px`, width: "100%" }}
-            data-testid="ag-grid"
-        >
+        <div className={wrapperClassName} style={wrapperStyle} data-testid="ag-grid">
             <AgGridReact
-                // theme={theme} // <-- Removed: Theme is now on the wrapper
-                columnDefs={columnDefs} // <-- Removed 'as any'
+                columnDefs={columnDefs}
                 rowData={rowData}
                 pinnedBottomRowData={pinnedBottomRowData}
                 pagination={pagination}
                 paginationPageSize={pageSize}
-                onGridReady={onGridReady} // <-- Removed 'as any'
+                // Row Height Configuration
+                rowHeight={effectiveRowHeightMode === "fixed" ? rowHeight : undefined}
+                getRowHeight={effectiveRowHeightMode === "custom" ? getRowHeight : undefined}
+                onGridReady={onGridReady}
                 onRowClicked={onRowClicked}
                 onRowDoubleClicked={onRowDoubleClicked}
                 onSortChanged={onSortChanged}

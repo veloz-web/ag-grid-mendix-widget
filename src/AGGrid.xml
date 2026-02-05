@@ -129,6 +129,10 @@
                             <caption>Allow Pinning in Grid Menu</caption>
                             <description>Allow end users to pin or unpin this column through the column options menu.</description>
                         </property>
+                        <property key="wrapText" type="boolean" defaultValue="false">
+                            <caption>Wrap Text</caption>
+                            <description>Enable text wrapping in this column. When the grid's Row Height Mode is set to Auto, rows will expand to fit the wrapped content. Works best with long text fields like descriptions or notes.</description>
+                        </property>
                     </propertyGroup>
                     <propertyGroup caption="Sorting &amp; Filtering">
                         <property key="sortable" type="boolean" defaultValue="true">
@@ -387,6 +391,29 @@
             <property key="suppressAggregationOnGroupRows" type="boolean" defaultValue="false">
                 <caption>Suppress Aggregation on Group Rows</caption>
                 <description>Hide aggregation values on group rows. Useful if you only want to show aggregations in the footer.</description>
+            </property>
+        </propertyGroup>
+        <propertyGroup caption="Row Height">
+            <property key="rowHeightMode" type="enumeration" defaultValue="fixed">
+                <caption>Row Height Mode</caption>
+                <description>How to determine row height. Fixed: all rows same height. Auto: rows expand to fit content (requires Wrap Text on columns). Custom: use a JavaScript expression per row. Note: Auto is not supported with Server-Side row model.</description>
+                <enumerationValues>
+                    <enumerationValue key="fixed">Fixed (all rows same height)</enumerationValue>
+                    <enumerationValue key="auto">Auto (fit content)</enumerationValue>
+                    <enumerationValue key="custom">Custom (JavaScript expression)</enumerationValue>
+                </enumerationValues>
+            </property>
+            <property key="rowHeight" type="integer" defaultValue="40">
+                <caption>Row Height (px)</caption>
+                <description>Row height in pixels. Used as the fixed height when mode is Fixed, or as the default/minimum height for Auto and Custom modes.</description>
+            </property>
+            <property key="rowHeightExpression" type="string" required="false" multiline="true">
+                <caption>Custom Row Height Expression</caption>
+                <description>JavaScript expression that returns a row height in pixels. Only used when Row Height Mode is Custom. Available variables: data (row object), rowIndex (row number). Example: data.type === 'header' ? 80 : 40</description>
+            </property>
+            <property key="maxRowHeight" type="integer" defaultValue="0">
+                <caption>Max Row Height (px)</caption>
+                <description>Maximum row height in pixels (0 = unlimited). Prevents extremely tall rows when using Auto or Custom modes. Recommended: 200-500 for auto-height grids.</description>
             </property>
         </propertyGroup>
         <propertyGroup caption="Grid Options">

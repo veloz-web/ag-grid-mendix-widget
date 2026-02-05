@@ -521,6 +521,41 @@ describe("Column Mapping Utilities", () => {
                 expect(result.sortable).toBe(false);
                 expect(result.filter).toBe(false);
             });
+
+            it("should enable wrapText and autoHeight when wrapText is true", () => {
+                const col: Partial<ColumnsType> = {
+                    attribute: { id: "testAttr" } as any,
+                    wrapText: true
+                };
+
+                const result = mapMendixColumnToColDef(col as ColumnsType, [], undefined);
+
+                expect(result.wrapText).toBe(true);
+                expect(result.autoHeight).toBe(true);
+            });
+
+            it("should not set wrapText or autoHeight when wrapText is false", () => {
+                const col: Partial<ColumnsType> = {
+                    attribute: { id: "testAttr" } as any,
+                    wrapText: false
+                };
+
+                const result = mapMendixColumnToColDef(col as ColumnsType, [], undefined);
+
+                expect(result.wrapText).toBeUndefined();
+                expect(result.autoHeight).toBeUndefined();
+            });
+
+            it("should not set wrapText or autoHeight when wrapText is undefined", () => {
+                const col: Partial<ColumnsType> = {
+                    attribute: { id: "testAttr" } as any
+                };
+
+                const result = mapMendixColumnToColDef(col as ColumnsType, [], undefined);
+
+                expect(result.wrapText).toBeUndefined();
+                expect(result.autoHeight).toBeUndefined();
+            });
         });
 
         describe("Custom Formatters", () => {

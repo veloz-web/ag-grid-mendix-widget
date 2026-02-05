@@ -5,6 +5,17 @@
     position: relative;
 }
 
+/* Row Height - Max row height cap for auto-height mode */
+.aggrid-max-row-height .ag-row {
+    max-height: var(--ag-max-row-height, none);
+    overflow: hidden;
+}
+
+.aggrid-max-row-height .ag-cell {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 /* Polling refresh notification banner */
 .aggrid-refresh-banner {
     position: sticky;

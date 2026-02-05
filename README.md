@@ -14,6 +14,8 @@ A powerful Mendix pluggable widget that integrates AG Grid into your Mendix appl
 - **Responsive Design**: Automatic view switching based on device (desktop/mobile)
 - **Filter Drawer**: Slide-out filter panel with Apply Changes button for staged updates
 - **Rich Formatters**: 16+ built-in formatters including status badges with JSON mapping
+- **Dynamic Row Height**: Fixed, auto-expanding, or custom per-row heights with text wrapping
+- **Row Events**: Single-click and double-click actions with Mendix microflow/nanoflow support
 - **Data Polling**: Auto-detect and notify users of new data
 - **Theme Support**: 4 modern themes (Alpine, Balham, Material, Quartz)
 - **Design-Time Preview**: See your grid in Mendix Studio Pro without running the app
@@ -37,6 +39,7 @@ A powerful Mendix pluggable widget that integrates AG Grid into your Mendix appl
 - **[COLUMN_WIDTH_CONFIGURATION.md](./COLUMN_WIDTH_CONFIGURATION.md)** - Column width options
 - **[ROW_GROUPING_GUIDE.md](./ROW_GROUPING_GUIDE.md)** - Hierarchical data grouping
 - **[AGGREGATIONS_GUIDE.md](./AGGREGATIONS_GUIDE.md)** - Column footers with sum, avg, count
+- **[ROW_HEIGHT_GUIDE.md](./ROW_HEIGHT_GUIDE.md)** - Dynamic row height configuration
 - **[POLLING_GUIDE.md](./POLLING_GUIDE.md)** - Auto-detect new data
 - **[ACCESSIBILITY.md](./ACCESSIBILITY.md)** - Keyboard navigation & accessibility
 
@@ -199,6 +202,7 @@ For each column, you need to configure:
 | Event | Description |
 |-------|-------------|
 | **On Row Click** | Action executed when user clicks a row |
+| **On Row Double Click** | Action executed when user double-clicks a row |
 
 ## Complete Setup Example
 
@@ -244,6 +248,7 @@ Attributes:
 
 6. **Configure Events (Optional):**
    - On Row Click: Call microflow `ACT_OpenCustomerDetails`
+   - On Row Double Click: Call microflow `ACT_EditCustomer`
    - Pass the clicked Customer object to the microflow
 
 ## Advanced Usage
@@ -520,6 +525,8 @@ src/
 - [x] **Server-side row model** - Handle very large datasets with server-side operations
 - [x] **Advanced aggregations** - Sum, count, avg, min, max in column footers and group rows
 - [x] **Row grouping** - Hierarchical data display with multi-level grouping (see [ROW_GROUPING_GUIDE.md](./ROW_GROUPING_GUIDE.md))
+- [x] **Dynamic row height** - Fixed, auto-expanding, and custom per-row heights with text wrapping (see [ROW_HEIGHT_GUIDE.md](./ROW_HEIGHT_GUIDE.md))
+- [x] **Row double-click event** - Separate double-click action alongside single-click
 
 ### 🚧 Future Enhancements
 - [ ] Cell editing capabilities (inline editing)
