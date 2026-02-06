@@ -1,0 +1,96 @@
+# GitLab CI/CD Pipeline Configuration for AG-Grid Mendix Widget
+
+image: node:18
+
+# Define stages
+stages:
+  - install
+  - lint
+  - test
+  - build
+  - release
+
+# Cache node_modules for faster builds
+cache:
+  key:
+    files:
+      - package-lock.json
+  paths:
+    - node_modules/
+
+# Install dependencies
+install:
+  stage: install
+  script:
+    - npm ci
+  artifacts:
+    paths:
+      - node_modules/
+    expire_in: 1 hour
+
+# Lint code
+lint:
+  stage: lint
+  dependencies:
+    - install
+  script:
+    - npm run lint
+  allow_failure: false
+
+# Run tests with coverage
+test:
+  stage: test
+  dependencies:
+    - install
+  script:
+    - npm run test:coverage
+  coverage: '/Lines\s+:\s+(\d+\.?\d*)%/'
+  artifacts:
+    when: always
+    paths:
+      - coverage/
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/cobertura-coverage.xml
+    expire_in: 30 days
+
+# Build widget
+build:
+  stage: build
+  dependencies:
+    - install
+  script:
+    - npm run build
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 1 week
+
+# Create release (only on tags)
+release:
+  stage: release
+  dependencies:
+    - install
+    - build
+  script:
+    - npm run release
+  artifacts:
+    paths:
+      - dist/*.mpk
+    expire_in: 1 year
+  only:
+    - tags
+
+# Code quality job (optional - uses GitLab Code Quality)
+code_quality:
+  stage: test
+  dependencies:
+    - install
+  script:
+    - npm run lint -- --format json --output-file gl-code-quality-report.json || true
+  artifacts:
+    reports:
+      codequality: gl-code-quality-report.json
+    expire_in: 1 week
+  allow_failure: true

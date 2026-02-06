@@ -5,6 +5,7 @@ module.exports = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   snapshotSerializers: [], // Remove enzyme-to-json serializer
   collectCoverage: false,
+  coverageReporters: ["text-summary", "cobertura", "lcov"],
   // Disable problematic pretty-format features
   snapshotFormat: {
     escapeString: true,

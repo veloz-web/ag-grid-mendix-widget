@@ -17,8 +17,9 @@
     "build": "pluggable-widgets-tools build:web",
     "release": "pluggable-widgets-tools release:web && node scripts/strip-console-logs.js",
     "format": "pluggable-widgets-tools format",
-    "lint": "pluggable-widgets-tools lint",
-    "test": "jest --config jest.config.js --coverage --watchAll=false"
+  "lint": "pluggable-widgets-tools lint",
+  "test": "jest --config jest.config.js --coverage --watchAll=false",
+  "test:coverage": "jest --config jest.config.js --coverage --coverageReporters=text-summary --coverageReporters=cobertura --coverageReporters=lcov --watchAll=false"
   },
   "devDependencies": {
     "@mendix/pluggable-widgets-tools": "^10.24.0",
