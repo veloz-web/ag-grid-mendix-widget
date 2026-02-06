@@ -16,6 +16,7 @@ A powerful Mendix pluggable widget that integrates AG Grid into your Mendix appl
 - **Rich Formatters**: 16+ built-in formatters including status badges with JSON mapping
 - **Dynamic Row Height**: Fixed, auto-expanding, or custom per-row heights with text wrapping
 - **Virtual Scrolling & Performance Tuning**: Configurable row buffer, server-side cache blocks, and memory management
+- **Row Styling**: Apply dynamic row class names based on data values
 - **Row Events**: Single-click and double-click actions with Mendix microflow/nanoflow support
 - **Data Polling**: Auto-detect and notify users of new data
 - **Theme Support**: 4 modern themes (Alpine, Balham, Material, Quartz)
@@ -42,6 +43,7 @@ A powerful Mendix pluggable widget that integrates AG Grid into your Mendix appl
 - **[AGGREGATIONS_GUIDE.md](./AGGREGATIONS_GUIDE.md)** - Column footers with sum, avg, count
 - **[ROW_HEIGHT_GUIDE.md](./ROW_HEIGHT_GUIDE.md)** - Dynamic row height configuration
 - **[VIRTUAL_SCROLLING_GUIDE.md](./VIRTUAL_SCROLLING_GUIDE.md)** - Virtual scrolling & performance tuning
+- **[ROW_CLASS_GUIDE.md](./ROW_CLASS_GUIDE.md)** - Dynamic row class styling
 - **[POLLING_GUIDE.md](./POLLING_GUIDE.md)** - Auto-detect new data
 - **[ACCESSIBILITY.md](./ACCESSIBILITY.md)** - Keyboard navigation & accessibility
 
@@ -529,6 +531,7 @@ src/
 - [x] **Row grouping** - Hierarchical data display with multi-level grouping (see [ROW_GROUPING_GUIDE.md](./ROW_GROUPING_GUIDE.md))
 - [x] **Dynamic row height** - Fixed, auto-expanding, and custom per-row heights with text wrapping (see [ROW_HEIGHT_GUIDE.md](./ROW_HEIGHT_GUIDE.md))
 - [x] **Virtual scrolling tuning** - Configure row buffer and server-side cache for large datasets (see [VIRTUAL_SCROLLING_GUIDE.md](./VIRTUAL_SCROLLING_GUIDE.md))
+- [x] **Row class styling** - Apply CSS classes based on row values (see [ROW_CLASS_GUIDE.md](./ROW_CLASS_GUIDE.md))
 - [x] **Row double-click event** - Separate double-click action alongside single-click
 
 ### 🚧 Future Enhancements

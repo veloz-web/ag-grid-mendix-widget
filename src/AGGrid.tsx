@@ -423,7 +423,12 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
                     rowHeightMode: props.rowHeightMode || "fixed",
                     rowHeight: props.rowHeight || 40,
                     rowHeightExpression: props.rowHeightExpression || "",
-                    maxRowHeight: props.maxRowHeight || 0
+                    maxRowHeight: props.maxRowHeight || 0,
+                    rowClassMode: props.rowClassMode || "none",
+                    rowClassAttribute: props.rowClassAttribute,
+                    rowClassMapping: props.rowClassMapping || "",
+                    rowClassDefault: props.rowClassDefault || "",
+                    rowClassExpression: props.rowClassExpression || ""
                 }}
                 uiFeatures={{
                     enableContextMenu: Boolean(props.enableContextMenu),

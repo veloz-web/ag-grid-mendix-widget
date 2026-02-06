@@ -140,6 +140,11 @@ describe("GridView Component", () => {
         rowHeight: 40,
         rowHeightExpression: "",
         maxRowHeight: 0,
+    rowClassMode: "none" as const,
+    rowClassAttribute: undefined,
+    rowClassMapping: "",
+    rowClassDefault: "",
+    rowClassExpression: "",
         onGridReady: jest.fn(),
         onRowClicked: jest.fn(),
         onRowDoubleClicked: jest.fn(),
@@ -198,6 +203,33 @@ describe("GridView Component", () => {
             expect(true).toBe(true); // Placeholder assertion
         });
 
+
+    describe("Row Class", () => {
+        it("renders with mapping mode", () => {
+            render(
+                <GridView
+                    {...mockProps}
+                    rowClassMode="mapping"
+                    rowClassAttribute={mockProps.columns[1].attribute}
+                    rowClassMapping='{"Active":"row-active"}'
+                    rowClassDefault="row-default"
+                />
+            );
+            expect(screen.getAllByTestId("ag-grid")[0]).toBeInTheDocument();
+        });
+
+        it("renders with expression mode", () => {
+            render(
+                <GridView
+                    {...mockProps}
+                    rowClassMode="expression"
+                    rowClassExpression="columnValue === 'Active' ? 'row-active' : ''"
+                    rowClassAttribute={mockProps.columns[1].attribute}
+                />
+            );
+            expect(screen.getAllByTestId("ag-grid")[0]).toBeInTheDocument();
+        });
+    });
         it("respects column visibility settings", () => {
             const propsWithVisibility = {
                 ...mockProps,

@@ -81,6 +81,8 @@ export interface CustomFormattersType {
 
 export type RowHeightModeEnum = "fixed" | "auto" | "custom";
 
+export type RowClassModeEnum = "none" | "mapping" | "expression";
+
 export type ThemeEnum = "alpine" | "balham" | "material" | "quartz";
 
 export type ThemeVariantEnum = "auto" | "light" | "dark";
@@ -171,6 +173,11 @@ export interface AGGridContainerProps {
     rowHeight: number;
     rowHeightExpression: string;
     maxRowHeight: number;
+    rowClassMode: RowClassModeEnum;
+    rowClassAttribute?: ListAttributeValue<string | Big | boolean | Date>;
+    rowClassMapping: string;
+    rowClassDefault: string;
+    rowClassExpression: string;
     licenseKey: string;
     enableContextMenu: boolean;
     useLocalStorage: boolean;
@@ -242,6 +249,11 @@ export interface AGGridPreviewProps {
     rowHeight: number | null;
     rowHeightExpression: string;
     maxRowHeight: number | null;
+    rowClassMode: RowClassModeEnum;
+    rowClassAttribute: string;
+    rowClassMapping: string;
+    rowClassDefault: string;
+    rowClassExpression: string;
     licenseKey: string;
     enableContextMenu: boolean;
     useLocalStorage: boolean;

@@ -51,6 +51,16 @@ export interface GridDisplayConfig {
     rowHeightExpression?: string;
     /** Maximum row height in pixels (0 = unlimited) */
     maxRowHeight: number;
+    /** Row class mode: none, mapping, or expression */
+    rowClassMode: "none" | "mapping" | "expression";
+    /** Attribute used for row class mapping */
+    rowClassAttribute?: ColumnsType["attribute"];
+    /** JSON mapping string for row class mapping */
+    rowClassMapping?: string;
+    /** Default row class when mapping/expression returns nothing */
+    rowClassDefault?: string;
+    /** JavaScript expression for row class */
+    rowClassExpression?: string;
 }
 
 /**

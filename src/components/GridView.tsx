@@ -2,6 +2,7 @@
 import React, { ReactElement, useMemo, useCallback } from "react";
 import { AgGridReact } from "ag-grid-react";
 import type { GridReadyEvent, ColumnPinnedEvent } from "ag-grid-community";
+import { ValueStatus } from "mendix";
 import { ColumnsType } from "../../typings/AGGridProps";
 import { CustomFormatterRegistry } from "../utils/customFormatters";
 import { buildColumnDefs } from "../utils/column/mapping";
@@ -22,6 +23,16 @@ interface GridViewProps {
     rowHeightExpression?: string;
     /** Maximum row height in pixels (0 = unlimited) */
     maxRowHeight?: number;
+    /** Row class mode: none, mapping, or expression */
+    rowClassMode?: "none" | "mapping" | "expression";
+    /** Attribute used for row class mapping */
+    rowClassAttribute?: ColumnsType["attribute"];
+    /** JSON mapping of value -> class name */
+    rowClassMapping?: string;
+    /** Default row class when mapping/expression returns nothing */
+    rowClassDefault?: string;
+    /** JavaScript expression for row class */
+    rowClassExpression?: string;
     /** Extra rows rendered above/below viewport (default: 10) */
     rowBuffer?: number;
     /** Disable row virtualisation — render ALL rows in DOM (default: false) */
@@ -73,6 +84,11 @@ export function GridView(props: GridViewProps): ReactElement {
         rowHeight = 40,
         rowHeightExpression,
         maxRowHeight = 0,
+    rowClassMode = "none",
+    rowClassAttribute,
+    rowClassMapping = "",
+    rowClassDefault = "",
+    rowClassExpression = "",
         rowBuffer = 10,
         suppressRowVirtualisation = false,
         cacheBlockSize = 100,
@@ -187,6 +203,114 @@ export function GridView(props: GridViewProps): ReactElement {
     const effectiveRowHeightMode =
         rowHeightMode === "auto" && props.rowModelType === "serverSide" ? "fixed" : rowHeightMode;
 
+    // --- Row class configuration ---
+    const attributeMap = useMemo(() => {
+        const map = new Map<string, any>();
+        columns.forEach((col) => {
+            if (col.attribute?.id) {
+                map.set(col.attribute.id, col.attribute);
+            }
+        });
+        return map;
+    }, [columns]);
+
+    const getValueById = useCallback(
+        (item: any, attributeId?: string) => {
+            if (!item || !attributeId) return undefined;
+            const attribute = attributeMap.get(attributeId);
+            if (!attribute) return undefined;
+            const value = attribute.get(item);
+            if (value && value.status === ValueStatus.Available) {
+                return value.value;
+            }
+            return undefined;
+        },
+        [attributeMap]
+    );
+
+    const parsedRowClassMapping = useMemo(() => {
+        if (rowClassMode !== "mapping" || !rowClassMapping || !rowClassMapping.trim()) {
+            return undefined;
+        }
+        try {
+            const parsed = JSON.parse(rowClassMapping);
+            if (parsed && typeof parsed === "object") {
+                return parsed as Record<string, string>;
+            }
+            console.warn("[AG Grid] Row class mapping must be a JSON object.");
+        } catch (e) {
+            console.error("[AG Grid] Invalid row class mapping JSON:", rowClassMapping, e);
+        }
+        return undefined;
+    }, [rowClassMode, rowClassMapping]);
+
+    const compiledRowClassFn = useMemo(() => {
+        if (rowClassMode !== "expression" || !rowClassExpression || !rowClassExpression.trim()) {
+            return undefined;
+        }
+        try {
+            return new Function(
+                "data",
+                "rowIndex",
+                "getValue",
+                "columnValue",
+                `return (${rowClassExpression});`
+            ) as (data: any, rowIndex: number, getValue: (id: string) => any, columnValue: any) => any;
+        } catch (e) {
+            console.error("[AG Grid] Invalid row class expression:", rowClassExpression, e);
+            return undefined;
+        }
+    }, [rowClassMode, rowClassExpression]);
+
+    const getRowClass = useCallback(
+        (params: any) => {
+            if (rowClassMode === "none" || !params?.data) {
+                return undefined;
+            }
+
+            const columnValue = rowClassAttribute?.id
+                ? getValueById(params.data, rowClassAttribute.id)
+                : undefined;
+
+            if (rowClassMode === "mapping") {
+                const key = columnValue !== undefined && columnValue !== null ? String(columnValue) : "";
+                const mapped = parsedRowClassMapping ? parsedRowClassMapping[key] : undefined;
+                return mapped || rowClassDefault || undefined;
+            }
+
+            if (rowClassMode === "expression" && compiledRowClassFn) {
+                try {
+                    const result = compiledRowClassFn(
+                        params.data,
+                        params.rowIndex,
+                        (id: string) => getValueById(params.data, id),
+                        columnValue
+                    );
+                    if (result === null || result === undefined || result === false) {
+                        return rowClassDefault || undefined;
+                    }
+                    if (Array.isArray(result) || typeof result === "string") {
+                        return result;
+                    }
+                    return String(result);
+                } catch (e) {
+                    console.error("[AG Grid] Error in row class expression:", e);
+                    return rowClassDefault || undefined;
+                }
+            }
+
+            return rowClassDefault || undefined;
+        },
+        [
+            rowClassMode,
+            rowClassAttribute,
+            parsedRowClassMapping,
+            rowClassDefault,
+            compiledRowClassFn,
+            getValueById
+        ]
+    );
+
     // Build wrapper class name
     const wrapperClassName = [
         themeClassName,
@@ -228,6 +352,7 @@ export function GridView(props: GridViewProps): ReactElement {
                 // Row Height Configuration
                 rowHeight={effectiveRowHeightMode === "fixed" ? rowHeight : undefined}
                 getRowHeight={effectiveRowHeightMode === "custom" ? getRowHeight : undefined}
+                getRowClass={rowClassMode !== "none" ? getRowClass : undefined}
                 onGridReady={onGridReady}
                 onRowClicked={onRowClicked}
                 onRowDoubleClicked={onRowDoubleClicked}

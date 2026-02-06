@@ -428,6 +428,41 @@
                 <description>Maximum row height in pixels (0 = unlimited). Prevents extremely tall rows when using Auto or Custom modes. Recommended: 200-500 for auto-height grids.</description>
             </property>
         </propertyGroup>
+        <propertyGroup caption="Row Styling">
+            <property key="rowClassMode" type="enumeration" defaultValue="none">
+                <caption>Row Class Mode</caption>
+                <description>Apply CSS class names to rows. None: no custom classes. Mapping: map a column value to a class name. Expression: compute class with JavaScript.</description>
+                <enumerationValues>
+                    <enumerationValue key="none">None</enumerationValue>
+                    <enumerationValue key="mapping">Mapping (value → class)</enumerationValue>
+                    <enumerationValue key="expression">Expression (JavaScript)</enumerationValue>
+                </enumerationValues>
+            </property>
+            <property key="rowClassAttribute" type="attribute" dataSource="../dataSource" required="false">
+                <caption>Row Class Attribute</caption>
+                <description>Attribute used for row class mapping. Required when Row Class Mode is Mapping.</description>
+                <attributeTypes>
+                    <attributeType name="String"/>
+                    <attributeType name="Integer"/>
+                    <attributeType name="Long"/>
+                    <attributeType name="Decimal"/>
+                    <attributeType name="Boolean"/>
+                    <attributeType name="DateTime"/>
+                </attributeTypes>
+            </property>
+            <property key="rowClassMapping" type="string" required="false" multiline="true">
+                <caption>Row Class Mapping (JSON)</caption>
+                <description>JSON mapping from value to class name. Example: {"Active":"row-active","Inactive":"row-inactive"}.</description>
+            </property>
+            <property key="rowClassDefault" type="string" required="false">
+                <caption>Default Row Class</caption>
+                <description>Optional fallback class when mapping/expression returns nothing.</description>
+            </property>
+            <property key="rowClassExpression" type="string" required="false" multiline="true">
+                <caption>Row Class Expression</caption>
+                <description>JavaScript expression that returns a class name (string) or array of class names. Available variables: data, rowIndex, getValue(attributeId), columnValue. Example: columnValue === "High" ? "row-danger" : ""</description>
+            </property>
+        </propertyGroup>
         <propertyGroup caption="Grid Options">
             <property key="licenseKey" type="string" required="false">
                 <caption>Enterprise Key</caption>
