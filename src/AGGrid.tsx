@@ -427,6 +427,7 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
                     rowClassMode: props.rowClassMode || "none",
                     rowClassAttribute: props.rowClassAttribute,
                     rowClassMapping: props.rowClassMapping || "",
+                    rowClassRules: props.rowClassRules || "",
                     rowClassDefault: props.rowClassDefault || "",
                     rowClassExpression: props.rowClassExpression || ""
                 }}

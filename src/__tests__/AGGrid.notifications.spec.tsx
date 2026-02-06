@@ -77,6 +77,7 @@ describe("AGGrid - Toast Notifications", () => {
             rowClassMode: "none" as const,
             rowClassAttribute: undefined,
             rowClassMapping: "",
+            rowClassRules: "",
             rowClassDefault: "",
             rowClassExpression: "",
             enableContextMenu: false,

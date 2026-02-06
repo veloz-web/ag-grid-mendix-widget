@@ -164,6 +164,30 @@ describe("AGGrid Editor Preview indicators", () => {
         ).toBeInTheDocument();
     });
 
+    it("shows row class rules banner when rules are configured", () => {
+        const props = {
+            ...baseProps,
+            rowClassRules: "{\"row-danger\":\"data.status === 'High'\"}"
+        };
+
+        render(preview(props));
+
+        expect(screen.getByText(/Row Class Rules/i)).toBeInTheDocument();
+        expect(screen.getByText(/Rules are enabled/i)).toBeInTheDocument();
+    });
+
+    it("shows row class rules error banner when JSON is invalid", () => {
+        const props = {
+            ...baseProps,
+            rowClassRules: "{invalid-json}"
+        };
+
+        render(preview(props));
+
+        expect(screen.getByText(/Row Class Rules Error/i)).toBeInTheDocument();
+        expect(screen.getByText(/Row Class Rules JSON error/i)).toBeInTheDocument();
+    });
+
     it("shows custom formatter warning banner for unknown names", () => {
         const props = {
             ...baseProps,

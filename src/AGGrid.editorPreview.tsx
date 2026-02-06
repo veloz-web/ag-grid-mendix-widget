@@ -17,6 +17,7 @@ export function preview(props: AGGridPreviewProps): ReactElement {
         cacheBlockSize,
         maxBlocksInCache,
         maxConcurrentRequests,
+        rowClassRules,
         enableViewSelector,
         enableFilterDrawer,
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -90,6 +91,25 @@ export function preview(props: AGGridPreviewProps): ReactElement {
     const showServerSideCacheHint =
         rowModelType === "serverSide" &&
         (typeof cacheBlockSize === "number" || typeof maxBlocksInCache === "number");
+    const showRowClassRulesHint = Boolean(rowClassRules && rowClassRules.trim());
+    let rowClassRulesError: string | null = null;
+    if (showRowClassRulesHint) {
+        try {
+            const parsed = JSON.parse(rowClassRules as string);
+            if (
+                !(
+                    (parsed && typeof parsed === "object" && !Array.isArray(parsed)) ||
+                    Array.isArray(parsed)
+                )
+            ) {
+                rowClassRulesError = "Row Class Rules JSON must be an object or array.";
+            }
+        } catch (e: any) {
+            rowClassRulesError = e?.message
+                ? `Row Class Rules JSON error: ${e.message}`
+                : "Row Class Rules JSON is invalid.";
+        }
+    }
 
     // Validate sort configuration
     const sortValidation = validateSortConfiguration(columns || []);
@@ -191,6 +211,30 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                             </li>
                         )}
                     </ul>
+                </div>
+            )}
+
+            {showRowClassRulesHint && (
+                <div
+                    style={{
+                        marginBottom: "10px",
+                        padding: "12px 16px",
+                        backgroundColor: rowClassRulesError ? "#ffebee" : "#e3f2fd",
+                        border: rowClassRulesError ? "1px solid #ef5350" : "1px solid #64b5f6",
+                        borderRadius: "4px",
+                        fontSize: "12px",
+                        color: rowClassRulesError ? "#c62828" : "#1e3a5f"
+                    }}
+                >
+                    <strong>{rowClassRulesError ? "⚠️ Row Class Rules Error:" : "🎯 Row Class Rules:"}</strong>
+                    {rowClassRulesError ? (
+                        <div style={{ marginTop: "6px" }}>{rowClassRulesError}</div>
+                    ) : (
+                        <div style={{ marginTop: "6px" }}>
+                            Rules are enabled. Each rule that evaluates to true adds its class name.
+                            Use JSON object or array format as documented in <code>ROW_CLASS_GUIDE.md</code>.
+                        </div>
+                    )}
                 </div>
             )}
 

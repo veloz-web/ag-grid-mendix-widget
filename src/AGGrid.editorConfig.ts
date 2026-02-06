@@ -1,4 +1,4 @@
-import { Properties } from "@mendix/pluggable-widgets-tools";
+import { Properties, Problem } from "@mendix/pluggable-widgets-tools";
 import { AGGridPreviewProps } from "../typings/AGGridProps";
 
 export function getProperties(
@@ -115,4 +115,42 @@ export function getPreview(values: AGGridPreviewProps): any {
         borders: true,
         children
     };
+}
+
+export function validate(values: AGGridPreviewProps): Problem[] {
+    const errors: Problem[] = [];
+
+    if (values.rowClassMode === "mapping" && !values.rowClassAttribute) {
+        errors.push({
+            property: "rowClassAttribute",
+            message: "Row Class Attribute is required when Row Class Mode is Mapping.",
+            severity: "error"
+        });
+    }
+
+    if (values.rowClassRules && values.rowClassRules.trim()) {
+        try {
+            const parsed = JSON.parse(values.rowClassRules);
+            const isValid =
+                (parsed && typeof parsed === "object" && !Array.isArray(parsed)) ||
+                Array.isArray(parsed);
+            if (!isValid) {
+                errors.push({
+                    property: "rowClassRules",
+                    message: "Row Class Rules JSON must be an object or array.",
+                    severity: "error"
+                });
+            }
+        } catch (e: any) {
+            errors.push({
+                property: "rowClassRules",
+                message: e?.message
+                    ? `Row Class Rules JSON error: ${e.message}`
+                    : "Row Class Rules JSON is invalid.",
+                severity: "error"
+            });
+        }
+    }
+
+    return errors;
 }

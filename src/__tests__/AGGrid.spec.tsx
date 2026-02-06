@@ -136,6 +136,7 @@ describe("AGGrid Component", () => {
     rowClassMode: "none" as const,
     rowClassAttribute: undefined,
     rowClassMapping: "",
+    rowClassRules: "",
     rowClassDefault: "",
     rowClassExpression: "",
         licenseKey: "",

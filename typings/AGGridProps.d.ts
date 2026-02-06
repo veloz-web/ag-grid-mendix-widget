@@ -176,6 +176,7 @@ export interface AGGridContainerProps {
     rowClassMode: RowClassModeEnum;
     rowClassAttribute?: ListAttributeValue<string | Big | boolean | Date>;
     rowClassMapping: string;
+    rowClassRules: string;
     rowClassDefault: string;
     rowClassExpression: string;
     licenseKey: string;
@@ -252,6 +253,7 @@ export interface AGGridPreviewProps {
     rowClassMode: RowClassModeEnum;
     rowClassAttribute: string;
     rowClassMapping: string;
+    rowClassRules: string;
     rowClassDefault: string;
     rowClassExpression: string;
     licenseKey: string;

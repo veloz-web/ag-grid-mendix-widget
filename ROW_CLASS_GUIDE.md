@@ -8,6 +8,7 @@ Two modes are supported:
 
 - **Mapping (value → class)**: Map a column value to a CSS class name.
 - **Expression (JavaScript)**: Compute class names using a JavaScript expression.
+- **Rules (JSON)**: Apply multiple classes when rule expressions match (future-proofed for list UI).
 
 These settings apply to **Grid view only**. Card/List templates already support custom class names within templates.
 
@@ -54,6 +55,27 @@ Example:
 getValue("Status") === "Delayed" ? "row-warning" : ""
 ```
 
+### 3) Rules (JSON)
+
+**Use when:** you want multiple classes applied based on several conditions.
+
+**Widget Settings → Row Styling**
+
+| Property | Value |
+|----------|-------|
+| Row Class Rules (JSON) | `{ "row-danger": "data.status === 'High'", "row-muted": "getValue('Score') < 10" }` |
+| Row Class Attribute | `Status` (optional, used for `columnValue`) |
+
+Rules are evaluated independently. Any rule that returns `true` adds its class name.
+
+You can also provide an **array** of rules:
+
+```json
+
+  { "className": "row-danger", "expression": "data.status === 'High'" },
+  { "className": "row-muted", "expression": "getValue('Score') < 10" }
+]
+```
 ---
 
 ## CSS Example
@@ -82,6 +104,7 @@ Add styles to your Mendix theme (e.g., `theme/web/custom-variables.scss`):
 - **No class applied?** Ensure the attribute value matches your JSON mapping exactly (case sensitive).
 - **Expression errors?** Invalid JavaScript will be logged in the browser console and ignored.
 - **Multiple classes?** Expression mode can return an array: `return ["row-danger", "row-bold"];`
+- **Rules + Mapping?** Rules are combined with Mapping/Expression results. If no class matches, Default Row Class is used.
 - **Server-side row model?** Works normally — row class is applied per row as it loads.
 
 ---

@@ -143,6 +143,7 @@ describe("GridView Component", () => {
     rowClassMode: "none" as const,
     rowClassAttribute: undefined,
     rowClassMapping: "",
+    rowClassRules: "",
     rowClassDefault: "",
     rowClassExpression: "",
         onGridReady: jest.fn(),
@@ -213,6 +214,17 @@ describe("GridView Component", () => {
                     rowClassAttribute={mockProps.columns[1].attribute}
                     rowClassMapping='{"Active":"row-active"}'
                     rowClassDefault="row-default"
+                />
+            );
+            expect(screen.getAllByTestId("ag-grid")[0]).toBeInTheDocument();
+        });
+
+        it("renders with rule-based classes", () => {
+            render(
+                <GridView
+                    {...mockProps}
+                    rowClassRules='{"row-flag":"columnValue === \"Active\""}'
+                    rowClassAttribute={mockProps.columns[1].attribute}
                 />
             );
             expect(screen.getAllByTestId("ag-grid")[0]).toBeInTheDocument();

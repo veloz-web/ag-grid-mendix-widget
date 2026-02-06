@@ -454,6 +454,10 @@
                 <caption>Row Class Mapping (JSON)</caption>
                 <description>JSON mapping from value to class name. Example: {"Active":"row-active","Inactive":"row-inactive"}.</description>
             </property>
+            <property key="rowClassRules" type="string" required="false" multiline="true">
+                <caption>Row Class Rules (JSON)</caption>
+                <description>JSON rules mapping class names to boolean expressions. Example: {"row-danger":"data.status === 'High'","row-muted":"getValue('Score') &lt; 10"}. This is future-proof for list-based rules UI.</description>
+            </property>
             <property key="rowClassDefault" type="string" required="false">
                 <caption>Default Row Class</caption>
                 <description>Optional fallback class when mapping/expression returns nothing.</description>

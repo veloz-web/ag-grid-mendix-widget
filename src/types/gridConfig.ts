@@ -57,6 +57,8 @@ export interface GridDisplayConfig {
     rowClassAttribute?: ColumnsType["attribute"];
     /** JSON mapping string for row class mapping */
     rowClassMapping?: string;
+    /** JSON rules mapping class names to expressions */
+    rowClassRules?: string;
     /** Default row class when mapping/expression returns nothing */
     rowClassDefault?: string;
     /** JavaScript expression for row class */

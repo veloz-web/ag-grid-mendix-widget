@@ -29,6 +29,8 @@ interface GridViewProps {
     rowClassAttribute?: ColumnsType["attribute"];
     /** JSON mapping of value -> class name */
     rowClassMapping?: string;
+    /** JSON rules mapping class name -> expression */
+    rowClassRules?: string;
     /** Default row class when mapping/expression returns nothing */
     rowClassDefault?: string;
     /** JavaScript expression for row class */
@@ -87,6 +89,7 @@ export function GridView(props: GridViewProps): ReactElement {
     rowClassMode = "none",
     rowClassAttribute,
     rowClassMapping = "",
+    rowClassRules = "",
     rowClassDefault = "",
     rowClassExpression = "",
         rowBuffer = 10,
@@ -244,6 +247,68 @@ export function GridView(props: GridViewProps): ReactElement {
         return undefined;
     }, [rowClassMode, rowClassMapping]);
 
+    type RowClassRule = { className: string; expression: string };
+
+    const parsedRowClassRules = useMemo(() => {
+        if (!rowClassRules || !rowClassRules.trim()) {
+            return undefined;
+        }
+        try {
+            const parsed = JSON.parse(rowClassRules);
+            if (Array.isArray(parsed)) {
+                return parsed
+                    .filter((rule) => rule && rule.className && rule.expression)
+                    .map((rule) => ({
+                        className: String(rule.className),
+                        expression: String(rule.expression)
+                    })) as RowClassRule[];
+            }
+            if (parsed && typeof parsed === "object") {
+                return Object.entries(parsed).map(([className, expression]) => ({
+                    className: String(className),
+                    expression: String(expression)
+                })) as RowClassRule[];
+            }
+            console.warn("[AG Grid] Row class rules must be a JSON object or array.");
+        } catch (e) {
+            console.error("[AG Grid] Invalid row class rules JSON:", rowClassRules, e);
+        }
+        return undefined;
+    }, [rowClassRules]);
+
+    const compiledRowClassRules = useMemo(() => {
+        if (!parsedRowClassRules || parsedRowClassRules.length === 0) {
+            return undefined;
+        }
+        return parsedRowClassRules
+            .map((rule) => {
+                try {
+                    const fn = new Function(
+                        "data",
+                        "rowIndex",
+                        "getValue",
+                        "columnValue",
+                        `return (${rule.expression});`
+                    ) as (
+                        data: any,
+                        rowIndex: number,
+                        getValue: (id: string) => any,
+                        columnValue: any
+                    ) => any;
+                    return { className: rule.className, fn };
+                } catch (e) {
+                    console.error(
+                        "[AG Grid] Invalid row class rule expression:",
+                        rule.className,
+                        rule.expression,
+                        e
+                    );
+                    return undefined;
+                }
+            })
+            .filter(Boolean) as Array<{ className: string; fn: (data: any, rowIndex: number, getValue: (id: string) => any, columnValue: any) => any }>;
+    }, [parsedRowClassRules]);
+
     const compiledRowClassFn = useMemo(() => {
         if (rowClassMode !== "expression" || !rowClassExpression || !rowClassExpression.trim()) {
             return undefined;
@@ -264,49 +329,75 @@ export function GridView(props: GridViewProps): ReactElement {
 
     const getRowClass = useCallback(
         (params: any) => {
-            if (rowClassMode === "none" || !params?.data) {
+            if (!params?.data) {
                 return undefined;
             }
 
+            const classes = new Set<string>();
             const columnValue = rowClassAttribute?.id
                 ? getValueById(params.data, rowClassAttribute.id)
                 : undefined;
 
-            if (rowClassMode === "mapping") {
-                const key = columnValue !== undefined && columnValue !== null ? String(columnValue) : "";
-                const mapped = parsedRowClassMapping ? parsedRowClassMapping[key] : undefined;
-                return mapped || rowClassDefault || undefined;
+            if (compiledRowClassRules && compiledRowClassRules.length > 0) {
+                compiledRowClassRules.forEach((rule) => {
+                    try {
+                        const result = rule.fn(
+                            params.data,
+                            params.rowIndex,
+                            (id: string) => getValueById(params.data, id),
+                            columnValue
+                        );
+                        if (result) {
+                            classes.add(rule.className);
+                        }
+                    } catch (e) {
+                        console.error("[AG Grid] Error in row class rule:", rule.className, e);
+                    }
+                });
             }
 
-            if (rowClassMode === "expression" && compiledRowClassFn) {
+            let baseResult: any;
+            if (rowClassMode === "mapping") {
+                const key = columnValue !== undefined && columnValue !== null ? String(columnValue) : "";
+                baseResult = parsedRowClassMapping ? parsedRowClassMapping[key] : undefined;
+            } else if (rowClassMode === "expression" && compiledRowClassFn) {
                 try {
-                    const result = compiledRowClassFn(
+                    baseResult = compiledRowClassFn(
                         params.data,
                         params.rowIndex,
                         (id: string) => getValueById(params.data, id),
                         columnValue
                     );
-                    if (result === null || result === undefined || result === false) {
-                        return rowClassDefault || undefined;
-                    }
-                    if (Array.isArray(result) || typeof result === "string") {
-                        return result;
-                    }
-                    return String(result);
                 } catch (e) {
                     console.error("[AG Grid] Error in row class expression:", e);
-                    return rowClassDefault || undefined;
                 }
             }
 
-            return rowClassDefault || undefined;
+            if (baseResult !== null && baseResult !== undefined && baseResult !== false) {
+                if (Array.isArray(baseResult)) {
+                    baseResult.forEach((cls) => cls && classes.add(String(cls)));
+                } else if (typeof baseResult === "string") {
+                    if (baseResult.trim()) {
+                        classes.add(baseResult);
+                    }
+                } else {
+                    classes.add(String(baseResult));
+                }
+            }
+
+            if (classes.size === 0 && rowClassDefault) {
+                classes.add(rowClassDefault);
+            }
+
+            return classes.size > 0 ? Array.from(classes) : undefined;
         },
         [
             rowClassMode,
             rowClassAttribute,
-            parsedRowClassMapping,
             rowClassDefault,
             compiledRowClassFn,
+            compiledRowClassRules,
+            parsedRowClassMapping,
             getValueById
         ]
     );
