@@ -31,7 +31,18 @@ export function preview(props: AGGridPreviewProps): ReactElement {
         customFormatters,
         enablePolling,
         pollingInterval,
-        enableNotifications
+        enableNotifications,
+        // CRUD features
+        enableRowAdd,
+        addButton,
+        onAddRow,
+        enableRowDelete,
+        deleteButton,
+        onDeleteRow,
+        editMode,
+        onCellEditCommit,
+        onRowClick,
+        onRowDoubleClick
     } = props;
 
     const themeClass = `ag-theme-${theme}`;
@@ -50,6 +61,19 @@ export function preview(props: AGGridPreviewProps): ReactElement {
     );
     const hasDrawerFilters = enableFilterDrawer && filterableColumns.length > 0;
     const hasToolbarFilters = toolbarFilters.length > 0;
+
+    // CRUD feature detection
+    const editableColumns = (columns || []).filter((col) => col.editable);
+    const hasEditableColumns = editableColumns.length > 0;
+    const hasAddAction = Boolean(onAddRow);
+    const hasDeleteAction = Boolean(onDeleteRow);
+    const hasEditAction = Boolean(onCellEditCommit);
+    const hasRowClickAction = Boolean(onRowClick);
+    const hasRowDoubleClickAction = Boolean(onRowDoubleClick);
+    const showDeleteInToolbar = enableRowDelete && (deleteButton?.showInToolbar ?? true);
+    const showDeleteInContext = enableRowDelete && (deleteButton?.showInContextMenu ?? true);
+    const showAddInToolbar = enableRowAdd && (addButton?.showInToolbar ?? true);
+    const anyCrudEnabled = enableRowAdd || enableRowDelete || hasEditableColumns;
 
     // Validate custom formatter references in columns
     const formatterNames: string[] = [];
@@ -780,6 +804,155 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                             }}
                         >
                             ⚠️ Warning: Notifications require polling to be enabled
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* CRUD Operations Status */}
+            {(anyCrudEnabled || hasRowClickAction || hasRowDoubleClickAction) && (
+                <div
+                    style={{
+                        marginTop: "8px",
+                        padding: "12px 16px",
+                        backgroundColor: anyCrudEnabled ? "#e8f5e9" : "#f5f5f5",
+                        border: `1px solid ${anyCrudEnabled ? "#81c784" : "#bdbdbd"}`,
+                        borderRadius: "4px",
+                        fontSize: "12px",
+                        color: "#1e3a5f"
+                    }}
+                >
+                    <strong>📝 CRUD &amp; Row Actions:</strong>
+                    <ul style={{ margin: "8px 0 0 0", paddingLeft: "20px", lineHeight: "1.8" }}>
+                        {/* Add */}
+                        <li>
+                            <strong>Add Row:</strong>{" "}
+                            {enableRowAdd ? (
+                                <>
+                                    <span style={{ color: "#2e7d32" }}>✓ Enabled</span>
+                                    {showAddInToolbar && " · Toolbar button"}
+                                    {addButton?.label && addButton.label !== "Add" && (
+                                        <> · Label: &quot;{addButton.label}&quot;</>
+                                    )}
+                                    {hasAddAction ? (
+                                        <span style={{ color: "#2e7d32" }}> · Action ✓</span>
+                                    ) : (
+                                        <span style={{ color: "#c62828" }}>
+                                            {" "}
+                                            · ⚠ No &quot;On Add Row&quot; action configured
+                                        </span>
+                                    )}
+                                </>
+                            ) : (
+                                <span style={{ color: "#999" }}>✗ Disabled</span>
+                            )}
+                        </li>
+
+                        {/* Delete */}
+                        <li>
+                            <strong>Delete Row:</strong>{" "}
+                            {enableRowDelete ? (
+                                <>
+                                    <span style={{ color: "#2e7d32" }}>✓ Enabled</span>
+                                    {showDeleteInToolbar && " · Toolbar button"}
+                                    {showDeleteInContext && " · Context menu"}
+                                    {hasDeleteAction ? (
+                                        <span style={{ color: "#2e7d32" }}> · Action ✓</span>
+                                    ) : (
+                                        <span style={{ color: "#c62828" }}>
+                                            {" "}
+                                            · ⚠ No &quot;On Delete Row&quot; action configured
+                                        </span>
+                                    )}
+                                </>
+                            ) : (
+                                <span style={{ color: "#999" }}>✗ Disabled</span>
+                            )}
+                        </li>
+
+                        {/* Edit */}
+                        <li>
+                            <strong>Inline Edit:</strong>{" "}
+                            {hasEditableColumns ? (
+                                <>
+                                    <span style={{ color: "#2e7d32" }}>
+                                        ✓ {editableColumns.length} column
+                                        {editableColumns.length === 1 ? "" : "s"}
+                                    </span>
+                                    {" · "}
+                                    {editMode === "row" ? "Full-row mode" : "Single-cell mode"}
+                                    {hasEditAction ? (
+                                        <span style={{ color: "#2e7d32" }}> · Commit action ✓</span>
+                                    ) : (
+                                        <span style={{ color: "#c62828" }}>
+                                            {" "}
+                                            · ⚠ No &quot;On Cell Edit Commit&quot; action
+                                        </span>
+                                    )}
+                                </>
+                            ) : (
+                                <span style={{ color: "#999" }}>
+                                    ✗ No editable columns configured
+                                </span>
+                            )}
+                        </li>
+
+                        {/* Row Click */}
+                        <li>
+                            <strong>Row Click:</strong>{" "}
+                            {hasRowClickAction ? (
+                                <span style={{ color: "#2e7d32" }}>✓ Action configured</span>
+                            ) : (
+                                <span style={{ color: "#999" }}>✗ Not configured</span>
+                            )}
+                            {" · "}
+                            <strong>Double Click:</strong>{" "}
+                            {hasRowDoubleClickAction ? (
+                                <span style={{ color: "#2e7d32" }}>✓ Action configured</span>
+                            ) : (
+                                <span style={{ color: "#999" }}>✗ Not configured</span>
+                            )}
+                        </li>
+                    </ul>
+
+                    {/* Warnings for misconfiguration */}
+                    {enableRowAdd && !hasAddAction && (
+                        <div
+                            style={{
+                                marginTop: "8px",
+                                fontStyle: "italic",
+                                fontSize: "11px",
+                                color: "#c62828"
+                            }}
+                        >
+                            💡 Go to the &quot;Events&quot; tab and set the &quot;On Add Row&quot;
+                            action (e.g. a microflow that creates a new object and opens a page).
+                        </div>
+                    )}
+                    {enableRowDelete && !hasDeleteAction && (
+                        <div
+                            style={{
+                                marginTop: "4px",
+                                fontStyle: "italic",
+                                fontSize: "11px",
+                                color: "#c62828"
+                            }}
+                        >
+                            💡 Go to the &quot;Events&quot; tab and set the &quot;On Delete
+                            Row&quot; action (e.g. a microflow that deletes the row object).
+                        </div>
+                    )}
+                    {hasEditableColumns && !hasEditAction && (
+                        <div
+                            style={{
+                                marginTop: "4px",
+                                fontStyle: "italic",
+                                fontSize: "11px",
+                                color: "#c62828"
+                            }}
+                        >
+                            💡 Go to the &quot;Events&quot; tab and set the &quot;On Cell Edit
+                            Commit&quot; action to persist edited values.
                         </div>
                     )}
                 </div>

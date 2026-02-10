@@ -327,6 +327,17 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
         ]
     );
 
+    const addConfig = useMemo(
+        () => ({
+            enableRowAdd: Boolean(props.enableRowAdd),
+            addButton: {
+                showInToolbar: props.addButton?.showInToolbar ?? true,
+                label: props.addButton?.label || "Add"
+            }
+        }),
+        [props.enableRowAdd, props.addButton]
+    );
+
     const handleSelectionChanged = useCallback((event: any) => {
         const api = event?.api;
         const selectedRows = api?.getSelectedRows?.() ?? [];
@@ -431,6 +442,19 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
         const selectedRows = gridApiRef.current?.getSelectedRows?.() ?? [];
         handleDeleteRows(selectedRows, "toolbar");
     }, [gridApiRef, handleDeleteRows]);
+
+    const handleAddRow = useCallback(() => {
+        if (!addConfig.enableRowAdd) {
+            return;
+        }
+        if (!props.onAddRow) {
+            showToast("Add action is not configured.", "error", "add-missing");
+            return;
+        }
+        if (props.onAddRow.canExecute) {
+            props.onAddRow.execute();
+        }
+    }, [addConfig.enableRowAdd, props.onAddRow, showToast]);
 
     // Loading states
     if (!dataSource || dataSource.status === ValueStatus.Loading) {
@@ -540,6 +564,10 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
                     deleteConfig.deleteButton.requireSelection && selectedRowCount === 0
                 }
                 onDeleteRows={handleToolbarDelete}
+                enableRowAdd={addConfig.enableRowAdd}
+                showAddInToolbar={addConfig.addButton.showInToolbar}
+                addButtonLabel={addConfig.addButton.label}
+                onAddRow={handleAddRow}
                 onExportRequest={handleExportRequest}
             />
 

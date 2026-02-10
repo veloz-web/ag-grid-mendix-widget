@@ -83,6 +83,24 @@ describe("AGGrid - Toast Notifications", () => {
             editMode: "cell" as const,
             stopEditingWhenCellsLoseFocus: true,
             undoRedoCellEditing: false,
+            enableRowDelete: false,
+            bulkDeleteEnabled: false,
+            deleteConfirmation: {
+                enabled: true,
+                title: "Confirm Delete",
+                message: "Are you sure you want to delete this row?"
+            },
+            deleteButton: {
+                showInToolbar: true,
+                showInContextMenu: true,
+                label: "Delete",
+                requireSelection: true
+            },
+            enableRowAdd: false,
+            addButton: {
+                showInToolbar: true,
+                label: "Add"
+            },
             enableContextMenu: false,
             enableToolbarFilterSearch: false,
             enableCsvExport: false,
@@ -94,7 +112,12 @@ describe("AGGrid - Toast Notifications", () => {
             enablePdfExport: false,
             pdfFileName: "export",
             pdfPageOrientation: "landscape" as any,
-            pdfDocumentTitle: ""
+            pdfDocumentTitle: "",
+            onRowClick: undefined,
+            onRowDoubleClick: undefined,
+            onCellEditCommit: undefined,
+            onDeleteRow: undefined,
+            onAddRow: undefined
         };
     });
 

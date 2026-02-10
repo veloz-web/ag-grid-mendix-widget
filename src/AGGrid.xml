@@ -563,6 +563,23 @@
                 </properties>
             </property>
         </propertyGroup>
+        <propertyGroup caption="Row Add">
+            <property key="enableRowAdd" type="boolean" defaultValue="false">
+                <caption>Enable Row Add</caption>
+                <description>Show an Add button in the toolbar that triggers a Mendix action (e.g. open a new-object page).</description>
+            </property>
+            <property key="addButton" type="object">
+                <caption>Add Button</caption>
+                <properties>
+                    <property key="showInToolbar" type="boolean" defaultValue="true">
+                        <caption>Show in Toolbar</caption>
+                    </property>
+                    <property key="label" type="string" defaultValue="Add">
+                        <caption>Button Label</caption>
+                    </property>
+                </properties>
+            </property>
+        </propertyGroup>
         <propertyGroup caption="Grid Options">
             <property key="licenseKey" type="string" required="false">
                 <caption>Enterprise Key</caption>
@@ -716,6 +733,10 @@
             <property key="onDeleteRow" type="action" dataSource="dataSource">
                 <caption>On Delete Row</caption>
                 <description>Action executed when a row is deleted.</description>
+            </property>
+            <property key="onAddRow" type="action" required="false">
+                <caption>On Add Row</caption>
+                <description>Action executed when the Add button is clicked (e.g. open a new-object page or run a microflow). No row context — fires on the widget's enclosing object or without context.</description>
             </property>
         </propertyGroup>
     </properties>

@@ -7,6 +7,7 @@
 
 import React from "react";
 import { ValueStatus } from "mendix";
+import { Big } from "big.js";
 import { mapMendixColumnToColDef, buildColumnDefs } from "../mapping";
 import { ColumnsType } from "../../../../typings/AGGridProps";
 import { CustomFormatterRegistry } from "../../customFormatters";
@@ -60,8 +61,8 @@ describe("Column Mapping Utilities", () => {
                     editorType: "number" as any,
                     selectOptions: "",
                     validationRequired: false,
-                    validationMinValue: 0,
-                    validationMaxValue: 100,
+                    validationMinValue: new Big(0),
+                    validationMaxValue: new Big(100),
                     validationPattern: ""
                 };
 

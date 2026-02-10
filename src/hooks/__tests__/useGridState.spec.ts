@@ -28,6 +28,9 @@ describe("useGridState Hook", () => {
             rowModelType: "clientSide",
             serverSideMicroflow: "",
             entityName: "",
+            cacheBlockSize: 100,
+            maxBlocksInCache: 0,
+            maxConcurrentRequests: 2,
             columns: [],
             enableColumnMenus: true,
             enableHeaderFilterButtons: true,
@@ -46,6 +49,37 @@ describe("useGridState Hook", () => {
             groupDefaultExpanded: 0,
             showGroupRowsOnSeparateLine: false,
             suppressAggregationOnGroupRows: false,
+            rowHeightMode: "fixed",
+            rowHeight: 40,
+            rowHeightExpression: "",
+            maxRowHeight: 0,
+            rowClassMode: "none",
+            rowClassAttribute: undefined,
+            rowClassMapping: "",
+            rowClassRules: "",
+            rowClassDefault: "",
+            rowClassExpression: "",
+            editMode: "cell",
+            stopEditingWhenCellsLoseFocus: true,
+            undoRedoCellEditing: false,
+            enableRowDelete: false,
+            bulkDeleteEnabled: false,
+            deleteConfirmation: {
+                enabled: true,
+                title: "Confirm Delete",
+                message: "Are you sure you want to delete this row?"
+            },
+            deleteButton: {
+                showInToolbar: true,
+                showInContextMenu: true,
+                label: "Delete",
+                requireSelection: true
+            },
+            enableRowAdd: false,
+            addButton: {
+                showInToolbar: true,
+                label: "Add"
+            },
             licenseKey: "",
             enableContextMenu: false,
             useLocalStorage: false,
@@ -53,6 +87,8 @@ describe("useGridState Hook", () => {
             enableToolbarFilterSearch: true,
             pagination: true,
             pageSize: 20,
+            rowBuffer: 10,
+            suppressRowVirtualisation: false,
             height: 500,
             theme: "alpine",
             themeVariant: "auto",
@@ -70,7 +106,12 @@ describe("useGridState Hook", () => {
             pdfDocumentTitle: "",
             enableNotifications: false,
             toastPosition: "topRight",
-            autoHideDuration: 0
+            autoHideDuration: 0,
+            onRowClick: undefined,
+            onRowDoubleClick: undefined,
+            onCellEditCommit: undefined,
+            onDeleteRow: undefined,
+            onAddRow: undefined
         };
 
         mockOnPersist = jest.fn();

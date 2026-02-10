@@ -4,7 +4,7 @@
  * @author Mendix Widgets Framework Team
  */
 import { CSSProperties } from "react";
-import { DynamicValue, ListValue, ListActionValue, ListAttributeValue } from "mendix";
+import { ActionValue, DynamicValue, ListValue, ListActionValue, ListAttributeValue } from "mendix";
 import { Big } from "big.js";
 
 export type RowModelTypeEnum = "clientSide" | "serverSide";
@@ -23,38 +23,9 @@ export type FilterLocationEnum = "none" | "drawer" | "toolbar";
 
 export type AggregationFunctionEnum = "sum" | "min" | "max" | "avg" | "count" | "first" | "last";
 
-export type FormatterEnum =
-    | "none"
-    | "currency"
-    | "currencyEUR"
-    | "currencyGBP"
-    | "percentage"
-    | "number"
-    | "decimal2"
-    | "dateShort"
-    | "dateLong"
-    | "dateISO"
-    | "dateDMY"
-    | "dateMDY"
-    | "dateYMD"
-    | "dateTime"
-    | "time"
-    | "yesNo"
-    | "trueFalse"
-    | "uppercase"
-    | "lowercase"
-    | "capitalize"
-    | "customPrefix"
-    | "link";
+export type FormatterEnum = "none" | "currency" | "currencyEUR" | "currencyGBP" | "percentage" | "number" | "decimal2" | "dateShort" | "dateLong" | "dateISO" | "dateDMY" | "dateMDY" | "dateYMD" | "dateTime" | "time" | "yesNo" | "trueFalse" | "uppercase" | "lowercase" | "capitalize" | "customPrefix" | "link";
 
-export type EditorTypeEnum =
-    | "text"
-    | "number"
-    | "date"
-    | "datetime"
-    | "boolean"
-    | "select"
-    | "richSelect";
+export type EditorTypeEnum = "text" | "number" | "date" | "datetime" | "boolean" | "select" | "richSelect";
 
 export interface ColumnsType {
     header: DynamicValue<string>;
@@ -136,19 +107,18 @@ export interface DeleteButtonType {
     requireSelection: boolean;
 }
 
+export interface AddButtonType {
+    showInToolbar: boolean;
+    label: string;
+}
+
 export type ThemeEnum = "alpine" | "balham" | "material" | "quartz";
 
 export type ThemeVariantEnum = "auto" | "light" | "dark";
 
 export type PdfPageOrientationEnum = "landscape" | "portrait";
 
-export type ToastPositionEnum =
-    | "topLeft"
-    | "topCenter"
-    | "topRight"
-    | "bottomLeft"
-    | "bottomCenter"
-    | "bottomRight";
+export type ToastPositionEnum = "topLeft" | "topCenter" | "topRight" | "bottomLeft" | "bottomCenter" | "bottomRight";
 
 export interface ColumnsPreviewType {
     header: string;
@@ -218,6 +188,11 @@ export interface DeleteButtonPreviewType {
     requireSelection: boolean;
 }
 
+export interface AddButtonPreviewType {
+    showInToolbar: boolean;
+    label: string;
+}
+
 export interface AGGridContainerProps {
     name: string;
     class: string;
@@ -265,6 +240,8 @@ export interface AGGridContainerProps {
     bulkDeleteEnabled: boolean;
     deleteConfirmation: DeleteConfirmationType;
     deleteButton: DeleteButtonType;
+    enableRowAdd: boolean;
+    addButton: AddButtonType;
     licenseKey: string;
     enableContextMenu: boolean;
     useLocalStorage: boolean;
@@ -296,6 +273,7 @@ export interface AGGridContainerProps {
     onRowDoubleClick?: ListActionValue;
     onCellEditCommit?: ListActionValue;
     onDeleteRow?: ListActionValue;
+    onAddRow?: ActionValue;
 }
 
 export interface AGGridPreviewProps {
@@ -351,6 +329,8 @@ export interface AGGridPreviewProps {
     bulkDeleteEnabled: boolean;
     deleteConfirmation: DeleteConfirmationPreviewType;
     deleteButton: DeleteButtonPreviewType;
+    enableRowAdd: boolean;
+    addButton: AddButtonPreviewType;
     licenseKey: string;
     enableContextMenu: boolean;
     useLocalStorage: boolean;
@@ -382,4 +362,5 @@ export interface AGGridPreviewProps {
     onRowDoubleClick: {} | null;
     onCellEditCommit: {} | null;
     onDeleteRow: {} | null;
+    onAddRow: {} | null;
 }

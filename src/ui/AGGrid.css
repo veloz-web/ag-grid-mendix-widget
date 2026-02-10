@@ -320,6 +320,38 @@
     flex-shrink: 0;
 }
 
+/* Toolbar Add Button */
+.aggrid-add-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: #16a34a;
+    color: #ffffff;
+    border: 1px solid #15803d;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.aggrid-add-btn:hover:not(:disabled) {
+    background: #15803d;
+    border-color: #166534;
+    box-shadow: 0 2px 4px rgba(22, 163, 74, 0.25);
+}
+
+.aggrid-add-btn:focus-visible {
+    outline: 3px solid rgba(22, 163, 74, 0.35);
+    outline-offset: 2px;
+}
+
+.aggrid-add-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 /* Toolbar Delete Button */
 .aggrid-delete-btn {
     display: inline-flex;

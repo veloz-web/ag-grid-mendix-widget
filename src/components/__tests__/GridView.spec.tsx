@@ -39,8 +39,7 @@ jest.mock("ag-grid-react", () => ({
                         node: { data: rowData?.[0] },
                         defaultItems: []
                     });
-                    const deleteItem =
-                        items && items.find((it: any) => it && it.name === "Delete");
+                    const deleteItem = items && items.find((it: any) => it && it.name === "Delete");
                     if (deleteItem && typeof deleteItem.action === "function") {
                         deleteItem.action();
                     }
@@ -330,9 +329,7 @@ describe("GridView Component", () => {
                 />
             );
 
-            expect(onDeleteRows).toHaveBeenCalledWith([
-                mockProps.rowData[0]
-            ], "context");
+            expect(onDeleteRows).toHaveBeenCalledWith([mockProps.rowData[0]], "context");
         });
     });
 
