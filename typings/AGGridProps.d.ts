@@ -23,7 +23,38 @@ export type FilterLocationEnum = "none" | "drawer" | "toolbar";
 
 export type AggregationFunctionEnum = "sum" | "min" | "max" | "avg" | "count" | "first" | "last";
 
-export type FormatterEnum = "none" | "currency" | "currencyEUR" | "currencyGBP" | "percentage" | "number" | "decimal2" | "dateShort" | "dateLong" | "dateISO" | "dateDMY" | "dateMDY" | "dateYMD" | "dateTime" | "time" | "yesNo" | "trueFalse" | "uppercase" | "lowercase" | "capitalize" | "customPrefix" | "link";
+export type FormatterEnum =
+    | "none"
+    | "currency"
+    | "currencyEUR"
+    | "currencyGBP"
+    | "percentage"
+    | "number"
+    | "decimal2"
+    | "dateShort"
+    | "dateLong"
+    | "dateISO"
+    | "dateDMY"
+    | "dateMDY"
+    | "dateYMD"
+    | "dateTime"
+    | "time"
+    | "yesNo"
+    | "trueFalse"
+    | "uppercase"
+    | "lowercase"
+    | "capitalize"
+    | "customPrefix"
+    | "link";
+
+export type EditorTypeEnum =
+    | "text"
+    | "number"
+    | "date"
+    | "datetime"
+    | "boolean"
+    | "select"
+    | "richSelect";
 
 export interface ColumnsType {
     header: DynamicValue<string>;
@@ -60,6 +91,13 @@ export interface ColumnsType {
     customPrefix: string;
     customSuffix: string;
     template: string;
+    editable: boolean;
+    editorType: EditorTypeEnum;
+    selectOptions: string;
+    validationRequired: boolean;
+    validationMinValue?: Big;
+    validationMaxValue?: Big;
+    validationPattern: string;
     linkAction?: ListActionValue;
     linkUrlPattern: string;
     linkText: string;
@@ -83,13 +121,34 @@ export type RowHeightModeEnum = "fixed" | "auto" | "custom";
 
 export type RowClassModeEnum = "none" | "mapping" | "expression";
 
+export type EditModeEnum = "cell" | "row";
+
+export interface DeleteConfirmationType {
+    enabled: boolean;
+    title: string;
+    message: string;
+}
+
+export interface DeleteButtonType {
+    showInToolbar: boolean;
+    showInContextMenu: boolean;
+    label: string;
+    requireSelection: boolean;
+}
+
 export type ThemeEnum = "alpine" | "balham" | "material" | "quartz";
 
 export type ThemeVariantEnum = "auto" | "light" | "dark";
 
 export type PdfPageOrientationEnum = "landscape" | "portrait";
 
-export type ToastPositionEnum = "topLeft" | "topCenter" | "topRight" | "bottomLeft" | "bottomCenter" | "bottomRight";
+export type ToastPositionEnum =
+    | "topLeft"
+    | "topCenter"
+    | "topRight"
+    | "bottomLeft"
+    | "bottomCenter"
+    | "bottomRight";
 
 export interface ColumnsPreviewType {
     header: string;
@@ -126,6 +185,13 @@ export interface ColumnsPreviewType {
     customPrefix: string;
     customSuffix: string;
     template: string;
+    editable: boolean;
+    editorType: EditorTypeEnum;
+    selectOptions: string;
+    validationRequired: boolean;
+    validationMinValue: number | null;
+    validationMaxValue: number | null;
+    validationPattern: string;
     linkAction: {} | null;
     linkUrlPattern: string;
     linkText: string;
@@ -137,6 +203,19 @@ export interface CustomFormattersPreviewType {
     formatterType: FormatterTypeEnum;
     formatterCode: string;
     formatterConfig: string;
+}
+
+export interface DeleteConfirmationPreviewType {
+    enabled: boolean;
+    title: string;
+    message: string;
+}
+
+export interface DeleteButtonPreviewType {
+    showInToolbar: boolean;
+    showInContextMenu: boolean;
+    label: string;
+    requireSelection: boolean;
 }
 
 export interface AGGridContainerProps {
@@ -179,6 +258,13 @@ export interface AGGridContainerProps {
     rowClassRules: string;
     rowClassDefault: string;
     rowClassExpression: string;
+    editMode: EditModeEnum;
+    stopEditingWhenCellsLoseFocus: boolean;
+    undoRedoCellEditing: boolean;
+    enableRowDelete: boolean;
+    bulkDeleteEnabled: boolean;
+    deleteConfirmation: DeleteConfirmationType;
+    deleteButton: DeleteButtonType;
     licenseKey: string;
     enableContextMenu: boolean;
     useLocalStorage: boolean;
@@ -208,6 +294,8 @@ export interface AGGridContainerProps {
     autoHideDuration: number;
     onRowClick?: ListActionValue;
     onRowDoubleClick?: ListActionValue;
+    onCellEditCommit?: ListActionValue;
+    onDeleteRow?: ListActionValue;
 }
 
 export interface AGGridPreviewProps {
@@ -256,6 +344,13 @@ export interface AGGridPreviewProps {
     rowClassRules: string;
     rowClassDefault: string;
     rowClassExpression: string;
+    editMode: EditModeEnum;
+    stopEditingWhenCellsLoseFocus: boolean;
+    undoRedoCellEditing: boolean;
+    enableRowDelete: boolean;
+    bulkDeleteEnabled: boolean;
+    deleteConfirmation: DeleteConfirmationPreviewType;
+    deleteButton: DeleteButtonPreviewType;
     licenseKey: string;
     enableContextMenu: boolean;
     useLocalStorage: boolean;
@@ -285,4 +380,6 @@ export interface AGGridPreviewProps {
     autoHideDuration: number | null;
     onRowClick: {} | null;
     onRowDoubleClick: {} | null;
+    onCellEditCommit: {} | null;
+    onDeleteRow: {} | null;
 }

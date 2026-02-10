@@ -133,13 +133,29 @@ describe("AGGrid Component", () => {
         rowHeight: 40,
         rowHeightExpression: "",
         maxRowHeight: 0,
-    rowClassMode: "none" as const,
-    rowClassAttribute: undefined,
-    rowClassMapping: "",
-    rowClassRules: "",
-    rowClassDefault: "",
-    rowClassExpression: "",
+        rowClassMode: "none" as const,
+        rowClassAttribute: undefined,
+        rowClassMapping: "",
+        rowClassRules: "",
+        rowClassDefault: "",
+        rowClassExpression: "",
+        editMode: "cell" as const,
+        stopEditingWhenCellsLoseFocus: true,
+        undoRedoCellEditing: false,
         licenseKey: "",
+        enableRowDelete: false,
+        bulkDeleteEnabled: false,
+        deleteConfirmation: {
+            enabled: true,
+            title: "Confirm Delete",
+            message: "Are you sure you want to delete this row?"
+        },
+        deleteButton: {
+            showInToolbar: true,
+            showInContextMenu: true,
+            label: "Delete",
+            requireSelection: true
+        },
         enableContextMenu: false,
         useLocalStorage: true,
         showToolbarSearch: true,
@@ -167,7 +183,9 @@ describe("AGGrid Component", () => {
         toastPosition: "topRight" as const,
         autoHideDuration: 0,
         onRowClick: undefined,
-        onRowDoubleClick: undefined
+        onRowDoubleClick: undefined,
+        onCellEditCommit: undefined,
+        onDeleteRow: undefined
     };
 
     beforeEach(() => {
@@ -428,6 +446,18 @@ describe("AGGrid Component", () => {
             }
             const popover = await screen.findByRole("dialog", { name: /column visibility/i });
             expect(popover).toBeInTheDocument();
+        });
+    });
+
+    describe("Row delete actions", () => {
+        it("renders delete button when enabled", () => {
+            render(<AGGrid {...mockProps} enableRowDelete={true} />);
+
+            const deleteButton = screen.getByRole("button", {
+                name: /delete selected rows/i
+            });
+            expect(deleteButton).toBeInTheDocument();
+            expect(deleteButton).toBeDisabled();
         });
     });
 

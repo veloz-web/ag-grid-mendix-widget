@@ -69,6 +69,12 @@ export interface ToolbarProps {
     enablePdfExport: boolean;
     onPdfExport: () => void;
     pdfFileName?: string;
+    // Delete props
+    enableRowDelete: boolean;
+    showDeleteInToolbar: boolean;
+    deleteButtonLabel: string;
+    deleteDisabled: boolean;
+    onDeleteRows?: () => void;
     // Consolidated export callback
     onExportRequest?: (req: {
         format: "csv" | "excel" | "pdf";
@@ -117,6 +123,11 @@ export const Toolbar: React.FC<ToolbarProps> = ({
     enablePdfExport,
     onPdfExport,
     pdfFileName,
+    enableRowDelete,
+    showDeleteInToolbar,
+    deleteButtonLabel,
+    deleteDisabled,
+    onDeleteRows,
     onExportRequest
 }) => {
     // Check if there are any active toolbar filters or search
@@ -298,6 +309,22 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                         {activeFilterCount > 0 && (
                             <span className="filter-badge">{activeFilterCount}</span>
                         )}
+                    </button>
+                )}
+
+                {enableRowDelete && showDeleteInToolbar && (
+                    <button
+                        type="button"
+                        className="aggrid-delete-btn"
+                        onClick={onDeleteRows}
+                        disabled={deleteDisabled || !onDeleteRows}
+                        title="Delete selected rows"
+                        aria-label="Delete selected rows"
+                    >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M6 7h12l-1 14H7L6 7zm3-3h6l1 2H8l1-2zm-4 2h14v2H5V6z" />
+                        </svg>
+                        <span className="btn-text">{deleteButtonLabel}</span>
                     </button>
                 )}
 

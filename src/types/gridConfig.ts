@@ -63,6 +63,12 @@ export interface GridDisplayConfig {
     rowClassDefault?: string;
     /** JavaScript expression for row class */
     rowClassExpression?: string;
+    /** Edit mode: cell or row */
+    editMode: "cell" | "row";
+    /** Stop editing when focus leaves the cell */
+    stopEditingWhenCellsLoseFocus: boolean;
+    /** Enable undo/redo for cell edits */
+    undoRedoCellEditing: boolean;
 }
 
 /**
@@ -81,6 +87,29 @@ export interface GridUIFeatures {
     enableHeaderFilterButtons: boolean;
     /** Show floating filters below headers */
     enableFloatingFilters: boolean;
+}
+
+/**
+ * Delete action configuration
+ */
+export interface GridDeleteConfig {
+    /** Enable row deletion */
+    enableRowDelete: boolean;
+    /** Allow multi-row deletion */
+    bulkDeleteEnabled: boolean;
+    /** Confirmation dialog settings */
+    deleteConfirmation: {
+        enabled: boolean;
+        title: string;
+        message: string;
+    };
+    /** Delete button visibility/settings */
+    deleteButton: {
+        showInToolbar: boolean;
+        showInContextMenu: boolean;
+        label: string;
+        requireSelection: boolean;
+    };
 }
 
 /**
@@ -123,6 +152,10 @@ export interface GridCallbacks {
     onRowClicked: (event: any) => void;
     /** Called when a row is double-clicked */
     onRowDoubleClicked?: (event: any) => void;
+    /** Called when a cell edit is committed */
+    onCellEditCommit?: any;
+    /** Called to refresh data source after edits (server-side) */
+    onDataRefresh?: () => void;
     /** Called when sort changes */
     onSortChanged?: (event: any) => void;
     /** Called when filter changes */
@@ -139,6 +172,10 @@ export interface GridCallbacks {
     onRowClick?: any;
     /** Called when row is double-clicked (for custom views) - Mendix action */
     onRowDoubleClick?: any;
+    /** Called when selection changes */
+    onSelectionChanged?: (event: any) => void;
+    /** Called to delete rows */
+    onDeleteRows?: (rows: any[], source?: "toolbar" | "context") => void;
 }
 
 /**
@@ -158,6 +195,7 @@ export interface GridConfig {
     data: GridDataConfig;
     display: GridDisplayConfig;
     uiFeatures: GridUIFeatures;
+    deleteConfig?: GridDeleteConfig;
     advancedFeatures: GridAdvancedFeatures;
     grouping: GridGroupingConfig;
     callbacks: GridCallbacks;

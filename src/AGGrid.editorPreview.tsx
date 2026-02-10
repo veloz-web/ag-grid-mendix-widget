@@ -206,8 +206,9 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                         {showServerSideCacheHint && (
                             <li>
                                 Server-side cache: block size {cacheBlockSize || 100}, max blocks{" "}
-                                {maxBlocksInCache || 0}, concurrent requests {maxConcurrentRequests || 2}.
-                                Tune these to balance server load vs. scroll smoothness.
+                                {maxBlocksInCache || 0}, concurrent requests{" "}
+                                {maxConcurrentRequests || 2}. Tune these to balance server load vs.
+                                scroll smoothness.
                             </li>
                         )}
                     </ul>
@@ -226,13 +227,16 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                         color: rowClassRulesError ? "#c62828" : "#1e3a5f"
                     }}
                 >
-                    <strong>{rowClassRulesError ? "⚠️ Row Class Rules Error:" : "🎯 Row Class Rules:"}</strong>
+                    <strong>
+                        {rowClassRulesError ? "⚠️ Row Class Rules Error:" : "🎯 Row Class Rules:"}
+                    </strong>
                     {rowClassRulesError ? (
                         <div style={{ marginTop: "6px" }}>{rowClassRulesError}</div>
                     ) : (
                         <div style={{ marginTop: "6px" }}>
                             Rules are enabled. Each rule that evaluates to true adds its class name.
-                            Use JSON object or array format as documented in <code>ROW_CLASS_GUIDE.md</code>.
+                            Use JSON object or array format as documented in{" "}
+                            <code>ROW_CLASS_GUIDE.md</code>.
                         </div>
                     )}
                 </div>

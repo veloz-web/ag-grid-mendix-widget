@@ -159,15 +159,13 @@ describe("AGGrid Editor Preview indicators", () => {
         render(preview(props));
 
         expect(screen.getByText(/Virtual scrolling tips/i)).toBeInTheDocument();
-        expect(
-            screen.getByText(/virtualisation is disabled/i)
-        ).toBeInTheDocument();
+        expect(screen.getByText(/virtualisation is disabled/i)).toBeInTheDocument();
     });
 
     it("shows row class rules banner when rules are configured", () => {
         const props = {
             ...baseProps,
-            rowClassRules: "{\"row-danger\":\"data.status === 'High'\"}"
+            rowClassRules: '{"row-danger":"data.status === \'High\'"}'
         };
 
         render(preview(props));

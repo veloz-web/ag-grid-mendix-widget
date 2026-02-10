@@ -32,6 +32,22 @@ jest.mock("ag-grid-react", () => ({
                     // ignore in tests
                 }
             }
+
+            if (_props.getContextMenuItems) {
+                try {
+                    const items = _props.getContextMenuItems({
+                        node: { data: rowData?.[0] },
+                        defaultItems: []
+                    });
+                    const deleteItem =
+                        items && items.find((it: any) => it && it.name === "Delete");
+                    if (deleteItem && typeof deleteItem.action === "function") {
+                        deleteItem.action();
+                    }
+                } catch (e) {
+                    // ignore in tests
+                }
+            }
         }, [onGridReady, _props]);
 
         return (
@@ -140,15 +156,20 @@ describe("GridView Component", () => {
         rowHeight: 40,
         rowHeightExpression: "",
         maxRowHeight: 0,
-    rowClassMode: "none" as const,
-    rowClassAttribute: undefined,
-    rowClassMapping: "",
-    rowClassRules: "",
-    rowClassDefault: "",
-    rowClassExpression: "",
+        rowClassMode: "none" as const,
+        rowClassAttribute: undefined,
+        rowClassMapping: "",
+        rowClassRules: "",
+        rowClassDefault: "",
+        rowClassExpression: "",
+        editMode: "cell" as const,
+        stopEditingWhenCellsLoseFocus: true,
+        undoRedoCellEditing: false,
         onGridReady: jest.fn(),
         onRowClicked: jest.fn(),
         onRowDoubleClicked: jest.fn(),
+        onCellEditCommit: undefined,
+        onDataRefresh: undefined,
         onSortChanged: jest.fn(),
         onFilterChanged: jest.fn(),
         onColumnMoved: jest.fn(),
@@ -204,44 +225,43 @@ describe("GridView Component", () => {
             expect(true).toBe(true); // Placeholder assertion
         });
 
+        describe("Row Class", () => {
+            it("renders with mapping mode", () => {
+                render(
+                    <GridView
+                        {...mockProps}
+                        rowClassMode="mapping"
+                        rowClassAttribute={mockProps.columns[1].attribute}
+                        rowClassMapping='{"Active":"row-active"}'
+                        rowClassDefault="row-default"
+                    />
+                );
+                expect(screen.getAllByTestId("ag-grid")[0]).toBeInTheDocument();
+            });
 
-    describe("Row Class", () => {
-        it("renders with mapping mode", () => {
-            render(
-                <GridView
-                    {...mockProps}
-                    rowClassMode="mapping"
-                    rowClassAttribute={mockProps.columns[1].attribute}
-                    rowClassMapping='{"Active":"row-active"}'
-                    rowClassDefault="row-default"
-                />
-            );
-            expect(screen.getAllByTestId("ag-grid")[0]).toBeInTheDocument();
-        });
+            it("renders with rule-based classes", () => {
+                render(
+                    <GridView
+                        {...mockProps}
+                        rowClassRules='{"row-flag":"columnValue === \"Active\""}'
+                        rowClassAttribute={mockProps.columns[1].attribute}
+                    />
+                );
+                expect(screen.getAllByTestId("ag-grid")[0]).toBeInTheDocument();
+            });
 
-        it("renders with rule-based classes", () => {
-            render(
-                <GridView
-                    {...mockProps}
-                    rowClassRules='{"row-flag":"columnValue === \"Active\""}'
-                    rowClassAttribute={mockProps.columns[1].attribute}
-                />
-            );
-            expect(screen.getAllByTestId("ag-grid")[0]).toBeInTheDocument();
+            it("renders with expression mode", () => {
+                render(
+                    <GridView
+                        {...mockProps}
+                        rowClassMode="expression"
+                        rowClassExpression="columnValue === 'Active' ? 'row-active' : ''"
+                        rowClassAttribute={mockProps.columns[1].attribute}
+                    />
+                );
+                expect(screen.getAllByTestId("ag-grid")[0]).toBeInTheDocument();
+            });
         });
-
-        it("renders with expression mode", () => {
-            render(
-                <GridView
-                    {...mockProps}
-                    rowClassMode="expression"
-                    rowClassExpression="columnValue === 'Active' ? 'row-active' : ''"
-                    rowClassAttribute={mockProps.columns[1].attribute}
-                />
-            );
-            expect(screen.getAllByTestId("ag-grid")[0]).toBeInTheDocument();
-        });
-    });
         it("respects column visibility settings", () => {
             const propsWithVisibility = {
                 ...mockProps,
@@ -281,6 +301,38 @@ describe("GridView Component", () => {
             const hiddenColDef = mapMendixColumnToColDef(columnsWithHidden[2], columnsWithHidden);
 
             expect(hiddenColDef.hide).toBe(true);
+        });
+    });
+
+    describe("Row delete actions", () => {
+        it("invokes onDeleteRows from context menu", () => {
+            const onDeleteRows = jest.fn();
+
+            render(
+                <GridView
+                    {...mockProps}
+                    deleteConfig={{
+                        enableRowDelete: true,
+                        bulkDeleteEnabled: false,
+                        deleteConfirmation: {
+                            enabled: true,
+                            title: "Confirm Delete",
+                            message: "Are you sure?"
+                        },
+                        deleteButton: {
+                            showInToolbar: true,
+                            showInContextMenu: true,
+                            label: "Delete",
+                            requireSelection: true
+                        }
+                    }}
+                    onDeleteRows={onDeleteRows}
+                />
+            );
+
+            expect(onDeleteRows).toHaveBeenCalledWith([
+                mockProps.rowData[0]
+            ], "context");
         });
     });
 

@@ -273,6 +273,44 @@
                             <description>Optional template to display instead of the raw value. Use ${attributeId} placeholders referencing column attributes (including hidden ones).</description>
                         </property>
                     </propertyGroup>
+                    <propertyGroup caption="Editing">
+                        <property key="editable" type="boolean" defaultValue="false">
+                            <caption>Editable</caption>
+                            <description>Allow inline editing for this column.</description>
+                        </property>
+                        <property key="editorType" type="enumeration" defaultValue="text">
+                            <caption>Editor Type</caption>
+                            <enumerationValues>
+                                <enumerationValue key="text">Text</enumerationValue>
+                                <enumerationValue key="number">Number</enumerationValue>
+                                <enumerationValue key="date">Date</enumerationValue>
+                                <enumerationValue key="datetime">Date &amp; Time</enumerationValue>
+                                <enumerationValue key="boolean">Checkbox</enumerationValue>
+                                <enumerationValue key="select">Dropdown</enumerationValue>
+                                <enumerationValue key="richSelect">Rich Select</enumerationValue>
+                            </enumerationValues>
+                        </property>
+                        <property key="selectOptions" type="string" required="false" multiline="true">
+                            <caption>Select Options (JSON)</caption>
+                            <description>JSON array for select/richSelect values. Example: ["Open","Closed"] or [{"value":"Open","label":"Open"}].</description>
+                        </property>
+                        <property key="validationRequired" type="boolean" defaultValue="false">
+                            <caption>Required</caption>
+                            <description>Disallow empty values when editing.</description>
+                        </property>
+                        <property key="validationMinValue" type="decimal" required="false">
+                            <caption>Min Value</caption>
+                            <description>Minimum value for number/date editors.</description>
+                        </property>
+                        <property key="validationMaxValue" type="decimal" required="false">
+                            <caption>Max Value</caption>
+                            <description>Maximum value for number/date editors.</description>
+                        </property>
+                        <property key="validationPattern" type="string" required="false">
+                            <caption>Validation Pattern</caption>
+                            <description>Regex pattern the value must match.</description>
+                        </property>
+                    </propertyGroup>
                     <propertyGroup caption="Links &amp; Actions">
                         <property key="linkAction" type="action" required="false" dataSource="../dataSource">
                             <caption>Link Action</caption>
@@ -467,6 +505,64 @@
                 <description>JavaScript expression that returns a class name (string) or array of class names. Available variables: data, rowIndex, getValue(attributeId), columnValue. Example: columnValue === "High" ? "row-danger" : ""</description>
             </property>
         </propertyGroup>
+        <propertyGroup caption="Editing">
+            <property key="editMode" type="enumeration" defaultValue="cell">
+                <caption>Edit Mode</caption>
+                <enumerationValues>
+                    <enumerationValue key="cell">Single Cell</enumerationValue>
+                    <enumerationValue key="row">Full Row</enumerationValue>
+                </enumerationValues>
+            </property>
+            <property key="stopEditingWhenCellsLoseFocus" type="boolean" defaultValue="true">
+                <caption>Stop Editing on Blur</caption>
+                <description>Stop editing when the cell loses focus.</description>
+            </property>
+            <property key="undoRedoCellEditing" type="boolean" defaultValue="false">
+                <caption>Enable Undo/Redo</caption>
+                <description>Enable AG Grid's built-in undo/redo for cell edits.</description>
+            </property>
+        </propertyGroup>
+        <propertyGroup caption="Row Delete">
+            <property key="enableRowDelete" type="boolean" defaultValue="false">
+                <caption>Enable Row Delete</caption>
+                <description>Show delete actions for grid rows.</description>
+            </property>
+            <property key="bulkDeleteEnabled" type="boolean" defaultValue="false">
+                <caption>Allow Multiple Row Delete</caption>
+                <description>Allow selecting and deleting multiple rows at once.</description>
+            </property>
+            <property key="deleteConfirmation" type="object">
+                <caption>Delete Confirmation</caption>
+                <properties>
+                    <property key="enabled" type="boolean" defaultValue="true">
+                        <caption>Show Confirmation Dialog</caption>
+                    </property>
+                    <property key="title" type="string" defaultValue="Confirm Delete">
+                        <caption>Dialog Title</caption>
+                    </property>
+                    <property key="message" type="string" defaultValue="Are you sure you want to delete this row?">
+                        <caption>Dialog Message</caption>
+                    </property>
+                </properties>
+            </property>
+            <property key="deleteButton" type="object">
+                <caption>Delete Button</caption>
+                <properties>
+                    <property key="showInToolbar" type="boolean" defaultValue="true">
+                        <caption>Show in Toolbar</caption>
+                    </property>
+                    <property key="showInContextMenu" type="boolean" defaultValue="true">
+                        <caption>Show in Context Menu</caption>
+                    </property>
+                    <property key="label" type="string" defaultValue="Delete">
+                        <caption>Button Label</caption>
+                    </property>
+                    <property key="requireSelection" type="boolean" defaultValue="true">
+                        <caption>Require Row Selection</caption>
+                    </property>
+                </properties>
+            </property>
+        </propertyGroup>
         <propertyGroup caption="Grid Options">
             <property key="licenseKey" type="string" required="false">
                 <caption>Enterprise Key</caption>
@@ -612,6 +708,14 @@
             <property key="onRowDoubleClick" type="action" dataSource="dataSource">
                 <caption>On Row Double Click</caption>
                 <description>Action to execute when a row is double-clicked</description>
+            </property>
+            <property key="onCellEditCommit" type="action" dataSource="dataSource">
+                <caption>On Cell Edit Commit</caption>
+                <description>Action executed after a cell edit is committed. Uses the edited row as context.</description>
+            </property>
+            <property key="onDeleteRow" type="action" dataSource="dataSource">
+                <caption>On Delete Row</caption>
+                <description>Action executed when a row is deleted.</description>
             </property>
         </propertyGroup>
     </properties>

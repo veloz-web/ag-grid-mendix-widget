@@ -14,10 +14,10 @@
 
 ## **Architecture Overview**
 
-### **Data Flow Pattern**
+### **Data Flow Pattern (Mendix-native)**
 ```
-UI Event → Widget Handler → Mendix Action (microflow/nanoflow) → 
-Data Layer Update → Response → Grid Refresh (optimistic or full)
+UI Event → Update MxObject value(s) → ListActionValue.get(row).execute() →
+Microflow commits (or rejects) → Grid refresh (client transaction or dataSource reload)
 ```
 
 ### **Key Mendix Integration Points**
@@ -25,6 +25,12 @@ Data Layer Update → Response → Grid Refresh (optimistic or full)
 2. **TypeScript Component** (event handlers, AG Grid API)
 3. **Mendix Actions** (microflows/nanoflows for CRUD operations)
 4. **Data Source Management** (client-side vs. server-side model)
+
+### **Mendix-native Constraints (Important)**
+- **ListActionValue does not accept parameters.** We must update the row’s `MxObject` values first, then call `action.get(row).execute()`.
+- **Server-side row model** should refresh via `dataSource.reload()` or `gridApi.refreshServerSide({ purge: true })` after edits/deletes/adds.
+- **Use current row item** as the action context (mirrors existing `onRowClick`/`onRowDoubleClick`).
+- **Validation** should be minimal client-side; final validation belongs in the microflow.
 
 ---
 
@@ -73,10 +79,10 @@ Add per-column editing configuration:
   </property>
 </property>
 
-<!-- Global editing action -->
+<!-- Global editing action (Mendix ListActionValue) -->
 <property key="onCellEditCommit" type="action" required="false">
   <caption>On Cell Edit Commit</caption>
-  <description>Triggered when cell value changes</description>
+  <description>Triggered after value is applied to the row MxObject. Uses the row item as context.</description>
   <returnType type="Boolean" />
 </property>
 
@@ -211,54 +217,30 @@ const AGGridWidget: FC<AGGridProps> = (props) => {
   
   const onCellValueChanged = useCallback(async (event: CellValueChangedEvent) => {
     const { data, colDef, oldValue, newValue, node } = event;
-    
-    // Skip if value hasn't actually changed
     if (oldValue === newValue) return;
-    
-    if (props.onCellEditCommit && props.onCellEditCommit.canExecute) {
+
+    // Mendix-native pattern: update MxObject first, then execute action on the row item
+    if (data && typeof data.set === "function") {
+      data.set(colDef.field!, newValue);
+    }
+
+    const action = props.onCellEditCommit?.get?.(data);
+    if (action && action.canExecute) {
       try {
-        // Prepare parameters for Mendix action
-        const editContext = {
-          row: data,
-          rowId: data[props.entityKeyField], // e.g., GUID
-          column: colDef.field,
-          oldValue: oldValue,
-          newValue: newValue,
-          rowIndex: node.rowIndex
-        };
-        
-        // Execute Mendix microflow/nanoflow
-        const result = await props.onCellEditCommit.execute(editContext);
-        
-        if (result === false) {
-          // Revert on failure
-          data[colDef.field!] = oldValue;
-          gridRef.current?.api.refreshCells({
-            rowNodes: [node],
-            columns: [colDef.field!],
-            force: true
-          });
-          
-          // Show error message
-          mx.ui.error("Edit failed. Changes reverted.");
-        } else {
-          // Optimistic update - refresh specific row if data returned
-          if (typeof result === 'object' && result !== null) {
-            node.setData(result);
-          }
-        }
+        await action.execute();
       } catch (error) {
-        console.error('Edit commit failed:', error);
-        
-        // Revert on error
-        data[colDef.field!] = oldValue;
-        gridRef.current?.api.refreshCells({
-          rowNodes: [node],
-          columns: [colDef.field!]
-        });
-        
+        console.error("Edit commit failed:", error);
+        if (data && typeof data.set === "function") {
+          data.set(colDef.field!, oldValue);
+        }
+        gridRef.current?.api.refreshCells({ rowNodes: [node], columns: [colDef.field!], force: true });
         mx.ui.error("An error occurred while saving changes.");
       }
+    }
+
+    // For server-side row model, refresh after commit
+    if (props.rowModelType === "serverSide" && props.dataSource?.reload) {
+      props.dataSource.reload();
     }
   }, [props.onCellEditCommit, props.entityKeyField]);
 
@@ -290,14 +272,12 @@ const AGGridWidget: FC<AGGridProps> = (props) => {
 
 **Microflow: `ACT_AGGrid_OnCellEditCommit`**
 - **Parameters**: 
-  - `EditContext` (Non-Persistable Entity with attributes: RowId, Column, OldValue, NewValue)
+  - **Row entity itself** (context object)
 - **Logic**:
-  1. Retrieve entity by RowId
-  2. Apply validation rules
-  3. Update attribute value
-  4. Commit changes
-  5. Return Boolean (success/failure) or updated object
-  6. Optional: Log changes for audit trail
+  1. Validate updated values
+  2. Commit changes
+  3. Optionally return a boolean (success/failure)
+  4. Optional: Log changes for audit trail
 
 ---
 
@@ -402,45 +382,40 @@ const getContextMenuItems = (params: GetContextMenuItemsParams): (string | MenuI
   return defaultItems;
 };
 
-// Delete handler
+// Delete handler (Mendix-native)
 const handleDeleteRows = async (rows: any[]) => {
-  if (!props.onDeleteRow || !props.onDeleteRow.canExecute) {
-    console.warn('onDeleteRow action not configured');
+  if (!props.onDeleteRow) {
+    console.warn("onDeleteRow action not configured");
     return;
   }
-  
+
   try {
-    const deletePromises = rows.map(async (row) => {
-      const deleteContext = {
-        rowId: row[props.entityKeyField],
-        rowData: row
-      };
-      
-      const result = await props.onDeleteRow.execute(deleteContext);
-      return { row, success: result !== false };
-    });
-    
-    const results = await Promise.all(deletePromises);
-    
-    // Remove successful deletes from grid
-    const successfulDeletes = results
-      .filter(r => r.success)
-      .map(r => r.row);
-    
+    const results = await Promise.all(
+      rows.map(async (row) => {
+        const action = props.onDeleteRow.get?.(row);
+        if (!action || !action.canExecute) return { row, success: false };
+        await action.execute();
+        return { row, success: true };
+      })
+    );
+
+    const successfulDeletes = results.filter((r) => r.success).map((r) => r.row);
     if (successfulDeletes.length > 0) {
-      gridRef.current?.api.applyTransaction({ remove: successfulDeletes });
+      if (props.rowModelType === "serverSide" && props.dataSource?.reload) {
+        props.dataSource.reload();
+      } else {
+        gridRef.current?.api.applyTransaction({ remove: successfulDeletes });
+      }
       mx.ui.info(`Successfully deleted ${successfulDeletes.length} row(s).`);
     }
-    
-    // Report failures
-    const failures = results.filter(r => !r.success);
+
+    const failures = results.filter((r) => !r.success);
     if (failures.length > 0) {
       mx.ui.error(`Failed to delete ${failures.length} row(s).`);
     }
-    
   } catch (error) {
-    console.error('Delete operation failed:', error);
-    mx.ui.error('An error occurred during delete operation.');
+    console.error("Delete operation failed:", error);
+    mx.ui.error("An error occurred during delete operation.");
   }
 };
 ```
@@ -448,13 +423,12 @@ const handleDeleteRows = async (rows: any[]) => {
 ### **2.3 Mendix Microflow Example** (1 hour)
 
 **Microflow: `ACT_AGGrid_OnDeleteRow`**
-- **Parameters**: `DeleteContext` (RowId, RowData)
+- **Parameters**: **Row entity itself** (context object)
 - **Logic**:
-  1. Retrieve entity by RowId
-  2. Check delete permissions/constraints
-  3. Delete associated objects (if cascade delete needed)
-  4. Delete entity
-  5. Return Boolean (success/failure)
+  1. Validate delete permissions/constraints
+  2. Delete associated objects (if cascade delete needed)
+  3. Delete entity
+  4. Return Boolean (success/failure)
 
 ---
 
@@ -548,83 +522,62 @@ const CustomToolbar: FC<CustomToolbarProps> = ({
   );
 };
 
-// Add row handler
+// Add row handler (Mendix-native)
 const handleAddRow = async () => {
   if (!props.onAddRow || !props.onAddRow.canExecute) {
-    console.warn('onAddRow action not configured');
+    console.warn("onAddRow action not configured");
     return;
   }
-  
+
   try {
-    // Build default values object
-    const defaultValues: Record<string, any> = {};
-    props.defaultValues?.forEach(dv => {
-      defaultValues[dv.field] = dv.value;
-    });
-    
-    const addContext = {
-      defaultValues,
-      gridContext: {
-        totalRows: gridRef.current?.api.getDisplayedRowCount() || 0
-      }
-    };
-    
     // Execute Mendix action to create new entity
-    const newRowData = await props.onAddRow.execute(addContext);
-    
+    const newRowData = await props.onAddRow.execute();
+
     if (!newRowData) {
-      mx.ui.error('Failed to create new row');
+      mx.ui.error("Failed to create new row");
       return;
     }
-    
+
+    if (props.rowModelType === "serverSide" && props.dataSource?.reload) {
+      props.dataSource.reload();
+      return;
+    }
+
     // Determine insert position
     let addIndex: number | undefined;
     switch (props.addPosition) {
-      case 'top':
+      case "top":
         addIndex = 0;
         break;
-      case 'bottom':
+      case "bottom":
         addIndex = undefined; // Appends to end
         break;
-      case 'afterSelected':
+      case "afterSelected":
         const selectedNodes = gridRef.current?.api.getSelectedNodes() || [];
         if (selectedNodes.length > 0) {
           addIndex = (selectedNodes[0].rowIndex ?? 0) + 1;
         }
         break;
     }
-    
-    // Add to grid
-    const transaction: RowDataTransaction = {
-      add: [newRowData],
-      addIndex
-    };
-    
-    const result = gridRef.current?.api.applyTransaction(transaction);
-    
-    if (result && result.add && result.add.length > 0 && props.startEditingOnAdd) {
+
+    const result = gridRef.current?.api.applyTransaction({ add: [newRowData], addIndex });
+
+    if (result?.add?.length && props.startEditingOnAdd) {
       const newNode = result.add[0];
-      
-      // Find first editable column
-      const firstEditableCol = props.columns.find(col => col.editable);
-      
+      const firstEditableCol = props.columns.find((col) => col.editable);
       if (firstEditableCol && newNode.rowIndex !== null) {
-        // Start editing
         gridRef.current?.api.startEditingCell({
           rowIndex: newNode.rowIndex,
           colKey: firstEditableCol.field
         });
-        
-        // Scroll to new row
-        gridRef.current?.api.ensureIndexVisible(newNode.rowIndex, 'middle');
+        gridRef.current?.api.ensureIndexVisible(newNode.rowIndex, "middle");
       }
     }
-    
-    mx.ui.info('New row added successfully');
-    
+
+    mx.ui.info("New row added successfully");
   } catch (error) {
-    console.error('Add row operation failed:', error);
-    mx.ui.error('An error occurred while adding a new row.');
+    console.error("Add row operation failed:", error);
+    mx.ui.error("An error occurred while adding a new row.");
   }
 };
 
@@ -667,13 +620,13 @@ const convertMxObjectToRowData = (mxObj: mendix.lib.MxObject): any => {
 ### **3.3 Mendix Microflow Example** (1 hour)
 
 **Microflow: `ACT_AGGrid_OnAddRow`**
-- **Parameters**: `AddContext` (DefaultValues, GridContext)
+- **Parameters**: none (use widget configuration or static defaults inside microflow)
 - **Logic**:
   1. Create new entity instance
-  2. Apply default values from configuration
-  3. Set any required associations
-  4. Commit object (or keep in memory for inline editing)
-  5. Return new object to widget
+  2. Apply default values defined in the microflow (or in a separate helper)
+  3. Set required associations
+  4. Commit object
+  5. Return new object to widget (optional)
   6. Optional: Validate required fields
 
 ---

@@ -7,6 +7,7 @@ import { ColumnsType } from "../../typings/AGGridProps";
 import { CustomFormatterRegistry } from "../utils/customFormatters";
 import { buildColumnDefs } from "../utils/column/mapping";
 import { calculatePinnedBottomRow } from "../utils/aggregation/calculator";
+import type { GridDeleteConfig } from "../types/gridConfig";
 
 interface GridViewProps {
     rowData: any[];
@@ -35,6 +36,12 @@ interface GridViewProps {
     rowClassDefault?: string;
     /** JavaScript expression for row class */
     rowClassExpression?: string;
+    /** Edit mode: cell or row */
+    editMode?: "cell" | "row";
+    /** Stop editing when focus leaves the cell */
+    stopEditingWhenCellsLoseFocus?: boolean;
+    /** Enable undo/redo for cell edits */
+    undoRedoCellEditing?: boolean;
     /** Extra rows rendered above/below viewport (default: 10) */
     rowBuffer?: number;
     /** Disable row virtualisation — render ALL rows in DOM (default: false) */
@@ -48,6 +55,8 @@ interface GridViewProps {
     onGridReady: (params: GridReadyEvent) => void;
     onRowClicked: (event: any) => void;
     onRowDoubleClicked?: (event: any) => void;
+    onCellEditCommit?: any;
+    onDataRefresh?: () => void;
     onSortChanged?: (event: any) => void;
     onFilterChanged?: (event: any) => void;
     onColumnMoved?: (event: any) => void;
@@ -55,6 +64,8 @@ interface GridViewProps {
     /** Called when the 'Show/Hide Columns' header menu item is selected */
     onOpenColumnVisibility?: () => void;
     onOpenHiddenDrawer?: () => void;
+    onSelectionChanged?: (event: any) => void;
+    onDeleteRows?: (rows: any[], source?: "toolbar" | "context") => void;
     columnVisibility?: Record<string, boolean>;
     columnOrder?: string[];
     customFormatterRegistry?: CustomFormatterRegistry;
@@ -62,6 +73,7 @@ interface GridViewProps {
     enableSideBar: boolean;
     enableStatusBar: boolean;
     enableAggregationFooter: boolean;
+    deleteConfig?: GridDeleteConfig;
     enableRowGrouping: boolean;
     groupDefaultExpanded: number;
     showGroupRowsOnSeparateLine: boolean;
@@ -86,12 +98,15 @@ export function GridView(props: GridViewProps): ReactElement {
         rowHeight = 40,
         rowHeightExpression,
         maxRowHeight = 0,
-    rowClassMode = "none",
-    rowClassAttribute,
-    rowClassMapping = "",
-    rowClassRules = "",
-    rowClassDefault = "",
-    rowClassExpression = "",
+        rowClassMode = "none",
+        rowClassAttribute,
+        rowClassMapping = "",
+        rowClassRules = "",
+        rowClassDefault = "",
+        rowClassExpression = "",
+        editMode = "cell",
+        stopEditingWhenCellsLoseFocus = true,
+        undoRedoCellEditing = false,
         rowBuffer = 10,
         suppressRowVirtualisation = false,
         cacheBlockSize = 100,
@@ -100,10 +115,14 @@ export function GridView(props: GridViewProps): ReactElement {
         onGridReady,
         onRowClicked,
         onRowDoubleClicked,
+        onCellEditCommit,
+        onDataRefresh,
         onSortChanged,
         onFilterChanged,
         onColumnMoved,
         onColumnPinned,
+        onSelectionChanged,
+        onDeleteRows,
         columnVisibility,
         columnOrder,
         customFormatterRegistry,
@@ -111,6 +130,7 @@ export function GridView(props: GridViewProps): ReactElement {
         enableSideBar,
         enableStatusBar,
         enableAggregationFooter,
+        deleteConfig,
         enableRowGrouping,
         groupDefaultExpanded,
         showGroupRowsOnSeparateLine,
@@ -119,6 +139,37 @@ export function GridView(props: GridViewProps): ReactElement {
         enableHeaderFilterButtons,
         enableFloatingFilters
     } = props;
+
+    const rowSelectionMode = deleteConfig?.enableRowDelete
+        ? deleteConfig.bulkDeleteEnabled
+            ? "multiple"
+            : "single"
+        : undefined;
+
+    const getContextMenuItems = useCallback(
+        (params: any) => {
+            const defaultItems = params.defaultItems || [];
+            if (!deleteConfig?.enableRowDelete || !deleteConfig.deleteButton.showInContextMenu) {
+                return defaultItems;
+            }
+
+            const rowData = params.node?.data;
+            const deleteLabel = deleteConfig.deleteButton.label || "Delete";
+            const deleteItem = {
+                name: deleteLabel,
+                action: () => {
+                    if (!onDeleteRows) {
+                        return;
+                    }
+                    onDeleteRows(rowData ? [rowData] : [], "context");
+                },
+                disabled: !rowData
+            } as any;
+
+            return [...defaultItems, "separator", deleteItem];
+        },
+        [deleteConfig, onDeleteRows]
+    );
 
     const statusBarConfig = useMemo(() => {
         if (!enableStatusBar) {
@@ -163,6 +214,7 @@ export function GridView(props: GridViewProps): ReactElement {
         try {
             // Compile the expression into a function: (data, rowIndex) => number
             // The expression should return a number (height in px)
+            // eslint-disable-next-line no-new-func
             return new Function("data", "rowIndex", `return (${rowHeightExpression});`) as (
                 data: any,
                 rowIndex: number
@@ -283,6 +335,7 @@ export function GridView(props: GridViewProps): ReactElement {
         return parsedRowClassRules
             .map((rule) => {
                 try {
+                    // eslint-disable-next-line no-new-func
                     const fn = new Function(
                         "data",
                         "rowIndex",
@@ -306,7 +359,15 @@ export function GridView(props: GridViewProps): ReactElement {
                     return undefined;
                 }
             })
-            .filter(Boolean) as Array<{ className: string; fn: (data: any, rowIndex: number, getValue: (id: string) => any, columnValue: any) => any }>;
+            .filter(Boolean) as Array<{
+            className: string;
+            fn: (
+                data: any,
+                rowIndex: number,
+                getValue: (id: string) => any,
+                columnValue: any
+            ) => any;
+        }>;
     }, [parsedRowClassRules]);
 
     const compiledRowClassFn = useMemo(() => {
@@ -314,13 +375,19 @@ export function GridView(props: GridViewProps): ReactElement {
             return undefined;
         }
         try {
+            // eslint-disable-next-line no-new-func
             return new Function(
                 "data",
                 "rowIndex",
                 "getValue",
                 "columnValue",
                 `return (${rowClassExpression});`
-            ) as (data: any, rowIndex: number, getValue: (id: string) => any, columnValue: any) => any;
+            ) as (
+                data: any,
+                rowIndex: number,
+                getValue: (id: string) => any,
+                columnValue: any
+            ) => any;
         } catch (e) {
             console.error("[AG Grid] Invalid row class expression:", rowClassExpression, e);
             return undefined;
@@ -358,7 +425,8 @@ export function GridView(props: GridViewProps): ReactElement {
 
             let baseResult: any;
             if (rowClassMode === "mapping") {
-                const key = columnValue !== undefined && columnValue !== null ? String(columnValue) : "";
+                const key =
+                    columnValue !== undefined && columnValue !== null ? String(columnValue) : "";
                 baseResult = parsedRowClassMapping ? parsedRowClassMapping[key] : undefined;
             } else if (rowClassMode === "expression" && compiledRowClassFn) {
                 try {
@@ -400,6 +468,40 @@ export function GridView(props: GridViewProps): ReactElement {
             parsedRowClassMapping,
             getValueById
         ]
+    );
+
+    const handleCellValueChanged = useCallback(
+        async (event: any) => {
+            const { data, colDef, oldValue, newValue, node, api } = event || {};
+            if (!data || oldValue === newValue) return;
+
+            const field = colDef?.field;
+            if (field && typeof data.set === "function") {
+                data.set(field, newValue);
+            }
+
+            const action = onCellEditCommit?.get?.(data);
+            if (action && action.canExecute) {
+                try {
+                    await action.execute();
+                } catch (error) {
+                    console.error("[AG Grid] Cell edit commit failed:", error);
+                    if (field && typeof data.set === "function") {
+                        data.set(field, oldValue);
+                    }
+                    api?.refreshCells({
+                        rowNodes: node ? [node] : undefined,
+                        columns: field ? [field] : undefined,
+                        force: true
+                    });
+                }
+            }
+
+            if (props.rowModelType === "serverSide" && typeof onDataRefresh === "function") {
+                onDataRefresh();
+            }
+        },
+        [onCellEditCommit, onDataRefresh, props.rowModelType]
     );
 
     // Build wrapper class name
@@ -444,14 +546,24 @@ export function GridView(props: GridViewProps): ReactElement {
                 rowHeight={effectiveRowHeightMode === "fixed" ? rowHeight : undefined}
                 getRowHeight={effectiveRowHeightMode === "custom" ? getRowHeight : undefined}
                 getRowClass={rowClassMode !== "none" ? getRowClass : undefined}
+                editType={editMode === "row" ? "fullRow" : undefined}
+                stopEditingWhenCellsLoseFocus={stopEditingWhenCellsLoseFocus}
+                undoRedoCellEditing={undoRedoCellEditing}
+                onCellValueChanged={handleCellValueChanged}
                 onGridReady={onGridReady}
                 onRowClicked={onRowClicked}
                 onRowDoubleClicked={onRowDoubleClicked}
+                onSelectionChanged={onSelectionChanged}
                 onSortChanged={onSortChanged}
                 onFilterChanged={onFilterChanged}
                 onColumnMoved={onColumnMoved}
                 onColumnPinned={onColumnPinned}
+                getContextMenuItems={getContextMenuItems}
                 rowModelType={props.rowModelType}
+                rowSelection={rowSelectionMode}
+                rowMultiSelectWithClick={Boolean(
+                    deleteConfig?.enableRowDelete && deleteConfig.bulkDeleteEnabled
+                )}
                 // Row Grouping Configuration
                 groupDisplayType={
                     enableRowGrouping && showGroupRowsOnSeparateLine ? "singleColumn" : "groupRows"
