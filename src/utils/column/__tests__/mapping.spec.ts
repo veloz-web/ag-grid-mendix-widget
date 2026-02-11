@@ -52,6 +52,26 @@ describe("Column Mapping Utilities", () => {
                 expect(result.suppressMovable).toBe(false);
             });
 
+            it("should configure editable columns with editor type", () => {
+                const col: Partial<ColumnsType> = {
+                    header: { value: "Editable" } as any,
+                    attribute: { id: "amount" } as any,
+                    editable: true,
+                    editorType: "number" as any,
+                    selectOptions: "",
+                    validationRequired: false,
+                    validationMinValue: "0",
+                    validationMaxValue: "100",
+                    validationPattern: ""
+                };
+
+                const result = mapMendixColumnToColDef(col as ColumnsType, [], undefined);
+
+                expect(result.editable).toBe(true);
+                expect(result.cellEditor).toBe("agNumberCellEditor");
+                expect(typeof result.valueSetter).toBe("function");
+            });
+
             it("should handle missing header value", () => {
                 const col: Partial<ColumnsType> = {
                     attribute: { id: "testAttr" } as any

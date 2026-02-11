@@ -6,6 +6,7 @@ import type {
     GridDataConfig,
     GridDisplayConfig,
     GridUIFeatures,
+    GridDeleteConfig,
     GridAdvancedFeatures,
     GridGroupingConfig,
     GridCallbacks,
@@ -18,6 +19,9 @@ export interface ViewRendererProps {
     data: GridDataConfig;
     display: GridDisplayConfig;
     uiFeatures: GridUIFeatures;
+    deleteConfig?: GridDeleteConfig;
+    rowSelectionMode?: "none" | "single" | "multiple";
+    showSelectionCheckboxes?: boolean;
     advancedFeatures: GridAdvancedFeatures;
     grouping: GridGroupingConfig;
     callbacks: GridCallbacks;
@@ -30,6 +34,9 @@ export const ViewRenderer = ({
     data,
     display,
     uiFeatures,
+    deleteConfig,
+    rowSelectionMode,
+    showSelectionCheckboxes,
     advancedFeatures,
     grouping,
     callbacks,
@@ -45,8 +52,10 @@ export const ViewRenderer = ({
                 height={display.height}
                 pagination={display.pagination}
                 pageSize={display.pageSize}
+                paginationPosition={display.paginationPosition}
                 rowBuffer={display.rowBuffer}
                 suppressRowVirtualisation={display.suppressRowVirtualisation}
+                domLayout={display.domLayout}
                 rowHeightMode={display.rowHeightMode}
                 rowHeight={display.rowHeight}
                 rowHeightExpression={display.rowHeightExpression}
@@ -57,9 +66,14 @@ export const ViewRenderer = ({
                 rowClassRules={display.rowClassRules}
                 rowClassDefault={display.rowClassDefault}
                 rowClassExpression={display.rowClassExpression}
+                editMode={display.editMode}
+                stopEditingWhenCellsLoseFocus={display.stopEditingWhenCellsLoseFocus}
+                undoRedoCellEditing={display.undoRedoCellEditing}
                 onGridReady={callbacks.onGridReady}
                 onRowClicked={callbacks.onRowClicked}
                 onRowDoubleClicked={callbacks.onRowDoubleClicked}
+                onCellEditCommit={callbacks.onCellEditCommit}
+                onDataRefresh={callbacks.onDataRefresh}
                 onSortChanged={callbacks.onSortChanged}
                 onFilterChanged={callbacks.onFilterChanged}
                 onColumnMoved={callbacks.onColumnMoved}
@@ -71,6 +85,9 @@ export const ViewRenderer = ({
                 enableSideBar={uiFeatures.enableSideBar}
                 enableStatusBar={uiFeatures.enableStatusBar}
                 enableAggregationFooter={advancedFeatures.enableAggregationFooter}
+                deleteConfig={deleteConfig}
+                rowSelectionMode={rowSelectionMode}
+                showSelectionCheckboxes={showSelectionCheckboxes}
                 enableRowGrouping={grouping.enabled}
                 groupDefaultExpanded={grouping.defaultExpanded}
                 showGroupRowsOnSeparateLine={grouping.showOnSeparateLine}
@@ -80,6 +97,8 @@ export const ViewRenderer = ({
                 enableFloatingFilters={uiFeatures.enableFloatingFilters}
                 onOpenColumnVisibility={callbacks.onOpenColumnVisibility}
                 onOpenHiddenDrawer={callbacks.onOpenHiddenDrawer}
+                onSelectionChanged={callbacks.onSelectionChanged}
+                onDeleteRows={callbacks.onDeleteRows}
                 rowModelType={rowModelType}
                 cacheBlockSize={advancedFeatures.cacheBlockSize}
                 maxBlocksInCache={advancedFeatures.maxBlocksInCache}
@@ -128,6 +147,7 @@ export const ViewRenderer = ({
                 height={display.height}
                 pagination={display.pagination}
                 pageSize={display.pageSize}
+                paginationPosition={display.paginationPosition}
                 rowBuffer={display.rowBuffer}
                 suppressRowVirtualisation={display.suppressRowVirtualisation}
                 rowHeightMode={display.rowHeightMode}
@@ -140,9 +160,14 @@ export const ViewRenderer = ({
                 rowClassRules={display.rowClassRules}
                 rowClassDefault={display.rowClassDefault}
                 rowClassExpression={display.rowClassExpression}
+                editMode={display.editMode}
+                stopEditingWhenCellsLoseFocus={display.stopEditingWhenCellsLoseFocus}
+                undoRedoCellEditing={display.undoRedoCellEditing}
                 onGridReady={callbacks.onGridReady}
                 onRowClicked={callbacks.onRowClicked}
                 onRowDoubleClicked={callbacks.onRowDoubleClicked}
+                onCellEditCommit={callbacks.onCellEditCommit}
+                onDataRefresh={callbacks.onDataRefresh}
                 onSortChanged={callbacks.onSortChanged}
                 onFilterChanged={callbacks.onFilterChanged}
                 onColumnMoved={callbacks.onColumnMoved}
@@ -178,6 +203,7 @@ export const ViewRenderer = ({
                 height={display.height}
                 pagination={display.pagination}
                 pageSize={display.pageSize}
+                paginationPosition={display.paginationPosition}
                 rowBuffer={display.rowBuffer}
                 suppressRowVirtualisation={display.suppressRowVirtualisation}
                 rowHeightMode={display.rowHeightMode}
@@ -190,9 +216,14 @@ export const ViewRenderer = ({
                 rowClassRules={display.rowClassRules}
                 rowClassDefault={display.rowClassDefault}
                 rowClassExpression={display.rowClassExpression}
+                editMode={display.editMode}
+                stopEditingWhenCellsLoseFocus={display.stopEditingWhenCellsLoseFocus}
+                undoRedoCellEditing={display.undoRedoCellEditing}
                 onGridReady={callbacks.onGridReady}
                 onRowClicked={callbacks.onRowClicked}
                 onRowDoubleClicked={callbacks.onRowDoubleClicked}
+                onCellEditCommit={callbacks.onCellEditCommit}
+                onDataRefresh={callbacks.onDataRefresh}
                 onSortChanged={callbacks.onSortChanged}
                 onFilterChanged={callbacks.onFilterChanged}
                 onColumnMoved={callbacks.onColumnMoved}

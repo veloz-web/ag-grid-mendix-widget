@@ -14,6 +14,96 @@ import { evaluateTemplate } from "../renderers";
 import { CustomFormatterRegistry } from "../customFormatters";
 import { getCellAlignment, getCellAlignmentStyle, getHeaderAlignmentClass } from "./alignment";
 
+type EditorType = "text" | "number" | "date" | "datetime" | "boolean" | "select" | "richSelect";
+
+function parseSelectOptions(selectOptions?: string): string[] {
+    if (!selectOptions || !selectOptions.trim()) {
+        return [];
+    }
+    try {
+        const parsed = JSON.parse(selectOptions);
+        if (Array.isArray(parsed)) {
+            return parsed
+                .map((option) => {
+                    if (typeof option === "string" || typeof option === "number") {
+                        return String(option);
+                    }
+                    if (option && typeof option === "object" && "value" in option) {
+                        return String(option.value);
+                    }
+                    return "";
+                })
+                .filter(Boolean);
+        }
+    } catch (e) {
+        console.error("[AG Grid] Invalid selectOptions JSON:", selectOptions, e);
+    }
+    return [];
+}
+
+function parseEditorValue(value: any, editorType: EditorType): any {
+    if (value === null || value === undefined) return value;
+    switch (editorType) {
+        case "number": {
+            const num = Number(value);
+            return Number.isNaN(num) ? value : num;
+        }
+        case "date":
+        case "datetime": {
+            const date = value instanceof Date ? value : new Date(value);
+            return isNaN(date.getTime()) ? value : date;
+        }
+        case "boolean":
+            return value === true || value === "true" || value === 1 || value === "1";
+        default:
+            return value;
+    }
+}
+
+function validateEditorValue(value: any, col: ColumnsType, editorType: EditorType): boolean {
+    const isEmpty = value === null || value === undefined || value === "";
+    if (col.validationRequired && isEmpty) return false;
+
+    if (isEmpty) return true;
+
+    if (
+        col.validationMinValue !== undefined &&
+        col.validationMinValue !== null &&
+        col.validationMinValue !== ""
+    ) {
+        const min = Number(col.validationMinValue);
+        const current =
+            editorType === "date" || editorType === "datetime"
+                ? new Date(value).getTime()
+                : Number(value);
+        if (!Number.isNaN(min) && !Number.isNaN(current) && current < min) return false;
+    }
+
+    if (
+        col.validationMaxValue !== undefined &&
+        col.validationMaxValue !== null &&
+        col.validationMaxValue !== ""
+    ) {
+        const max = Number(col.validationMaxValue);
+        const current =
+            editorType === "date" || editorType === "datetime"
+                ? new Date(value).getTime()
+                : Number(value);
+        if (!Number.isNaN(max) && !Number.isNaN(current) && current > max) return false;
+    }
+
+    if (col.validationPattern) {
+        try {
+            const regex = new RegExp(col.validationPattern);
+            if (!regex.test(String(value))) return false;
+        } catch (e) {
+            console.error("[AG Grid] Invalid validation regex:", col.validationPattern, e);
+        }
+    }
+
+    return true;
+}
+
 /**
  * Maps a single Mendix column configuration to an AG Grid ColDef.
  *
@@ -69,6 +159,81 @@ export function mapMendixColumnToColDef(
             }
         }
     };
+
+    const editorType = (col.editorType || "text") as EditorType;
+    const isEditable = Boolean(col.editable) && !col.template;
+
+    if (col.editable && col.template) {
+        console.warn(
+            `[AG Grid] Column "${col.header?.value}" is editable but uses a template. ` +
+                "Templates are not editable."
+        );
+    }
+
+    if (isEditable) {
+        colDef.editable = true;
+
+        switch (editorType) {
+            case "number":
+                colDef.cellEditor = "agNumberCellEditor";
+                colDef.cellEditorParams = {
+                    min:
+                        col.validationMinValue !== undefined && col.validationMinValue !== ""
+                            ? Number(col.validationMinValue)
+                            : undefined,
+                    max:
+                        col.validationMaxValue !== undefined && col.validationMaxValue !== ""
+                            ? Number(col.validationMaxValue)
+                            : undefined
+                };
+                break;
+            case "date":
+            case "datetime":
+                colDef.cellEditor = "agDateCellEditor";
+                break;
+            case "boolean":
+                colDef.cellEditor = "agCheckboxCellEditor";
+                break;
+            case "select": {
+                colDef.cellEditor = "agSelectCellEditor";
+                const values = parseSelectOptions(col.selectOptions);
+                colDef.cellEditorParams = { values };
+                break;
+            }
+            case "richSelect": {
+                colDef.cellEditor = "agRichSelectCellEditor";
+                const values = parseSelectOptions(col.selectOptions);
+                colDef.cellEditorParams = { values };
+                break;
+            }
+            default:
+                colDef.cellEditor = "agTextCellEditor";
+                break;
+        }
+
+        colDef.valueParser = (params) => parseEditorValue(params.newValue, editorType);
+        colDef.valueSetter = (params) => {
+            const parsedValue = parseEditorValue(params.newValue, editorType);
+            if (!validateEditorValue(parsedValue, col, editorType)) {
+                return false;
+            }
+
+            const item = params.data;
+            if (!item) return false;
+
+            const attributeId = col.attribute?.id || params.colDef?.field;
+            if (attributeId) {
+                if (typeof item.set === "function") {
+                    item.set(attributeId, parsedValue);
+                } else {
+                    item[attributeId] = parsedValue;
+                }
+                return true;
+            }
+
+            return false;
+        };
+    }
 
     // Add aggregation function if enabled
     if (col.enableAggregation && col.aggregationFunction) {
@@ -326,13 +491,15 @@ export function mapMendixColumnToColDef(
  * @param columnVisibility - Map of column IDs to visibility state
  * @param columnOrder - Ordered array of column IDs
  * @param customFormatterRegistry - Registry of custom formatters
+ * @param rowHeightMode - Row height mode (auto mode enables wrapText/autoHeight on all columns)
  * @returns Array of AG Grid column definitions
  */
 export function buildColumnDefs(
     columns: ColumnsType[],
     columnVisibility: Record<string, boolean>,
     columnOrder: string[],
-    customFormatterRegistry?: CustomFormatterRegistry
+    customFormatterRegistry?: CustomFormatterRegistry,
+    rowHeightMode?: "fixed" | "auto" | "custom"
 ): ColDef[] {
     // Filter visible columns
     const visibleColumns = columns.filter((col) => {
@@ -354,7 +521,26 @@ export function buildColumnDefs(
     }
 
     // Map to AG Grid ColDef
-    return orderedColumns.map((col) =>
+    const colDefs = orderedColumns.map((col) =>
         mapMendixColumnToColDef(col, columns, customFormatterRegistry)
     );
+
+    // If row height mode is "auto", enable wrapText and autoHeight on ALL columns
+    if (rowHeightMode === "auto") {
+        console.log("[AGGrid] Row height mode is 'auto' - enabling wrapText and autoHeight on all columns");
+        colDefs.forEach((colDef, idx) => {
+            colDef.wrapText = true;
+            colDef.autoHeight = true;
+            if (idx === 0) {
+                console.log("[AGGrid] Sample column def:", {
+                    field: colDef.field,
+                    wrapText: colDef.wrapText,
+                    autoHeight: colDef.autoHeight
+                });
+            }
+        });
+        console.log(`[AGGrid] Set autoHeight=true on ${colDefs.length} columns`);
+    }
+
+    return colDefs;
 }

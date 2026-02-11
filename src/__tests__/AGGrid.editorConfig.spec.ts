@@ -56,7 +56,7 @@ describe("AGGrid editorConfig validate", () => {
     it("returns no errors for valid rules", () => {
         const errors = validate({
             ...baseProps,
-            rowClassRules: "{\"row-danger\":\"data.status === 'High'\"}",
+            rowClassRules: '{"row-danger":"data.status === \'High\'"}',
             rowClassMode: "mapping",
             rowClassAttribute: { id: "Status" }
         } as any);

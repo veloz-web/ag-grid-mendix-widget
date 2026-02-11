@@ -28,7 +28,14 @@ export function CustomTemplateView(props: CustomTemplateViewProps): ReactElement
 
     // If no template provided, render the fallback view
     if (!template || template.trim() === "") {
-        return <DynamicView rowData={rowData} columns={columns} onRowClick={onRowClick} onRowDoubleClick={onRowDoubleClick} />;
+        return (
+            <DynamicView
+                rowData={rowData}
+                columns={columns}
+                onRowClick={onRowClick}
+                onRowDoubleClick={onRowDoubleClick}
+            />
+        );
     }
 
     // Additional safety check: ensure we have valid data

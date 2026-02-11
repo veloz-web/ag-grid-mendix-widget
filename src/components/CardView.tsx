@@ -59,7 +59,12 @@ export function DynamicView(props: DynamicViewProps): ReactElement {
                 });
 
                 return (
-                    <div key={idx} className="aggrid-card" onClick={() => handleCardClick(item)} onDoubleClick={() => handleCardDoubleClick(item)}>
+                    <div
+                        key={idx}
+                        className="aggrid-card"
+                        onClick={() => handleCardClick(item)}
+                        onDoubleClick={() => handleCardDoubleClick(item)}
+                    >
                         {availableColumns.map((col, colIdx) => {
                             let rawValue: any;
                             let attributeType: string;

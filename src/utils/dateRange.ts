@@ -135,5 +135,5 @@ export const toComparableDate = (value: string | Date | undefined | null): numbe
         return null;
     }
 
-    return Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
+    return Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
 };

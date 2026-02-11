@@ -4,7 +4,7 @@
  * @author Mendix Widgets Framework Team
  */
 import { CSSProperties } from "react";
-import { DynamicValue, ListValue, ListActionValue, ListAttributeValue } from "mendix";
+import { ActionValue, DynamicValue, ListValue, ListActionValue, ListAttributeValue } from "mendix";
 import { Big } from "big.js";
 
 export type RowModelTypeEnum = "clientSide" | "serverSide";
@@ -24,6 +24,8 @@ export type FilterLocationEnum = "none" | "drawer" | "toolbar";
 export type AggregationFunctionEnum = "sum" | "min" | "max" | "avg" | "count" | "first" | "last";
 
 export type FormatterEnum = "none" | "currency" | "currencyEUR" | "currencyGBP" | "percentage" | "number" | "decimal2" | "dateShort" | "dateLong" | "dateISO" | "dateDMY" | "dateMDY" | "dateYMD" | "dateTime" | "time" | "yesNo" | "trueFalse" | "uppercase" | "lowercase" | "capitalize" | "customPrefix" | "link";
+
+export type EditorTypeEnum = "text" | "number" | "date" | "datetime" | "boolean" | "select" | "richSelect";
 
 export interface ColumnsType {
     header: DynamicValue<string>;
@@ -60,6 +62,13 @@ export interface ColumnsType {
     customPrefix: string;
     customSuffix: string;
     template: string;
+    editable: boolean;
+    editorType: EditorTypeEnum;
+    selectOptions: string;
+    validationRequired: boolean;
+    validationMinValue: string;
+    validationMaxValue: string;
+    validationPattern: string;
     linkAction?: ListActionValue;
     linkUrlPattern: string;
     linkText: string;
@@ -82,6 +91,14 @@ export interface CustomFormattersType {
 export type RowHeightModeEnum = "fixed" | "auto" | "custom";
 
 export type RowClassModeEnum = "none" | "mapping" | "expression";
+
+export type RowSelectionModeEnum = "none" | "single" | "multiple";
+
+export type EditModeEnum = "cell" | "row";
+
+export type PaginationPositionEnum = "bottom" | "top";
+
+export type DomLayoutEnum = "normal" | "autoHeight" | "print";
 
 export type ThemeEnum = "alpine" | "balham" | "material" | "quartz";
 
@@ -126,6 +143,13 @@ export interface ColumnsPreviewType {
     customPrefix: string;
     customSuffix: string;
     template: string;
+    editable: boolean;
+    editorType: EditorTypeEnum;
+    selectOptions: string;
+    validationRequired: boolean;
+    validationMinValue: string;
+    validationMaxValue: string;
+    validationPattern: string;
     linkAction: {} | null;
     linkUrlPattern: string;
     linkText: string;
@@ -179,6 +203,23 @@ export interface AGGridContainerProps {
     rowClassRules: string;
     rowClassDefault: string;
     rowClassExpression: string;
+    rowSelectionMode: RowSelectionModeEnum;
+    showSelectionCheckboxes: boolean;
+    editMode: EditModeEnum;
+    stopEditingWhenCellsLoseFocus: boolean;
+    undoRedoCellEditing: boolean;
+    enableRowDelete: boolean;
+    bulkDeleteEnabled: boolean;
+    deleteConfirmationEnabled: boolean;
+    deleteConfirmationTitle: string;
+    deleteConfirmationMessage: string;
+    deleteShowInToolbar: boolean;
+    deleteShowInContextMenu: boolean;
+    deleteButtonLabel: string;
+    deleteRequireSelection: boolean;
+    enableRowAdd: boolean;
+    addShowInToolbar: boolean;
+    addButtonLabel: string;
     licenseKey: string;
     enableContextMenu: boolean;
     useLocalStorage: boolean;
@@ -186,8 +227,10 @@ export interface AGGridContainerProps {
     enableToolbarFilterSearch: boolean;
     pagination: boolean;
     pageSize: number;
+    paginationPosition: PaginationPositionEnum;
     rowBuffer: number;
     suppressRowVirtualisation: boolean;
+    domLayout: DomLayoutEnum;
     height: number;
     theme: ThemeEnum;
     themeVariant: ThemeVariantEnum;
@@ -208,6 +251,9 @@ export interface AGGridContainerProps {
     autoHideDuration: number;
     onRowClick?: ListActionValue;
     onRowDoubleClick?: ListActionValue;
+    onCellEditCommit?: ListActionValue;
+    onDeleteRow?: ListActionValue;
+    onAddRow?: ActionValue;
 }
 
 export interface AGGridPreviewProps {
@@ -256,6 +302,23 @@ export interface AGGridPreviewProps {
     rowClassRules: string;
     rowClassDefault: string;
     rowClassExpression: string;
+    rowSelectionMode: RowSelectionModeEnum;
+    showSelectionCheckboxes: boolean;
+    editMode: EditModeEnum;
+    stopEditingWhenCellsLoseFocus: boolean;
+    undoRedoCellEditing: boolean;
+    enableRowDelete: boolean;
+    bulkDeleteEnabled: boolean;
+    deleteConfirmationEnabled: boolean;
+    deleteConfirmationTitle: string;
+    deleteConfirmationMessage: string;
+    deleteShowInToolbar: boolean;
+    deleteShowInContextMenu: boolean;
+    deleteButtonLabel: string;
+    deleteRequireSelection: boolean;
+    enableRowAdd: boolean;
+    addShowInToolbar: boolean;
+    addButtonLabel: string;
     licenseKey: string;
     enableContextMenu: boolean;
     useLocalStorage: boolean;
@@ -263,8 +326,10 @@ export interface AGGridPreviewProps {
     enableToolbarFilterSearch: boolean;
     pagination: boolean;
     pageSize: number | null;
+    paginationPosition: PaginationPositionEnum;
     rowBuffer: number | null;
     suppressRowVirtualisation: boolean;
+    domLayout: DomLayoutEnum;
     height: number | null;
     theme: ThemeEnum;
     themeVariant: ThemeVariantEnum;
@@ -285,4 +350,7 @@ export interface AGGridPreviewProps {
     autoHideDuration: number | null;
     onRowClick: {} | null;
     onRowDoubleClick: {} | null;
+    onCellEditCommit: {} | null;
+    onDeleteRow: {} | null;
+    onAddRow: {} | null;
 }

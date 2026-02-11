@@ -9,6 +9,7 @@ export function preview(props: AGGridPreviewProps): ReactElement {
         columns,
         pagination,
         pageSize,
+        paginationPosition,
         height,
         theme,
         rowModelType,
@@ -31,10 +32,54 @@ export function preview(props: AGGridPreviewProps): ReactElement {
         customFormatters,
         enablePolling,
         pollingInterval,
-        enableNotifications
+        enableNotifications,
+        // Row selection
+        rowSelectionMode,
+        showSelectionCheckboxes,
+        // CRUD features
+        enableRowAdd,
+        addShowInToolbar,
+        addButtonLabel,
+        onAddRow,
+        enableRowDelete,
+        bulkDeleteEnabled,
+        deleteShowInToolbar,
+        deleteShowInContextMenu,
+        deleteButtonLabel,
+        deleteRequireSelection,
+        onDeleteRow,
+        editMode,
+        onCellEditCommit,
+        onRowClick,
+        onRowDoubleClick,
+        // Row height
+        rowHeightMode,
+        rowHeight,
+        // DOM Layout
+        domLayout
     } = props;
 
     const themeClass = `ag-theme-${theme}`;
+
+    // Calculate row height for preview
+    // Default AG Grid row height is 42px with 10px top/bottom padding
+    let previewRowPadding = "10px 12px"; // Default padding
+    let previewRowMinHeight: number | undefined;
+
+    if (rowHeightMode === "fixed" && rowHeight) {
+        // For fixed height, calculate padding to match configured height
+        // Row height includes padding, so we need to distribute the space
+        const configuredHeight = rowHeight;
+        const verticalPadding = Math.max(6, Math.floor((configuredHeight - 22) / 2)); // 22px for text
+        previewRowPadding = `${verticalPadding}px 12px`;
+    } else if (rowHeightMode === "auto") {
+        // For auto height, use more generous padding and allow wrapping
+        previewRowPadding = "12px 12px";
+        previewRowMinHeight = undefined; // No min height constraint
+    } else if (rowHeightMode === "custom") {
+        // For custom expression, use a moderate default in preview
+        previewRowPadding = "10px 12px";
+    }
 
     // Check if templates are available
     const hasCardTemplate = !!(customCardTemplate && customCardTemplate.trim());
@@ -50,6 +95,66 @@ export function preview(props: AGGridPreviewProps): ReactElement {
     );
     const hasDrawerFilters = enableFilterDrawer && filterableColumns.length > 0;
     const hasToolbarFilters = toolbarFilters.length > 0;
+
+    // CRUD feature detection
+    const editableColumns = (columns || []).filter((col) => col.editable);
+    const hasEditableColumns = editableColumns.length > 0;
+    const hasAddAction = Boolean(onAddRow);
+    const hasDeleteAction = Boolean(onDeleteRow);
+    const hasEditAction = Boolean(onCellEditCommit);
+    const hasRowClickAction = Boolean(onRowClick);
+    const hasRowDoubleClickAction = Boolean(onRowDoubleClick);
+    const showDeleteInToolbar = enableRowDelete && (deleteShowInToolbar ?? true);
+    const showDeleteInContext = enableRowDelete && (deleteShowInContextMenu ?? true);
+    const showAddInToolbar = enableRowAdd && (addShowInToolbar ?? true);
+    const anyCrudEnabled = enableRowAdd || enableRowDelete || hasEditableColumns;
+
+    // CRUD validation — collect errors and warnings
+    const crudErrors: string[] = [];
+    const crudWarnings: string[] = [];
+
+    if (enableRowAdd && !hasAddAction) {
+        crudErrors.push(
+            '"Enable Row Add" is ON but no "On Add Row" action is configured. ' +
+                "The Add button will appear but do nothing. Go to Events → On Add Row."
+        );
+    }
+    if (enableRowDelete && !hasDeleteAction) {
+        crudErrors.push(
+            '"Enable Row Delete" is ON but no "On Delete Row" action is configured. ' +
+                "The Delete button will appear but do nothing. Go to Events → On Delete Row."
+        );
+    }
+    if (enableRowDelete && !showDeleteInToolbar && !showDeleteInContext) {
+        crudWarnings.push(
+            "Row delete is enabled but the delete button is hidden from both the toolbar and the context menu. " +
+                "Users will have no way to trigger a delete."
+        );
+    }
+    if (enableRowDelete && (deleteRequireSelection ?? true) && rowSelectionMode === "none") {
+        crudErrors.push(
+            'Row delete requires row selection but Row Selection Mode is "None". ' +
+                'Go to Row Selection → Selection Mode and set it to "Single Row" or "Multiple Rows".'
+        );
+    }
+    if (enableRowDelete && bulkDeleteEnabled && rowSelectionMode !== "multiple") {
+        crudErrors.push(
+            '"Allow Multiple Row Delete" is ON but Row Selection Mode is not "Multiple Rows". ' +
+                'Go to Row Selection → Selection Mode and set it to "Multiple Rows" for bulk delete to work.'
+        );
+    }
+    if (rowSelectionMode === "multiple" && !showSelectionCheckboxes) {
+        crudWarnings.push(
+            'Row Selection Mode is "Multiple Rows" but checkboxes are hidden. ' +
+                "Users can still multi-select by clicking rows, but there is no visual checkbox indicator."
+        );
+    }
+    if (hasEditableColumns && !hasEditAction) {
+        crudErrors.push(
+            'Columns are marked as editable but no "On Cell Edit Commit" action is configured. ' +
+                "Edits will not be persisted. Go to Events → On Cell Edit Commit."
+        );
+    }
 
     // Validate custom formatter references in columns
     const formatterNames: string[] = [];
@@ -114,6 +219,40 @@ export function preview(props: AGGridPreviewProps): ReactElement {
     // Validate sort configuration
     const sortValidation = validateSortConfiguration(columns || []);
 
+    // Validate domLayout conflicts
+    const domLayoutWarnings: string[] = [];
+    if (domLayout === "autoHeight") {
+        if (pagination) {
+            domLayoutWarnings.push(
+                "DOM Layout 'Auto Height' conflicts with Pagination. Pagination will be disabled because the grid expands to show all rows."
+            );
+        }
+        if (height && height !== 500) {
+            domLayoutWarnings.push(
+                `DOM Layout 'Auto Height' ignores the configured height (${height}px). The grid will expand to fit all rows.`
+            );
+        }
+        if (!suppressRowVirtualisation) {
+            domLayoutWarnings.push(
+                "DOM Layout 'Auto Height' disables row virtualization. ALL rows will be rendered in the DOM, which can cause performance issues with large datasets (>100 rows)."
+            );
+        }
+        if (rowModelType === "serverSide") {
+            domLayoutWarnings.push(
+                "DOM Layout 'Auto Height' is NOT recommended with Server-Side row model. Server-Side is designed for large datasets, but Auto Height loads all rows at once."
+            );
+        }
+    } else if (domLayout === "print") {
+        if (pagination) {
+            domLayoutWarnings.push(
+                "DOM Layout 'Print' conflicts with Pagination. Pagination will be disabled in print mode."
+            );
+        }
+        domLayoutWarnings.push(
+            "DOM Layout 'Print' is optimized for printing and disables virtualization. Use only when printing the grid."
+        );
+    }
+
     // Prepare preview columns for template rendering
     const previewColumns = (columns || []).map((c: any) => ({
         header: c.header,
@@ -140,6 +279,33 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                 >
                     <strong>🚫 Sort Configuration Error:</strong>
                     <p style={{ margin: "8px 0 0 0" }}>{sortValidation.error}</p>
+                </div>
+            )}
+
+            {/* DOM Layout Warnings */}
+            {domLayoutWarnings.length > 0 && (
+                <div
+                    style={{
+                        marginBottom: "10px",
+                        padding: "12px 16px",
+                        backgroundColor: "#fff3e0",
+                        border: "2px solid #ff9800",
+                        borderRadius: "4px",
+                        fontSize: "13px",
+                        color: "#e65100"
+                    }}
+                >
+                    <strong>⚠️ DOM Layout Configuration Warnings:</strong>
+                    <ul style={{ margin: "8px 0 0 0", paddingLeft: "20px" }}>
+                        {domLayoutWarnings.map((warning, idx) => (
+                            <li key={idx} style={{ marginTop: "4px" }}>
+                                {warning}
+                            </li>
+                        ))}
+                    </ul>
+                    <div style={{ marginTop: "8px", fontStyle: "italic", fontSize: "12px" }}>
+                        💡 Tip: For large datasets with pagination, keep DOM Layout set to "Normal"
+                    </div>
                 </div>
             )}
 
@@ -176,6 +342,56 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                 </div>
             )}
 
+            {/* CRUD Configuration Errors - TOP PRIORITY */}
+            {crudErrors.length > 0 && (
+                <div
+                    style={{
+                        marginBottom: "10px",
+                        padding: "12px 16px",
+                        backgroundColor: "#ffebee",
+                        border: "2px solid #d32f2f",
+                        borderRadius: "4px",
+                        fontSize: "13px",
+                        color: "#c62828"
+                    }}
+                >
+                    <strong>🚫 CRUD Configuration Error{crudErrors.length > 1 ? "s" : ""}:</strong>
+                    <ul style={{ margin: "8px 0 0 0", paddingLeft: "20px" }}>
+                        {crudErrors.map((err, idx) => (
+                            <li key={idx} style={{ marginBottom: "4px" }}>
+                                {err}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+
+            {/* CRUD Configuration Warnings */}
+            {crudWarnings.length > 0 && (
+                <div
+                    style={{
+                        marginBottom: "10px",
+                        padding: "12px 16px",
+                        backgroundColor: "#fff8e1",
+                        border: "1px solid #f9a825",
+                        borderRadius: "4px",
+                        fontSize: "12px",
+                        color: "#6d4c41"
+                    }}
+                >
+                    <strong>
+                        ⚠️ CRUD Configuration Warning{crudWarnings.length > 1 ? "s" : ""}:
+                    </strong>
+                    <ul style={{ margin: "8px 0 0 0", paddingLeft: "20px" }}>
+                        {crudWarnings.map((warn, idx) => (
+                            <li key={idx} style={{ marginBottom: "4px" }}>
+                                {warn}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+
             {/* Virtual Scrolling Hints */}
             {(showVirtualScrollingWarning || showRowBufferHint || showServerSideCacheHint) && (
                 <div
@@ -206,8 +422,9 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                         {showServerSideCacheHint && (
                             <li>
                                 Server-side cache: block size {cacheBlockSize || 100}, max blocks{" "}
-                                {maxBlocksInCache || 0}, concurrent requests {maxConcurrentRequests || 2}.
-                                Tune these to balance server load vs. scroll smoothness.
+                                {maxBlocksInCache || 0}, concurrent requests{" "}
+                                {maxConcurrentRequests || 2}. Tune these to balance server load vs.
+                                scroll smoothness.
                             </li>
                         )}
                     </ul>
@@ -226,20 +443,27 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                         color: rowClassRulesError ? "#c62828" : "#1e3a5f"
                     }}
                 >
-                    <strong>{rowClassRulesError ? "⚠️ Row Class Rules Error:" : "🎯 Row Class Rules:"}</strong>
+                    <strong>
+                        {rowClassRulesError ? "⚠️ Row Class Rules Error:" : "🎯 Row Class Rules:"}
+                    </strong>
                     {rowClassRulesError ? (
                         <div style={{ marginTop: "6px" }}>{rowClassRulesError}</div>
                     ) : (
                         <div style={{ marginTop: "6px" }}>
                             Rules are enabled. Each rule that evaluates to true adds its class name.
-                            Use JSON object or array format as documented in <code>ROW_CLASS_GUIDE.md</code>.
+                            Use JSON object or array format as documented in{" "}
+                            <code>ROW_CLASS_GUIDE.md</code>.
                         </div>
                     )}
                 </div>
             )}
 
             {/* Toolbar */}
-            {(showViewSelector || hasDrawerFilters || hasToolbarFilters) && (
+            {(showViewSelector ||
+                hasDrawerFilters ||
+                hasToolbarFilters ||
+                showAddInToolbar ||
+                showDeleteInToolbar) && (
                 <div
                     style={{
                         display: "flex",
@@ -383,6 +607,69 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                                 Filters ({filterableColumns.length})
                             </div>
                         )}
+
+                        {/* Add Button */}
+                        {showAddInToolbar && (
+                            <div
+                                style={{
+                                    padding: "8px 14px",
+                                    border: hasAddAction
+                                        ? "1px solid #4caf50"
+                                        : "2px dashed #ef5350",
+                                    background: hasAddAction ? "#4caf50" : "#fff",
+                                    borderRadius: "6px",
+                                    color: hasAddAction ? "#fff" : "#c62828",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "6px",
+                                    fontSize: "13px",
+                                    fontWeight: 500
+                                }}
+                                title={
+                                    hasAddAction
+                                        ? `Add button: "${addButtonLabel || "Add"}"`
+                                        : "⚠ Add button has no action configured"
+                                }
+                            >
+                                <span style={{ fontSize: "16px", lineHeight: 1 }}>+</span>
+                                {addButtonLabel || "Add"}
+                                {!hasAddAction && <span style={{ fontSize: "11px" }}> ⚠</span>}
+                            </div>
+                        )}
+
+                        {/* Delete Button */}
+                        {showDeleteInToolbar && (
+                            <div
+                                style={{
+                                    padding: "8px 14px",
+                                    border: hasDeleteAction
+                                        ? "1px solid #f44336"
+                                        : "2px dashed #ef5350",
+                                    background: hasDeleteAction ? "#f44336" : "#fff",
+                                    borderRadius: "6px",
+                                    color: hasDeleteAction ? "#fff" : "#c62828",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "6px",
+                                    fontSize: "13px",
+                                    fontWeight: 500,
+                                    opacity: deleteRequireSelection ?? true ? 0.6 : 1
+                                }}
+                                title={
+                                    !hasDeleteAction
+                                        ? "⚠ Delete button has no action configured"
+                                        : deleteRequireSelection ?? true
+                                        ? `Delete button: "${
+                                              deleteButtonLabel || "Delete"
+                                          }" (disabled until rows selected)`
+                                        : `Delete button: "${deleteButtonLabel || "Delete"}"`
+                                }
+                            >
+                                <span style={{ fontSize: "14px", lineHeight: 1 }}>🗑</span>
+                                {deleteButtonLabel || "Delete"}
+                                {!hasDeleteAction && <span style={{ fontSize: "11px" }}> ⚠</span>}
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
@@ -445,21 +732,25 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                                 style={{
                                     display: "flex",
                                     borderBottom: "1px solid #eee",
-                                    fontSize: "13px"
+                                    fontSize: "13px",
+                                    minHeight: previewRowMinHeight
                                 }}
                             >
                                 {columns.map((col, colIdx) => (
                                     <div
                                         key={colIdx}
                                         style={{
-                                            padding: "10px 12px",
+                                            padding: previewRowPadding,
                                             borderRight:
                                                 colIdx < columns.length - 1
                                                     ? "1px solid #eee"
                                                     : "none",
                                             flex: col.width ? `0 0 ${col.width}px` : "1",
                                             minWidth: col.width || 150,
-                                            color: "#666"
+                                            color: "#666",
+                                            whiteSpace: rowHeightMode === "auto" ? "normal" : "nowrap",
+                                            overflow: rowHeightMode === "auto" ? "visible" : "hidden",
+                                            textOverflow: rowHeightMode === "auto" ? "clip" : "ellipsis"
                                         }}
                                     >
                                         {col.formatter === "link" ? (
@@ -492,7 +783,12 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                         }}
                     >
                         <span>Page 1 of 1</span>
-                        <span>Page size: {pageSize || 20}</span>
+                        <span>
+                            Page size: {pageSize || 20}
+                            {paginationPosition && paginationPosition !== "bottom"
+                                ? ` · Position: ${paginationPosition}`
+                                : ""}
+                        </span>
                     </div>
                 )}
             </div>
@@ -776,6 +1072,176 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                             }}
                         >
                             ⚠️ Warning: Notifications require polling to be enabled
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* CRUD Operations Status */}
+            {(anyCrudEnabled ||
+                hasRowClickAction ||
+                hasRowDoubleClickAction ||
+                rowSelectionMode !== "none") && (
+                <div
+                    style={{
+                        marginTop: "8px",
+                        padding: "12px 16px",
+                        backgroundColor: anyCrudEnabled ? "#e8f5e9" : "#f5f5f5",
+                        border: `1px solid ${anyCrudEnabled ? "#81c784" : "#bdbdbd"}`,
+                        borderRadius: "4px",
+                        fontSize: "12px",
+                        color: "#1e3a5f"
+                    }}
+                >
+                    <strong>📝 CRUD &amp; Row Actions:</strong>
+                    <ul style={{ margin: "8px 0 0 0", paddingLeft: "20px", lineHeight: "1.8" }}>
+                        {/* Row Selection */}
+                        <li>
+                            <strong>Row Selection:</strong>{" "}
+                            {rowSelectionMode === "multiple" ? (
+                                <span style={{ color: "#2e7d32" }}>
+                                    ✓ Multiple Rows
+                                    {showSelectionCheckboxes
+                                        ? " (with checkboxes)"
+                                        : " (click to select)"}
+                                </span>
+                            ) : rowSelectionMode === "single" ? (
+                                <span style={{ color: "#2e7d32" }}>✓ Single Row</span>
+                            ) : (
+                                <span style={{ color: "#999" }}>✗ None</span>
+                            )}
+                        </li>
+
+                        {/* Add */}
+                        <li>
+                            <strong>Add Row:</strong>{" "}
+                            {enableRowAdd ? (
+                                <>
+                                    <span style={{ color: "#2e7d32" }}>✓ Enabled</span>
+                                    {showAddInToolbar && " · Toolbar button"}
+                                    {addButtonLabel && addButtonLabel !== "Add" && (
+                                        <> · Label: &quot;{addButtonLabel}&quot;</>
+                                    )}
+                                    {hasAddAction ? (
+                                        <span style={{ color: "#2e7d32" }}> · Action ✓</span>
+                                    ) : (
+                                        <span style={{ color: "#c62828" }}>
+                                            {" "}
+                                            · ⚠ No &quot;On Add Row&quot; action configured
+                                        </span>
+                                    )}
+                                </>
+                            ) : (
+                                <span style={{ color: "#999" }}>✗ Disabled</span>
+                            )}
+                        </li>
+
+                        {/* Delete */}
+                        <li>
+                            <strong>Delete Row:</strong>{" "}
+                            {enableRowDelete ? (
+                                <>
+                                    <span style={{ color: "#2e7d32" }}>✓ Enabled</span>
+                                    {showDeleteInToolbar && " · Toolbar button"}
+                                    {showDeleteInContext && " · Context menu"}
+                                    {bulkDeleteEnabled && " · Bulk delete"}
+                                    {hasDeleteAction ? (
+                                        <span style={{ color: "#2e7d32" }}> · Action ✓</span>
+                                    ) : (
+                                        <span style={{ color: "#c62828" }}>
+                                            {" "}
+                                            · ⚠ No &quot;On Delete Row&quot; action configured
+                                        </span>
+                                    )}
+                                </>
+                            ) : (
+                                <span style={{ color: "#999" }}>✗ Disabled</span>
+                            )}
+                        </li>
+
+                        {/* Edit */}
+                        <li>
+                            <strong>Inline Edit:</strong>{" "}
+                            {hasEditableColumns ? (
+                                <>
+                                    <span style={{ color: "#2e7d32" }}>
+                                        ✓ {editableColumns.length} column
+                                        {editableColumns.length === 1 ? "" : "s"}
+                                    </span>
+                                    {" · "}
+                                    {editMode === "row" ? "Full-row mode" : "Single-cell mode"}
+                                    {hasEditAction ? (
+                                        <span style={{ color: "#2e7d32" }}> · Commit action ✓</span>
+                                    ) : (
+                                        <span style={{ color: "#c62828" }}>
+                                            {" "}
+                                            · ⚠ No &quot;On Cell Edit Commit&quot; action
+                                        </span>
+                                    )}
+                                </>
+                            ) : (
+                                <span style={{ color: "#999" }}>
+                                    ✗ No editable columns configured
+                                </span>
+                            )}
+                        </li>
+
+                        {/* Row Click */}
+                        <li>
+                            <strong>Row Click:</strong>{" "}
+                            {hasRowClickAction ? (
+                                <span style={{ color: "#2e7d32" }}>✓ Action configured</span>
+                            ) : (
+                                <span style={{ color: "#999" }}>✗ Not configured</span>
+                            )}
+                            {" · "}
+                            <strong>Double Click:</strong>{" "}
+                            {hasRowDoubleClickAction ? (
+                                <span style={{ color: "#2e7d32" }}>✓ Action configured</span>
+                            ) : (
+                                <span style={{ color: "#999" }}>✗ Not configured</span>
+                            )}
+                        </li>
+                    </ul>
+
+                    {/* Warnings for misconfiguration */}
+                    {enableRowAdd && !hasAddAction && (
+                        <div
+                            style={{
+                                marginTop: "8px",
+                                fontStyle: "italic",
+                                fontSize: "11px",
+                                color: "#c62828"
+                            }}
+                        >
+                            💡 Go to the &quot;Events&quot; tab and set the &quot;On Add Row&quot;
+                            action (e.g. a microflow that creates a new object and opens a page).
+                        </div>
+                    )}
+                    {enableRowDelete && !hasDeleteAction && (
+                        <div
+                            style={{
+                                marginTop: "4px",
+                                fontStyle: "italic",
+                                fontSize: "11px",
+                                color: "#c62828"
+                            }}
+                        >
+                            💡 Go to the &quot;Events&quot; tab and set the &quot;On Delete
+                            Row&quot; action (e.g. a microflow that deletes the row object).
+                        </div>
+                    )}
+                    {hasEditableColumns && !hasEditAction && (
+                        <div
+                            style={{
+                                marginTop: "4px",
+                                fontStyle: "italic",
+                                fontSize: "11px",
+                                color: "#c62828"
+                            }}
+                        >
+                            💡 Go to the &quot;Events&quot; tab and set the &quot;On Cell Edit
+                            Commit&quot; action to persist edited values.
                         </div>
                     )}
                 </div>

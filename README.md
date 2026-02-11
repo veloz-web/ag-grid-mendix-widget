@@ -17,6 +17,9 @@ A powerful Mendix pluggable widget that integrates AG Grid into your Mendix appl
 - **Dynamic Row Height**: Fixed, auto-expanding, or custom per-row heights with text wrapping
 - **Virtual Scrolling & Performance Tuning**: Configurable row buffer, server-side cache blocks, and memory management
 - **Row Styling**: Apply dynamic row class names based on data values
+- **Full CRUD Support**: Create, Update (inline editing), Delete with dual-mode support for entities and custom data
+- **Inline Editing**: Edit cells with automatic entity `.set()` calls or custom microflow handling
+- **Row Actions**: Delete from toolbar/context menu with confirmation dialogs
 - **Row Events**: Single-click and double-click actions with Mendix microflow/nanoflow support
 - **Data Polling**: Auto-detect and notify users of new data
 - **Theme Support**: 4 modern themes (Alpine, Balham, Material, Quartz)
@@ -44,6 +47,7 @@ A powerful Mendix pluggable widget that integrates AG Grid into your Mendix appl
 - **[ROW_HEIGHT_GUIDE.md](./ROW_HEIGHT_GUIDE.md)** - Dynamic row height configuration
 - **[VIRTUAL_SCROLLING_GUIDE.md](./VIRTUAL_SCROLLING_GUIDE.md)** - Virtual scrolling & performance tuning
 - **[ROW_CLASS_GUIDE.md](./ROW_CLASS_GUIDE.md)** - Dynamic row class styling
+- **[INLINE_EDITING_SETUP.md](./INLINE_EDITING_SETUP.md)** - ✏️ **CRUD Operations** - Create, Update, Delete rows (Entity & Non-Entity support)
 - **[POLLING_GUIDE.md](./POLLING_GUIDE.md)** - Auto-detect new data
 - **[ACCESSIBILITY.md](./ACCESSIBILITY.md)** - Keyboard navigation & accessibility
 
@@ -532,6 +536,8 @@ src/
 - [x] **Dynamic row height** - Fixed, auto-expanding, and custom per-row heights with text wrapping (see [ROW_HEIGHT_GUIDE.md](./ROW_HEIGHT_GUIDE.md))
 - [x] **Virtual scrolling tuning** - Configure row buffer and server-side cache for large datasets (see [VIRTUAL_SCROLLING_GUIDE.md](./VIRTUAL_SCROLLING_GUIDE.md))
 - [x] **Row class styling** - Apply CSS classes based on row values (see [ROW_CLASS_GUIDE.md](./ROW_CLASS_GUIDE.md))
+- [x] **Inline editing** - Edit cells with Mendix action commits (see [INLINE_EDITING_GUIDE.md](./INLINE_EDITING_GUIDE.md))
+- [x] **Row delete actions** - Delete rows from the toolbar or context menu
 - [x] **Row double-click event** - Separate double-click action alongside single-click
 
 ### 🚧 Future Enhancements

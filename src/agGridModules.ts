@@ -4,7 +4,8 @@ import {
     ModuleRegistry,
     ColumnApiModule,
     CsvExportModule,
-    QuickFilterModule
+    QuickFilterModule,
+    RowSelectionModule
 } from "ag-grid-community";
 import {
     CellStyleModule,
@@ -19,7 +20,8 @@ import {
     DateFilterModule,
     MultiFilterModule,
     ExcelExportModule,
-    RowGroupingModule
+    RowGroupingModule,
+    RichSelectModule
 } from "ag-grid-enterprise";
 
 // Register only the modules we need for optimal bundle size
@@ -40,5 +42,7 @@ ModuleRegistry.registerModules([
     DateFilterModule,
     MultiFilterModule,
     ExcelExportModule,
-    RowGroupingModule
+    RowGroupingModule,
+    RichSelectModule,
+    RowSelectionModule
 ]);
