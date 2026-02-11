@@ -8,42 +8,44 @@
     <icon/>
     <properties>
         <propertyGroup caption="Data Source">
-            <property key="dataSource" type="datasource" isList="true" required="true">
-                <caption>Data source</caption>
-                <description>The data source for the grid</description>
-            </property>
-        </propertyGroup>
-        <propertyGroup caption="Data Mode">
-            <property key="rowModelType" type="enumeration" defaultValue="clientSide">
-                <caption>Row Model</caption>
-                <description>Choose Client-Side for small datasets or Server-Side for large datasets.</description>
-                <enumerationValues>
-                    <enumerationValue key="clientSide">Client-Side (Standard)</enumerationValue>
-                    <enumerationValue key="serverSide">Server-Side (Large Data)</enumerationValue>
-                </enumerationValues>
-            </property>
-        </propertyGroup>
-        <propertyGroup caption="Server-Side Configuration">
-            <property key="serverSideMicroflow" type="string" required="false">
-                <caption>Data Loader Microflow</caption>
-                <description>Name of the Microflow (e.g. 'MyModule.DS_GetGridData') that accepts an AG Grid Request JSON and returns a Response JSON.</description>
-            </property>
-            <property key="entityName" type="string" required="false">
-                <caption>Entity Name</caption>
-                <description>The entity type being retrieved (helper for OQL generation).</description>
-            </property>
-            <property key="cacheBlockSize" type="integer" defaultValue="100">
-                <caption>Cache Block Size</caption>
-                <description>Number of rows fetched per block from the server. Larger values reduce requests but increase memory. Default: 100.</description>
-            </property>
-            <property key="maxBlocksInCache" type="integer" defaultValue="0">
-                <caption>Max Blocks in Cache</caption>
-                <description>Maximum number of blocks kept in memory. 0 = unlimited (keep all fetched blocks). Reduce to limit memory for very large datasets.</description>
-            </property>
-            <property key="maxConcurrentRequests" type="integer" defaultValue="2">
-                <caption>Max Concurrent Requests</caption>
-                <description>Maximum number of simultaneous data requests to the server. Higher values may improve perceived speed but increase server load. Default: 2.</description>
-            </property>
+            <propertyGroup caption="Data Source">
+                <property key="dataSource" type="datasource" isList="true" required="true">
+                    <caption>Data source</caption>
+                    <description>The data source for the grid</description>
+                </property>
+            </propertyGroup>
+            <propertyGroup caption="Row Model">
+                <property key="rowModelType" type="enumeration" defaultValue="clientSide">
+                    <caption>Row Model</caption>
+                    <description>Choose Client-Side for small datasets or Server-Side for large datasets.</description>
+                    <enumerationValues>
+                        <enumerationValue key="clientSide">Client-Side (Standard)</enumerationValue>
+                        <enumerationValue key="serverSide">Server-Side (Large Data)</enumerationValue>
+                    </enumerationValues>
+                </property>
+            </propertyGroup>
+            <propertyGroup caption="Server-Side Configuration">
+                <property key="serverSideMicroflow" type="string" required="false">
+                    <caption>Data Loader Microflow</caption>
+                    <description>Name of the Microflow (e.g. 'MyModule.DS_GetGridData') that accepts an AG Grid Request JSON and returns a Response JSON.</description>
+                </property>
+                <property key="entityName" type="string" required="false">
+                    <caption>Entity Name</caption>
+                    <description>The entity type being retrieved (helper for OQL generation).</description>
+                </property>
+                <property key="cacheBlockSize" type="integer" defaultValue="100">
+                    <caption>Cache Block Size</caption>
+                    <description>Number of rows fetched per block from the server. Larger values reduce requests but increase memory. Default: 100.</description>
+                </property>
+                <property key="maxBlocksInCache" type="integer" defaultValue="0">
+                    <caption>Max Blocks in Cache</caption>
+                    <description>Maximum number of blocks kept in memory. 0 = unlimited (keep all fetched blocks). Reduce to limit memory for very large datasets.</description>
+                </property>
+                <property key="maxConcurrentRequests" type="integer" defaultValue="2">
+                    <caption>Max Concurrent Requests</caption>
+                    <description>Maximum number of simultaneous data requests to the server. Higher values may improve perceived speed but increase server load. Default: 2.</description>
+                </property>
+            </propertyGroup>
         </propertyGroup>
         <propertyGroup caption="Columns">
             <property key="columns" type="object" isList="true" required="true">
@@ -138,7 +140,7 @@
                             </enumerationValues>
                         </property>
                         <property key="pinnable" type="boolean" defaultValue="false">
-                            <caption>Allow Pinning in Grid Menu</caption>
+                            <caption>Allow Pin in Menu</caption>
                             <description>Allow end users to pin or unpin this column through the column options menu.</description>
                         </property>
                         <property key="wrapText" type="boolean" defaultValue="false">
@@ -280,6 +282,7 @@
                         </property>
                         <property key="editorType" type="enumeration" defaultValue="text">
                             <caption>Editor Type</caption>
+                            <description>The type of editor to use for inline editing.</description>
                             <enumerationValues>
                                 <enumerationValue key="text">Text</enumerationValue>
                                 <enumerationValue key="number">Number</enumerationValue>
@@ -298,13 +301,13 @@
                             <caption>Required</caption>
                             <description>Disallow empty values when editing.</description>
                         </property>
-                        <property key="validationMinValue" type="decimal" required="false">
+                        <property key="validationMinValue" type="string" required="false" defaultValue="">
                             <caption>Min Value</caption>
-                            <description>Minimum value for number/date editors.</description>
+                            <description>Minimum value for number/date editors. Leave empty for no minimum.</description>
                         </property>
-                        <property key="validationMaxValue" type="decimal" required="false">
+                        <property key="validationMaxValue" type="string" required="false" defaultValue="">
                             <caption>Max Value</caption>
-                            <description>Maximum value for number/date editors.</description>
+                            <description>Maximum value for number/date editors. Leave empty for no maximum.</description>
                         </property>
                         <property key="validationPattern" type="string" required="false">
                             <caption>Validation Pattern</caption>
@@ -317,7 +320,7 @@
                             <description>Action to execute when link is clicked (Show Page, Microflow, Nanoflow, etc.). The context object will be the row's data object.</description>
                         </property>
                         <property key="linkUrlPattern" type="string" required="false">
-                            <caption>Link URL Pattern (Legacy)</caption>
+                            <caption>Link URL (Legacy)</caption>
                             <description>LEGACY: URL pattern with ${value} placeholder. Prefer using Link Action for proper Mendix navigation.</description>
                         </property>
                         <property key="linkText" type="string" required="false">
@@ -339,7 +342,7 @@
                 <description>Show the three-dot menu icon in column headers. Disable to hide column menu access globally for all columns.</description>
             </property>
             <property key="enableHeaderFilterButtons" type="boolean" defaultValue="true">
-                <caption>Enable Header Filter Buttons</caption>
+                <caption>Header Filter Buttons</caption>
                 <description>Show filter icons in column headers. Disable to hide header filter icons while keeping filtering capability for toolbar/drawer filters.</description>
             </property>
             <property key="enableFloatingFilters" type="boolean" defaultValue="false">
@@ -348,70 +351,72 @@
             </property>
         </propertyGroup>
         <propertyGroup caption="View Options">
-            <property key="enableViewSelector" type="boolean" defaultValue="true">
-                <caption>Enable View Selector</caption>
-                <description>Show grid/list/card view selector</description>
-            </property>
-            <property key="defaultView" type="enumeration" defaultValue="grid">
-                <caption>Default View (Desktop)</caption>
-                <description>Default view mode on desktop screens</description>
-                <enumerationValues>
-                    <enumerationValue key="grid">Grid</enumerationValue>
-                    <enumerationValue key="cards">Cards</enumerationValue>
-                    <enumerationValue key="list">List</enumerationValue>
-                </enumerationValues>
-            </property>
-            <property key="mobileDefaultView" type="enumeration" defaultValue="cards">
-                <caption>Default View (Mobile)</caption>
-                <description>Default view mode on mobile screens</description>
-                <enumerationValues>
-                    <enumerationValue key="grid">Grid</enumerationValue>
-                    <enumerationValue key="cards">Cards</enumerationValue>
-                    <enumerationValue key="list">List</enumerationValue>
-                </enumerationValues>
-            </property>
-            <property key="customCardTemplate" type="string" defaultValue="" multiline="true" required="false">
-                <caption>Custom Card Template (HTML)</caption>
-                <description>HTML template for custom card view. Use {{FieldName}} placeholders for dynamic data. FieldName must match column headers exactly. Leave empty to use default HardenCardView.</description>
-            </property>
-            <property key="customListTemplate" type="string" defaultValue="" multiline="true" required="false">
-                <caption>Custom List Template (HTML)</caption>
-                <description>HTML template for custom list view. Use {{FieldName}} placeholders for dynamic data. FieldName must match column headers exactly. Leave empty to use default HardenListView.</description>
-            </property>
-            <property key="enableFilterDrawer" type="boolean" defaultValue="true">
-                <caption>Enable Filter Drawer</caption>
-                <description>Show a slide-out drawer for filters</description>
-            </property>
-        </propertyGroup>
-        <propertyGroup caption="Custom Formatters">
-            <property key="customFormatters" type="object" isList="true" required="false">
-                <caption>Custom Formatters</caption>
-                <description>Define reusable custom formatters that can be used in templates and columns</description>
-                <properties>
-                    <propertyGroup caption="Formatter">
-                        <property key="formatterName" type="string" required="true">
-                            <caption>Formatter Name</caption>
-                            <description>Unique name for this formatter (e.g., "statusBadge", "userAvatar"). Use this name in templates like {{formatterName("FieldName")}}</description>
-                        </property>
-                        <property key="formatterType" type="enumeration" defaultValue="javascript" required="true">
-                            <caption>Formatter Type</caption>
-                            <description>Type of formatter implementation</description>
-                            <enumerationValues>
-                                <enumerationValue key="javascript">JavaScript Function</enumerationValue>
-                                <enumerationValue key="microflow">Microflow (planned)</enumerationValue>
-                            </enumerationValues>
-                        </property>
-                        <property key="formatterCode" type="string" multiline="true" required="true">
-                            <caption>Formatter Code</caption>
-                            <description>JavaScript function body. Must return a string or HTML. Available variables: value (field value), item (row object), column (column config). Example: return `&lt;span class="badge"&gt;${value}&lt;/span&gt;`;</description>
-                        </property>
-                        <property key="formatterConfig" type="string" multiline="true" required="false">
-                            <caption>Formatter Configuration (JSON)</caption>
-                            <description>Optional JSON configuration for this formatter (e.g., color mappings, URL patterns). Accessible as 'config' variable in code.</description>
-                        </property>
-                    </propertyGroup>
-                </properties>
-            </property>
+            <propertyGroup caption="Views &amp; Templates">
+                <property key="enableViewSelector" type="boolean" defaultValue="true">
+                    <caption>Enable View Selector</caption>
+                    <description>Show grid/list/card view selector</description>
+                </property>
+                <property key="defaultView" type="enumeration" defaultValue="grid">
+                    <caption>Default View (Desktop)</caption>
+                    <description>Default view mode on desktop screens</description>
+                    <enumerationValues>
+                        <enumerationValue key="grid">Grid</enumerationValue>
+                        <enumerationValue key="cards">Cards</enumerationValue>
+                        <enumerationValue key="list">List</enumerationValue>
+                    </enumerationValues>
+                </property>
+                <property key="mobileDefaultView" type="enumeration" defaultValue="cards">
+                    <caption>Default View (Mobile)</caption>
+                    <description>Default view mode on mobile screens</description>
+                    <enumerationValues>
+                        <enumerationValue key="grid">Grid</enumerationValue>
+                        <enumerationValue key="cards">Cards</enumerationValue>
+                        <enumerationValue key="list">List</enumerationValue>
+                    </enumerationValues>
+                </property>
+                <property key="customCardTemplate" type="string" defaultValue="" multiline="true" required="false">
+                    <caption>Card Template (HTML)</caption>
+                    <description>HTML template for custom card view. Use {{FieldName}} placeholders for dynamic data. FieldName must match column headers exactly. Leave empty to use default HardenCardView.</description>
+                </property>
+                <property key="customListTemplate" type="string" defaultValue="" multiline="true" required="false">
+                    <caption>List Template (HTML)</caption>
+                    <description>HTML template for custom list view. Use {{FieldName}} placeholders for dynamic data. FieldName must match column headers exactly. Leave empty to use default HardenListView.</description>
+                </property>
+                <property key="enableFilterDrawer" type="boolean" defaultValue="true">
+                    <caption>Enable Filter Drawer</caption>
+                    <description>Show a slide-out drawer for filters</description>
+                </property>
+            </propertyGroup>
+            <propertyGroup caption="Custom Formatters">
+                <property key="customFormatters" type="object" isList="true" required="false">
+                    <caption>Custom Formatters</caption>
+                    <description>Define reusable custom formatters that can be used in templates and columns</description>
+                    <properties>
+                        <propertyGroup caption="Formatter">
+                            <property key="formatterName" type="string" required="true">
+                                <caption>Formatter Name</caption>
+                                <description>Unique name for this formatter (e.g., "statusBadge", "userAvatar"). Use this name in templates like {{formatterName("FieldName")}}</description>
+                            </property>
+                            <property key="formatterType" type="enumeration" defaultValue="javascript" required="true">
+                                <caption>Formatter Type</caption>
+                                <description>Type of formatter implementation</description>
+                                <enumerationValues>
+                                    <enumerationValue key="javascript">JavaScript Function</enumerationValue>
+                                    <enumerationValue key="microflow">Microflow (planned)</enumerationValue>
+                                </enumerationValues>
+                            </property>
+                            <property key="formatterCode" type="string" multiline="true" required="true">
+                                <caption>Formatter Code</caption>
+                                <description>JavaScript function body. Must return a string or HTML. Available variables: value (field value), item (row object), column (column config). Example: return `&lt;span class="badge"&gt;${value}&lt;/span&gt;`;</description>
+                            </property>
+                            <property key="formatterConfig" type="string" multiline="true" required="false">
+                                <caption>Formatter Config (JSON)</caption>
+                                <description>Optional JSON configuration for this formatter (e.g., color mappings, URL patterns). Accessible as 'config' variable in code.</description>
+                            </property>
+                        </propertyGroup>
+                    </properties>
+                </property>
+            </propertyGroup>
         </propertyGroup>
         <propertyGroup caption="UI Elements">
             <property key="enableSideBar" type="boolean" defaultValue="false">
@@ -423,7 +428,7 @@
                 <description>Show the AG Grid status bar with row counts and selection information.</description>
             </property>
             <property key="enableAggregationFooter" type="boolean" defaultValue="false">
-                <caption>Enable Aggregation Footer</caption>
+                <caption>Aggregation Footer</caption>
                 <description>Show a pinned bottom row displaying column aggregations (sum, avg, count, etc.). Configure aggregation per column in the Aggregation section.</description>
             </property>
             <property key="enableRowGrouping" type="boolean" defaultValue="false">
@@ -435,150 +440,164 @@
                 <description>Number of group levels to expand by default. -1 = expand all, 0 = collapse all, 1 = expand first level, etc.</description>
             </property>
             <property key="showGroupRowsOnSeparateLine" type="boolean" defaultValue="false">
-                <caption>Show Groups on Separate Line</caption>
+                <caption>Groups on Own Line</caption>
                 <description>Display group rows on a separate line above the data rows. When disabled, groups appear inline with data.</description>
             </property>
             <property key="suppressAggregationOnGroupRows" type="boolean" defaultValue="false">
-                <caption>Suppress Aggregation on Group Rows</caption>
+                <caption>Hide Group Aggregation</caption>
                 <description>Hide aggregation values on group rows. Useful if you only want to show aggregations in the footer.</description>
             </property>
         </propertyGroup>
-        <propertyGroup caption="Row Height">
-            <property key="rowHeightMode" type="enumeration" defaultValue="fixed">
-                <caption>Row Height Mode</caption>
-                <description>How to determine row height. Fixed: all rows same height. Auto: rows expand to fit content (requires Wrap Text on columns). Custom: use a JavaScript expression per row. Note: Auto is not supported with Server-Side row model.</description>
-                <enumerationValues>
-                    <enumerationValue key="fixed">Fixed (all rows same height)</enumerationValue>
-                    <enumerationValue key="auto">Auto (fit content)</enumerationValue>
-                    <enumerationValue key="custom">Custom (JavaScript expression)</enumerationValue>
-                </enumerationValues>
-            </property>
-            <property key="rowHeight" type="integer" defaultValue="40">
-                <caption>Row Height (px)</caption>
-                <description>Row height in pixels. Used as the fixed height when mode is Fixed, or as the default/minimum height for Auto and Custom modes.</description>
-            </property>
-            <property key="rowHeightExpression" type="string" required="false" multiline="true">
-                <caption>Custom Row Height Expression</caption>
-                <description>JavaScript expression that returns a row height in pixels. Only used when Row Height Mode is Custom. Available variables: data (row object), rowIndex (row number). Example: data.type === 'header' ? 80 : 40</description>
-            </property>
-            <property key="maxRowHeight" type="integer" defaultValue="0">
-                <caption>Max Row Height (px)</caption>
-                <description>Maximum row height in pixels (0 = unlimited). Prevents extremely tall rows when using Auto or Custom modes. Recommended: 200-500 for auto-height grids.</description>
-            </property>
+        <propertyGroup caption="Row Options">
+            <propertyGroup caption="Row Height">
+                <property key="rowHeightMode" type="enumeration" defaultValue="fixed">
+                    <caption>Row Height Mode</caption>
+                    <description>How to determine row height. Fixed: all rows same height. Auto: rows expand to fit content (requires Wrap Text on columns). Custom: use a JavaScript expression per row. Note: Auto is not supported with Server-Side row model.</description>
+                    <enumerationValues>
+                        <enumerationValue key="fixed">Fixed (all rows same height)</enumerationValue>
+                        <enumerationValue key="auto">Auto (fit content)</enumerationValue>
+                        <enumerationValue key="custom">Custom (JavaScript expression)</enumerationValue>
+                    </enumerationValues>
+                </property>
+                <property key="rowHeight" type="integer" defaultValue="40">
+                    <caption>Row Height (px)</caption>
+                    <description>Row height in pixels. Used as the fixed height when mode is Fixed, or as the default/minimum height for Auto and Custom modes.</description>
+                </property>
+                <property key="rowHeightExpression" type="string" required="false" multiline="true">
+                    <caption>Height Expression (JS)</caption>
+                    <description>JavaScript expression that returns a row height in pixels. Only used when Row Height Mode is Custom. Available variables: data (row object), rowIndex (row number). Example: data.type === 'header' ? 80 : 40</description>
+                </property>
+                <property key="maxRowHeight" type="integer" defaultValue="0">
+                    <caption>Max Row Height (px)</caption>
+                    <description>Maximum row height in pixels (0 = unlimited). Prevents extremely tall rows when using Auto or Custom modes. Recommended: 200-500 for auto-height grids.</description>
+                </property>
+            </propertyGroup>
+            <propertyGroup caption="Row Styling">
+                <property key="rowClassMode" type="enumeration" defaultValue="none">
+                    <caption>Row Class Mode</caption>
+                    <description>Apply CSS class names to rows. None: no custom classes. Mapping: map a column value to a class name. Expression: compute class with JavaScript.</description>
+                    <enumerationValues>
+                        <enumerationValue key="none">None</enumerationValue>
+                        <enumerationValue key="mapping">Mapping (value → class)</enumerationValue>
+                        <enumerationValue key="expression">Expression (JavaScript)</enumerationValue>
+                    </enumerationValues>
+                </property>
+                <property key="rowClassAttribute" type="attribute" dataSource="dataSource" required="false">
+                    <caption>Row Class Attribute</caption>
+                    <description>Attribute used for row class mapping. Required when Row Class Mode is Mapping.</description>
+                    <attributeTypes>
+                        <attributeType name="String"/>
+                        <attributeType name="Integer"/>
+                        <attributeType name="Long"/>
+                        <attributeType name="Decimal"/>
+                        <attributeType name="Boolean"/>
+                        <attributeType name="DateTime"/>
+                    </attributeTypes>
+                </property>
+                <property key="rowClassMapping" type="string" required="false" multiline="true">
+                    <caption>Row Class Mapping (JSON)</caption>
+                    <description>JSON mapping from value to class name. Example: {"Active":"row-active","Inactive":"row-inactive"}.</description>
+                </property>
+                <property key="rowClassRules" type="string" required="false" multiline="true">
+                    <caption>Row Class Rules (JSON)</caption>
+                    <description>JSON rules mapping class names to boolean expressions. Example: {"row-danger":"data.status === 'High'","row-muted":"getValue('Score') &lt; 10"}. This is future-proof for list-based rules UI.</description>
+                </property>
+                <property key="rowClassDefault" type="string" required="false">
+                    <caption>Default Row Class</caption>
+                    <description>Optional fallback class when mapping/expression returns nothing.</description>
+                </property>
+                <property key="rowClassExpression" type="string" required="false" multiline="true">
+                    <caption>Row Class Expression</caption>
+                    <description>JavaScript expression that returns a class name (string) or array of class names. Available variables: data, rowIndex, getValue(attributeId), columnValue. Example: columnValue === "High" ? "row-danger" : ""</description>
+                </property>
+            </propertyGroup>
+            <propertyGroup caption="Row Selection">
+                <property key="rowSelectionMode" type="enumeration" defaultValue="none">
+                    <caption>Selection Mode</caption>
+                    <description>Control how users can select rows. None: no selection. Single: one row at a time. Multiple: select many rows with checkboxes.</description>
+                    <enumerationValues>
+                        <enumerationValue key="none">None</enumerationValue>
+                        <enumerationValue key="single">Single Row</enumerationValue>
+                        <enumerationValue key="multiple">Multiple Rows</enumerationValue>
+                    </enumerationValues>
+                </property>
+                <property key="showSelectionCheckboxes" type="boolean" defaultValue="true">
+                    <caption>Show Checkboxes</caption>
+                    <description>Show checkbox column when Selection Mode is Multiple. Includes a select-all checkbox in the header.</description>
+                </property>
+            </propertyGroup>
         </propertyGroup>
-        <propertyGroup caption="Row Styling">
-            <property key="rowClassMode" type="enumeration" defaultValue="none">
-                <caption>Row Class Mode</caption>
-                <description>Apply CSS class names to rows. None: no custom classes. Mapping: map a column value to a class name. Expression: compute class with JavaScript.</description>
-                <enumerationValues>
-                    <enumerationValue key="none">None</enumerationValue>
-                    <enumerationValue key="mapping">Mapping (value → class)</enumerationValue>
-                    <enumerationValue key="expression">Expression (JavaScript)</enumerationValue>
-                </enumerationValues>
-            </property>
-            <property key="rowClassAttribute" type="attribute" dataSource="../dataSource" required="false">
-                <caption>Row Class Attribute</caption>
-                <description>Attribute used for row class mapping. Required when Row Class Mode is Mapping.</description>
-                <attributeTypes>
-                    <attributeType name="String"/>
-                    <attributeType name="Integer"/>
-                    <attributeType name="Long"/>
-                    <attributeType name="Decimal"/>
-                    <attributeType name="Boolean"/>
-                    <attributeType name="DateTime"/>
-                </attributeTypes>
-            </property>
-            <property key="rowClassMapping" type="string" required="false" multiline="true">
-                <caption>Row Class Mapping (JSON)</caption>
-                <description>JSON mapping from value to class name. Example: {"Active":"row-active","Inactive":"row-inactive"}.</description>
-            </property>
-            <property key="rowClassRules" type="string" required="false" multiline="true">
-                <caption>Row Class Rules (JSON)</caption>
-                <description>JSON rules mapping class names to boolean expressions. Example: {"row-danger":"data.status === 'High'","row-muted":"getValue('Score') &lt; 10"}. This is future-proof for list-based rules UI.</description>
-            </property>
-            <property key="rowClassDefault" type="string" required="false">
-                <caption>Default Row Class</caption>
-                <description>Optional fallback class when mapping/expression returns nothing.</description>
-            </property>
-            <property key="rowClassExpression" type="string" required="false" multiline="true">
-                <caption>Row Class Expression</caption>
-                <description>JavaScript expression that returns a class name (string) or array of class names. Available variables: data, rowIndex, getValue(attributeId), columnValue. Example: columnValue === "High" ? "row-danger" : ""</description>
-            </property>
-        </propertyGroup>
-        <propertyGroup caption="Editing">
-            <property key="editMode" type="enumeration" defaultValue="cell">
-                <caption>Edit Mode</caption>
-                <enumerationValues>
-                    <enumerationValue key="cell">Single Cell</enumerationValue>
-                    <enumerationValue key="row">Full Row</enumerationValue>
-                </enumerationValues>
-            </property>
-            <property key="stopEditingWhenCellsLoseFocus" type="boolean" defaultValue="true">
-                <caption>Stop Editing on Blur</caption>
-                <description>Stop editing when the cell loses focus.</description>
-            </property>
-            <property key="undoRedoCellEditing" type="boolean" defaultValue="false">
-                <caption>Enable Undo/Redo</caption>
-                <description>Enable AG Grid's built-in undo/redo for cell edits.</description>
-            </property>
-        </propertyGroup>
-        <propertyGroup caption="Row Delete">
-            <property key="enableRowDelete" type="boolean" defaultValue="false">
-                <caption>Enable Row Delete</caption>
-                <description>Show delete actions for grid rows.</description>
-            </property>
-            <property key="bulkDeleteEnabled" type="boolean" defaultValue="false">
-                <caption>Allow Multiple Row Delete</caption>
-                <description>Allow selecting and deleting multiple rows at once.</description>
-            </property>
-            <property key="deleteConfirmation" type="object">
-                <caption>Delete Confirmation</caption>
-                <properties>
-                    <property key="enabled" type="boolean" defaultValue="true">
-                        <caption>Show Confirmation Dialog</caption>
-                    </property>
-                    <property key="title" type="string" defaultValue="Confirm Delete">
-                        <caption>Dialog Title</caption>
-                    </property>
-                    <property key="message" type="string" defaultValue="Are you sure you want to delete this row?">
-                        <caption>Dialog Message</caption>
-                    </property>
-                </properties>
-            </property>
-            <property key="deleteButton" type="object">
-                <caption>Delete Button</caption>
-                <properties>
-                    <property key="showInToolbar" type="boolean" defaultValue="true">
-                        <caption>Show in Toolbar</caption>
-                    </property>
-                    <property key="showInContextMenu" type="boolean" defaultValue="true">
-                        <caption>Show in Context Menu</caption>
-                    </property>
-                    <property key="label" type="string" defaultValue="Delete">
-                        <caption>Button Label</caption>
-                    </property>
-                    <property key="requireSelection" type="boolean" defaultValue="true">
-                        <caption>Require Row Selection</caption>
-                    </property>
-                </properties>
-            </property>
-        </propertyGroup>
-        <propertyGroup caption="Row Add">
-            <property key="enableRowAdd" type="boolean" defaultValue="false">
-                <caption>Enable Row Add</caption>
-                <description>Show an Add button in the toolbar that triggers a Mendix action (e.g. open a new-object page).</description>
-            </property>
-            <property key="addButton" type="object">
-                <caption>Add Button</caption>
-                <properties>
-                    <property key="showInToolbar" type="boolean" defaultValue="true">
-                        <caption>Show in Toolbar</caption>
-                    </property>
-                    <property key="label" type="string" defaultValue="Add">
-                        <caption>Button Label</caption>
-                    </property>
-                </properties>
-            </property>
+        <propertyGroup caption="CRUD">
+            <propertyGroup caption="Editing">
+                <property key="editMode" type="enumeration" defaultValue="cell">
+                    <caption>Edit Mode</caption>
+                    <description>Choose whether to edit a single cell or the full row at once.</description>
+                    <enumerationValues>
+                        <enumerationValue key="cell">Single Cell</enumerationValue>
+                        <enumerationValue key="row">Full Row</enumerationValue>
+                    </enumerationValues>
+                </property>
+                <property key="stopEditingWhenCellsLoseFocus" type="boolean" defaultValue="true">
+                    <caption>Stop Editing on Blur</caption>
+                    <description>Stop editing when the cell loses focus.</description>
+                </property>
+                <property key="undoRedoCellEditing" type="boolean" defaultValue="false">
+                    <caption>Enable Undo/Redo</caption>
+                    <description>Enable AG Grid's built-in undo/redo for cell edits.</description>
+                </property>
+            </propertyGroup>
+            <propertyGroup caption="Row Delete">
+                <property key="enableRowDelete" type="boolean" defaultValue="false">
+                    <caption>Enable Row Delete</caption>
+                    <description>Show delete actions for grid rows.</description>
+                </property>
+                <property key="bulkDeleteEnabled" type="boolean" defaultValue="false">
+                    <caption>Allow Bulk Delete</caption>
+                    <description>Allow selecting and deleting multiple rows at once.</description>
+                </property>
+                <property key="deleteConfirmationEnabled" type="boolean" defaultValue="true">
+                    <caption>Show Confirmation Dialog</caption>
+                    <description>Show a confirmation dialog before deleting rows.</description>
+                </property>
+                <property key="deleteConfirmationTitle" type="string" defaultValue="Confirm Delete">
+                    <caption>Dialog Title</caption>
+                    <description>Title text for the delete confirmation dialog.</description>
+                </property>
+                <property key="deleteConfirmationMessage" type="string" defaultValue="Are you sure you want to delete this row?">
+                    <caption>Dialog Message</caption>
+                    <description>Message shown in the delete confirmation dialog.</description>
+                </property>
+                <property key="deleteShowInToolbar" type="boolean" defaultValue="true">
+                    <caption>Show Delete in Toolbar</caption>
+                    <description>Show the delete button in the toolbar.</description>
+                </property>
+                <property key="deleteShowInContextMenu" type="boolean" defaultValue="true">
+                    <caption>Delete in Context Menu</caption>
+                    <description>Show delete in the right-click context menu.</description>
+                </property>
+                <property key="deleteButtonLabel" type="string" defaultValue="Delete">
+                    <caption>Delete Button Label</caption>
+                    <description>Label text for the delete button.</description>
+                </property>
+                <property key="deleteRequireSelection" type="boolean" defaultValue="true">
+                    <caption>Require Row Selection</caption>
+                    <description>Disable the delete button when no rows are selected.</description>
+                </property>
+            </propertyGroup>
+            <propertyGroup caption="Row Add">
+                <property key="enableRowAdd" type="boolean" defaultValue="false">
+                    <caption>Enable Row Add</caption>
+                    <description>Show an Add button in the toolbar that triggers a Mendix action (e.g. open a new-object page).</description>
+                </property>
+                <property key="addShowInToolbar" type="boolean" defaultValue="true">
+                    <caption>Show Add in Toolbar</caption>
+                    <description>Show the add button in the toolbar.</description>
+                </property>
+                <property key="addButtonLabel" type="string" defaultValue="Add">
+                    <caption>Add Button Label</caption>
+                    <description>Label text for the add button.</description>
+                </property>
+            </propertyGroup>
         </propertyGroup>
         <propertyGroup caption="Grid Options">
             <property key="licenseKey" type="string" required="false">
@@ -598,7 +617,7 @@
                 <description>Show the "Contains" search field in the toolbar for quick filtering.</description>
             </property>
             <property key="enableToolbarFilterSearch" type="boolean" defaultValue="true">
-                <caption>Enable Toolbar Filter Search</caption>
+                <caption>Toolbar Filter Search</caption>
                 <description>Enable search/autocomplete functionality within toolbar multi-select filters. Disable for simpler dropdowns.</description>
             </property>
             <property key="pagination" type="boolean" defaultValue="true">
@@ -614,7 +633,7 @@
                 <description>Number of extra rows rendered above and below the visible area. Higher values reduce flicker when scrolling fast but use more memory. Default: 10.</description>
             </property>
             <property key="suppressRowVirtualisation" type="boolean" defaultValue="false">
-                <caption>Suppress Row Virtualisation</caption>
+                <caption>Disable Virtualisation</caption>
                 <description>When enabled, ALL rows are rendered in the DOM at once (disables virtual scrolling). Only use for small datasets or print layouts. NOT recommended for large datasets.</description>
             </property>
             <property key="height" type="integer" defaultValue="500">
@@ -645,77 +664,79 @@
                 <description>Automatically check for new data added by other users</description>
             </property>
             <property key="pollingInterval" type="integer" defaultValue="60">
-                <caption>Polling Interval (seconds)</caption>
+                <caption>Polling Interval (sec)</caption>
                 <description>How often to check for new data (in seconds). Minimum 10 seconds.</description>
             </property>
         </propertyGroup>
         <propertyGroup caption="Data Export">
-            <property key="enableCsvExport" type="boolean" defaultValue="false">
-                <caption>Enable CSV Export</caption>
-                <description>Show CSV export button in the toolbar. Exports current grid data (respects filters and sorting).</description>
-            </property>
-            <property key="csvFileName" type="string" defaultValue="export">
-                <caption>CSV File Name</caption>
-                <description>Default filename for CSV export (without .csv extension)</description>
-            </property>
-            <property key="csvExportAllColumns" type="boolean" defaultValue="true">
-                <caption>Export All Columns</caption>
-                <description>Export all columns. Disable to only export visible columns.</description>
-            </property>
-            <property key="enableExcelExport" type="boolean" defaultValue="false">
-                <caption>Enable Excel Export</caption>
-                <description>Show Excel export button in the toolbar. Exports to .xlsx format. Requires AG Grid Enterprise license.</description>
-            </property>
-            <property key="excelFileName" type="string" defaultValue="export">
-                <caption>Excel File Name</caption>
-                <description>Default filename for Excel export (without .xlsx extension)</description>
-            </property>
-            <property key="excelExportAllColumns" type="boolean" defaultValue="true">
-                <caption>Export All Columns (Excel)</caption>
-                <description>Export all columns to Excel. Disable to only export visible columns.</description>
-            </property>
-            <property key="enablePdfExport" type="boolean" defaultValue="false">
-                <caption>Enable PDF Export</caption>
-                <description>Show PDF export button in the toolbar. Exports to PDF format using pdfMake.</description>
-            </property>
-            <property key="pdfFileName" type="string" defaultValue="export">
-                <caption>PDF File Name</caption>
-                <description>Default filename for PDF export (without .pdf extension)</description>
-            </property>
-            <property key="pdfPageOrientation" type="enumeration" defaultValue="landscape">
-                <caption>PDF Page Orientation</caption>
-                <description>Page orientation for PDF export</description>
-                <enumerationValues>
-                    <enumerationValue key="landscape">Landscape</enumerationValue>
-                    <enumerationValue key="portrait">Portrait</enumerationValue>
-                </enumerationValues>
-            </property>
-            <property key="pdfDocumentTitle" type="string" defaultValue="Report" required="false">
-                <caption>PDF Document Title</caption>
-                <description>Optional title to display at the top of the PDF document (leave empty for no title)</description>
-            </property>
-        </propertyGroup>
-        <propertyGroup caption="Notifications">
-            <property key="enableNotifications" type="boolean" defaultValue="false">
-                <caption>Enable Notifications</caption>
-                <description>Show toast notifications when new data is detected by polling</description>
-            </property>
-            <property key="toastPosition" type="enumeration" defaultValue="topRight">
-                <caption>Toast Position</caption>
-                <description>Where to display toast notifications on screen</description>
-                <enumerationValues>
-                    <enumerationValue key="topLeft">Top Left</enumerationValue>
-                    <enumerationValue key="topCenter">Top Center</enumerationValue>
-                    <enumerationValue key="topRight">Top Right</enumerationValue>
-                    <enumerationValue key="bottomLeft">Bottom Left</enumerationValue>
-                    <enumerationValue key="bottomCenter">Bottom Center</enumerationValue>
-                    <enumerationValue key="bottomRight">Bottom Right</enumerationValue>
-                </enumerationValues>
-            </property>
-            <property key="autoHideDuration" type="integer" defaultValue="5000">
-                <caption>Auto Hide Duration (ms)</caption>
-                <description>How long to show notifications before auto-hiding. Set to 0 to require manual dismissal.</description>
-            </property>
+            <propertyGroup caption="Export Options">
+                <property key="enableCsvExport" type="boolean" defaultValue="false">
+                    <caption>Enable CSV Export</caption>
+                    <description>Show CSV export button in the toolbar. Exports current grid data (respects filters and sorting).</description>
+                </property>
+                <property key="csvFileName" type="string" defaultValue="export">
+                    <caption>CSV File Name</caption>
+                    <description>Default filename for CSV export (without .csv extension)</description>
+                </property>
+                <property key="csvExportAllColumns" type="boolean" defaultValue="true">
+                    <caption>Export All Columns</caption>
+                    <description>Export all columns. Disable to only export visible columns.</description>
+                </property>
+                <property key="enableExcelExport" type="boolean" defaultValue="false">
+                    <caption>Enable Excel Export</caption>
+                    <description>Show Excel export button in the toolbar. Exports to .xlsx format. Requires AG Grid Enterprise license.</description>
+                </property>
+                <property key="excelFileName" type="string" defaultValue="export">
+                    <caption>Excel File Name</caption>
+                    <description>Default filename for Excel export (without .xlsx extension)</description>
+                </property>
+                <property key="excelExportAllColumns" type="boolean" defaultValue="true">
+                    <caption>All Columns (Excel)</caption>
+                    <description>Export all columns to Excel. Disable to only export visible columns.</description>
+                </property>
+                <property key="enablePdfExport" type="boolean" defaultValue="false">
+                    <caption>Enable PDF Export</caption>
+                    <description>Show PDF export button in the toolbar. Exports to PDF format using pdfMake.</description>
+                </property>
+                <property key="pdfFileName" type="string" defaultValue="export">
+                    <caption>PDF File Name</caption>
+                    <description>Default filename for PDF export (without .pdf extension)</description>
+                </property>
+                <property key="pdfPageOrientation" type="enumeration" defaultValue="landscape">
+                    <caption>PDF Page Orientation</caption>
+                    <description>Page orientation for PDF export</description>
+                    <enumerationValues>
+                        <enumerationValue key="landscape">Landscape</enumerationValue>
+                        <enumerationValue key="portrait">Portrait</enumerationValue>
+                    </enumerationValues>
+                </property>
+                <property key="pdfDocumentTitle" type="string" defaultValue="Report" required="false">
+                    <caption>PDF Document Title</caption>
+                    <description>Optional title to display at the top of the PDF document (leave empty for no title)</description>
+                </property>
+            </propertyGroup>
+            <propertyGroup caption="Notifications">
+                <property key="enableNotifications" type="boolean" defaultValue="false">
+                    <caption>Enable Notifications</caption>
+                    <description>Show toast notifications when new data is detected by polling</description>
+                </property>
+                <property key="toastPosition" type="enumeration" defaultValue="topRight">
+                    <caption>Toast Position</caption>
+                    <description>Where to display toast notifications on screen</description>
+                    <enumerationValues>
+                        <enumerationValue key="topLeft">Top Left</enumerationValue>
+                        <enumerationValue key="topCenter">Top Center</enumerationValue>
+                        <enumerationValue key="topRight">Top Right</enumerationValue>
+                        <enumerationValue key="bottomLeft">Bottom Left</enumerationValue>
+                        <enumerationValue key="bottomCenter">Bottom Center</enumerationValue>
+                        <enumerationValue key="bottomRight">Bottom Right</enumerationValue>
+                    </enumerationValues>
+                </property>
+                <property key="autoHideDuration" type="integer" defaultValue="5000">
+                    <caption>Auto Hide Duration (ms)</caption>
+                    <description>How long to show notifications before auto-hiding. Set to 0 to require manual dismissal.</description>
+                </property>
+            </propertyGroup>
         </propertyGroup>
         <propertyGroup caption="Events">
             <property key="onRowClick" type="action" dataSource="dataSource">

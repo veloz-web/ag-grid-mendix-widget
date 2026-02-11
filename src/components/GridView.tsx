@@ -74,6 +74,8 @@ interface GridViewProps {
     enableStatusBar: boolean;
     enableAggregationFooter: boolean;
     deleteConfig?: GridDeleteConfig;
+    rowSelectionMode?: "none" | "single" | "multiple";
+    showSelectionCheckboxes?: boolean;
     enableRowGrouping: boolean;
     groupDefaultExpanded: number;
     showGroupRowsOnSeparateLine: boolean;
@@ -131,6 +133,8 @@ export function GridView(props: GridViewProps): ReactElement {
         enableStatusBar,
         enableAggregationFooter,
         deleteConfig,
+        rowSelectionMode: selectionModeProp = "none",
+        showSelectionCheckboxes = true,
         enableRowGrouping,
         groupDefaultExpanded,
         showGroupRowsOnSeparateLine,
@@ -140,11 +144,18 @@ export function GridView(props: GridViewProps): ReactElement {
         enableFloatingFilters
     } = props;
 
-    const rowSelectionMode = deleteConfig?.enableRowDelete
-        ? deleteConfig.bulkDeleteEnabled
-            ? "multiple"
-            : "single"
-        : undefined;
+    // Row selection is now driven by the dedicated rowSelectionMode prop (decoupled from delete)
+    const rowSelectionConfig =
+        selectionModeProp === "multiple"
+            ? {
+                  mode: "multiRow" as const,
+                  checkboxes: showSelectionCheckboxes,
+                  headerCheckbox: showSelectionCheckboxes,
+                  enableClickSelection: true
+              }
+            : selectionModeProp === "single"
+            ? { mode: "singleRow" as const, checkboxes: false, enableClickSelection: true }
+            : undefined;
 
     const getContextMenuItems = useCallback(
         (params: any) => {
@@ -560,10 +571,7 @@ export function GridView(props: GridViewProps): ReactElement {
                 onColumnPinned={onColumnPinned}
                 getContextMenuItems={getContextMenuItems}
                 rowModelType={props.rowModelType}
-                rowSelection={rowSelectionMode}
-                rowMultiSelectWithClick={Boolean(
-                    deleteConfig?.enableRowDelete && deleteConfig.bulkDeleteEnabled
-                )}
+                rowSelection={rowSelectionConfig}
                 // Row Grouping Configuration
                 groupDisplayType={
                     enableRowGrouping && showGroupRowsOnSeparateLine ? "singleColumn" : "groupRows"

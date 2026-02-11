@@ -1,5 +1,13 @@
 // src/AGGrid.tsx - Functional Component
-import { ChangeEvent, ReactElement, useRef, useMemo, useCallback, useState } from "react";
+import {
+    ChangeEvent,
+    ReactElement,
+    useRef,
+    useMemo,
+    useCallback,
+    useState,
+    useEffect
+} from "react";
 
 // Import module registration (runs the code)
 import "./agGridModules";
@@ -307,23 +315,28 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
             enableRowDelete: Boolean(props.enableRowDelete),
             bulkDeleteEnabled: Boolean(props.bulkDeleteEnabled),
             deleteConfirmation: {
-                enabled: props.deleteConfirmation?.enabled ?? true,
-                title: props.deleteConfirmation?.title || "Confirm Delete",
+                enabled: props.deleteConfirmationEnabled ?? true,
+                title: props.deleteConfirmationTitle || "Confirm Delete",
                 message:
-                    props.deleteConfirmation?.message || "Are you sure you want to delete this row?"
+                    props.deleteConfirmationMessage || "Are you sure you want to delete this row?"
             },
             deleteButton: {
-                showInToolbar: props.deleteButton?.showInToolbar ?? true,
-                showInContextMenu: props.deleteButton?.showInContextMenu ?? true,
-                label: props.deleteButton?.label || "Delete",
-                requireSelection: props.deleteButton?.requireSelection ?? true
+                showInToolbar: props.deleteShowInToolbar ?? true,
+                showInContextMenu: props.deleteShowInContextMenu ?? true,
+                label: props.deleteButtonLabel || "Delete",
+                requireSelection: props.deleteRequireSelection ?? true
             }
         }),
         [
             props.enableRowDelete,
             props.bulkDeleteEnabled,
-            props.deleteConfirmation,
-            props.deleteButton
+            props.deleteConfirmationEnabled,
+            props.deleteConfirmationTitle,
+            props.deleteConfirmationMessage,
+            props.deleteShowInToolbar,
+            props.deleteShowInContextMenu,
+            props.deleteButtonLabel,
+            props.deleteRequireSelection
         ]
     );
 
@@ -331,12 +344,68 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
         () => ({
             enableRowAdd: Boolean(props.enableRowAdd),
             addButton: {
-                showInToolbar: props.addButton?.showInToolbar ?? true,
-                label: props.addButton?.label || "Add"
+                showInToolbar: props.addShowInToolbar ?? true,
+                label: props.addButtonLabel || "Add"
             }
         }),
-        [props.enableRowAdd, props.addButton]
+        [props.enableRowAdd, props.addShowInToolbar, props.addButtonLabel]
     );
+
+    // --- CRUD Configuration Validation (runtime) ---
+    useEffect(() => {
+        const selMode = props.rowSelectionMode || "none";
+
+        if (deleteConfig.enableRowDelete) {
+            if (!props.onDeleteRow) {
+                console.error(
+                    "[AG Grid] Row delete is enabled but no 'On Delete Row' action is configured. " +
+                        "The delete button will not work. Configure an action in the Events tab."
+                );
+            }
+            if (
+                !deleteConfig.deleteButton.showInToolbar &&
+                !deleteConfig.deleteButton.showInContextMenu
+            ) {
+                console.warn(
+                    "[AG Grid] Row delete is enabled but the delete button is hidden from both the toolbar and the context menu. " +
+                        "Users will have no way to trigger a delete."
+                );
+            }
+            if (deleteConfig.deleteButton.requireSelection && selMode === "none") {
+                console.error(
+                    "[AG Grid] Row delete requires row selection but Row Selection Mode is 'None'. " +
+                        "Set Row Selection Mode to 'Single' or 'Multiple' so users can select rows to delete."
+                );
+            }
+            if (deleteConfig.bulkDeleteEnabled && selMode !== "multiple") {
+                console.warn(
+                    "[AG Grid] Bulk delete is enabled but Row Selection Mode is not 'Multiple'. " +
+                        "Set Row Selection Mode to 'Multiple' to allow selecting multiple rows for deletion."
+                );
+            }
+        }
+        if (addConfig.enableRowAdd && !props.onAddRow) {
+            console.error(
+                "[AG Grid] Row add is enabled but no 'On Add Row' action is configured. " +
+                    "The add button will not work. Configure an action in the Events tab."
+            );
+        }
+        const editableColumns = (props.columns || []).filter((c: any) => c.editable);
+        if (editableColumns.length > 0 && !props.onCellEditCommit) {
+            console.warn(
+                "[AG Grid] Editable columns are configured but no 'On Cell Edit Commit' action is set. " +
+                    "Cell edits will not be persisted."
+            );
+        }
+    }, [
+        deleteConfig,
+        addConfig,
+        props.onDeleteRow,
+        props.onAddRow,
+        props.onCellEditCommit,
+        props.columns,
+        props.rowSelectionMode
+    ]);
 
     const handleSelectionChanged = useCallback((event: any) => {
         const api = event?.api;
@@ -610,6 +679,8 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
                     enableFloatingFilters: Boolean(props.enableFloatingFilters)
                 }}
                 deleteConfig={deleteConfig}
+                rowSelectionMode={props.rowSelectionMode || "none"}
+                showSelectionCheckboxes={props.showSelectionCheckboxes !== false}
                 advancedFeatures={{
                     enableAggregationFooter: Boolean(props.enableAggregationFooter),
                     rowModelType: props.rowModelType,

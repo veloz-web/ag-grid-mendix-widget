@@ -4,7 +4,8 @@ import {
     ModuleRegistry,
     ColumnApiModule,
     CsvExportModule,
-    QuickFilterModule
+    QuickFilterModule,
+    RowSelectionModule
 } from "ag-grid-community";
 import {
     CellStyleModule,
@@ -42,5 +43,6 @@ ModuleRegistry.registerModules([
     MultiFilterModule,
     ExcelExportModule,
     RowGroupingModule,
-    RichSelectModule
+    RichSelectModule,
+    RowSelectionModule
 ]);

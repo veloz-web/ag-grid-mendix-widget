@@ -47,7 +47,7 @@ jest.mock("ag-grid-react", () => ({
                     // ignore in tests
                 }
             }
-        }, [onGridReady, _props]);
+        }, [onGridReady, _props, rowData]);
 
         return (
             <div

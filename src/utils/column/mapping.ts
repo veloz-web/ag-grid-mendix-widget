@@ -66,7 +66,11 @@ function validateEditorValue(value: any, col: ColumnsType, editorType: EditorTyp
 
     if (isEmpty) return true;
 
-    if (col.validationMinValue !== undefined && col.validationMinValue !== null) {
+    if (
+        col.validationMinValue !== undefined &&
+        col.validationMinValue !== null &&
+        col.validationMinValue !== ""
+    ) {
         const min = Number(col.validationMinValue);
         const current =
             editorType === "date" || editorType === "datetime"
@@ -75,7 +79,11 @@ function validateEditorValue(value: any, col: ColumnsType, editorType: EditorTyp
         if (!Number.isNaN(min) && !Number.isNaN(current) && current < min) return false;
     }
 
-    if (col.validationMaxValue !== undefined && col.validationMaxValue !== null) {
+    if (
+        col.validationMaxValue !== undefined &&
+        col.validationMaxValue !== null &&
+        col.validationMaxValue !== ""
+    ) {
         const max = Number(col.validationMaxValue);
         const current =
             editorType === "date" || editorType === "datetime"
@@ -169,8 +177,14 @@ export function mapMendixColumnToColDef(
             case "number":
                 colDef.cellEditor = "agNumberCellEditor";
                 colDef.cellEditorParams = {
-                    min: col.validationMinValue ?? undefined,
-                    max: col.validationMaxValue ?? undefined
+                    min:
+                        col.validationMinValue !== undefined && col.validationMinValue !== ""
+                            ? Number(col.validationMinValue)
+                            : undefined,
+                    max:
+                        col.validationMaxValue !== undefined && col.validationMaxValue !== ""
+                            ? Number(col.validationMaxValue)
+                            : undefined
                 };
                 break;
             case "date":

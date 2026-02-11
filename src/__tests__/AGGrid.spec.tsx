@@ -152,24 +152,20 @@ describe("AGGrid Component", () => {
         stopEditingWhenCellsLoseFocus: true,
         undoRedoCellEditing: false,
         licenseKey: "",
+        rowSelectionMode: "none" as const,
+        showSelectionCheckboxes: true,
         enableRowDelete: false,
         bulkDeleteEnabled: false,
-        deleteConfirmation: {
-            enabled: true,
-            title: "Confirm Delete",
-            message: "Are you sure you want to delete this row?"
-        },
-        deleteButton: {
-            showInToolbar: true,
-            showInContextMenu: true,
-            label: "Delete",
-            requireSelection: true
-        },
+        deleteConfirmationEnabled: true,
+        deleteConfirmationTitle: "Confirm Delete",
+        deleteConfirmationMessage: "Are you sure you want to delete this row?",
+        deleteShowInToolbar: true,
+        deleteShowInContextMenu: true,
+        deleteButtonLabel: "Delete",
+        deleteRequireSelection: true,
         enableRowAdd: false,
-        addButton: {
-            showInToolbar: true,
-            label: "Add"
-        },
+        addShowInToolbar: true,
+        addButtonLabel: "Add",
         enableContextMenu: false,
         useLocalStorage: true,
         showToolbarSearch: true,
@@ -591,7 +587,8 @@ describe("AGGrid Component", () => {
                 <AGGrid
                     {...mockProps}
                     enableRowAdd={true}
-                    addButton={{ showInToolbar: true, label: "New Record" }}
+                    addShowInToolbar={true}
+                    addButtonLabel="New Record"
                 />
             );
 
@@ -603,7 +600,8 @@ describe("AGGrid Component", () => {
                 <AGGrid
                     {...mockProps}
                     enableRowAdd={true}
-                    addButton={{ showInToolbar: false, label: "Add" }}
+                    addShowInToolbar={false}
+                    addButtonLabel="Add"
                 />
             );
 

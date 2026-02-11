@@ -20,6 +20,8 @@ export interface ViewRendererProps {
     display: GridDisplayConfig;
     uiFeatures: GridUIFeatures;
     deleteConfig?: GridDeleteConfig;
+    rowSelectionMode?: "none" | "single" | "multiple";
+    showSelectionCheckboxes?: boolean;
     advancedFeatures: GridAdvancedFeatures;
     grouping: GridGroupingConfig;
     callbacks: GridCallbacks;
@@ -33,6 +35,8 @@ export const ViewRenderer = ({
     display,
     uiFeatures,
     deleteConfig,
+    rowSelectionMode,
+    showSelectionCheckboxes,
     advancedFeatures,
     grouping,
     callbacks,
@@ -80,6 +84,8 @@ export const ViewRenderer = ({
                 enableStatusBar={uiFeatures.enableStatusBar}
                 enableAggregationFooter={advancedFeatures.enableAggregationFooter}
                 deleteConfig={deleteConfig}
+                rowSelectionMode={rowSelectionMode}
+                showSelectionCheckboxes={showSelectionCheckboxes}
                 enableRowGrouping={grouping.enabled}
                 groupDefaultExpanded={grouping.defaultExpanded}
                 showGroupRowsOnSeparateLine={grouping.showOnSeparateLine}

@@ -66,8 +66,8 @@ export interface ColumnsType {
     editorType: EditorTypeEnum;
     selectOptions: string;
     validationRequired: boolean;
-    validationMinValue?: Big;
-    validationMaxValue?: Big;
+    validationMinValue: string;
+    validationMaxValue: string;
     validationPattern: string;
     linkAction?: ListActionValue;
     linkUrlPattern: string;
@@ -92,25 +92,9 @@ export type RowHeightModeEnum = "fixed" | "auto" | "custom";
 
 export type RowClassModeEnum = "none" | "mapping" | "expression";
 
+export type RowSelectionModeEnum = "none" | "single" | "multiple";
+
 export type EditModeEnum = "cell" | "row";
-
-export interface DeleteConfirmationType {
-    enabled: boolean;
-    title: string;
-    message: string;
-}
-
-export interface DeleteButtonType {
-    showInToolbar: boolean;
-    showInContextMenu: boolean;
-    label: string;
-    requireSelection: boolean;
-}
-
-export interface AddButtonType {
-    showInToolbar: boolean;
-    label: string;
-}
 
 export type ThemeEnum = "alpine" | "balham" | "material" | "quartz";
 
@@ -159,8 +143,8 @@ export interface ColumnsPreviewType {
     editorType: EditorTypeEnum;
     selectOptions: string;
     validationRequired: boolean;
-    validationMinValue: number | null;
-    validationMaxValue: number | null;
+    validationMinValue: string;
+    validationMaxValue: string;
     validationPattern: string;
     linkAction: {} | null;
     linkUrlPattern: string;
@@ -173,24 +157,6 @@ export interface CustomFormattersPreviewType {
     formatterType: FormatterTypeEnum;
     formatterCode: string;
     formatterConfig: string;
-}
-
-export interface DeleteConfirmationPreviewType {
-    enabled: boolean;
-    title: string;
-    message: string;
-}
-
-export interface DeleteButtonPreviewType {
-    showInToolbar: boolean;
-    showInContextMenu: boolean;
-    label: string;
-    requireSelection: boolean;
-}
-
-export interface AddButtonPreviewType {
-    showInToolbar: boolean;
-    label: string;
 }
 
 export interface AGGridContainerProps {
@@ -233,15 +199,23 @@ export interface AGGridContainerProps {
     rowClassRules: string;
     rowClassDefault: string;
     rowClassExpression: string;
+    rowSelectionMode: RowSelectionModeEnum;
+    showSelectionCheckboxes: boolean;
     editMode: EditModeEnum;
     stopEditingWhenCellsLoseFocus: boolean;
     undoRedoCellEditing: boolean;
     enableRowDelete: boolean;
     bulkDeleteEnabled: boolean;
-    deleteConfirmation: DeleteConfirmationType;
-    deleteButton: DeleteButtonType;
+    deleteConfirmationEnabled: boolean;
+    deleteConfirmationTitle: string;
+    deleteConfirmationMessage: string;
+    deleteShowInToolbar: boolean;
+    deleteShowInContextMenu: boolean;
+    deleteButtonLabel: string;
+    deleteRequireSelection: boolean;
     enableRowAdd: boolean;
-    addButton: AddButtonType;
+    addShowInToolbar: boolean;
+    addButtonLabel: string;
     licenseKey: string;
     enableContextMenu: boolean;
     useLocalStorage: boolean;
@@ -322,15 +296,23 @@ export interface AGGridPreviewProps {
     rowClassRules: string;
     rowClassDefault: string;
     rowClassExpression: string;
+    rowSelectionMode: RowSelectionModeEnum;
+    showSelectionCheckboxes: boolean;
     editMode: EditModeEnum;
     stopEditingWhenCellsLoseFocus: boolean;
     undoRedoCellEditing: boolean;
     enableRowDelete: boolean;
     bulkDeleteEnabled: boolean;
-    deleteConfirmation: DeleteConfirmationPreviewType;
-    deleteButton: DeleteButtonPreviewType;
+    deleteConfirmationEnabled: boolean;
+    deleteConfirmationTitle: string;
+    deleteConfirmationMessage: string;
+    deleteShowInToolbar: boolean;
+    deleteShowInContextMenu: boolean;
+    deleteButtonLabel: string;
+    deleteRequireSelection: boolean;
     enableRowAdd: boolean;
-    addButton: AddButtonPreviewType;
+    addShowInToolbar: boolean;
+    addButtonLabel: string;
     licenseKey: string;
     enableContextMenu: boolean;
     useLocalStorage: boolean;

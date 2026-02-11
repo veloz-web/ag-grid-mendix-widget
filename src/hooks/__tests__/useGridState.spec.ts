@@ -62,24 +62,20 @@ describe("useGridState Hook", () => {
             editMode: "cell",
             stopEditingWhenCellsLoseFocus: true,
             undoRedoCellEditing: false,
+            rowSelectionMode: "none" as const,
+            showSelectionCheckboxes: true,
             enableRowDelete: false,
             bulkDeleteEnabled: false,
-            deleteConfirmation: {
-                enabled: true,
-                title: "Confirm Delete",
-                message: "Are you sure you want to delete this row?"
-            },
-            deleteButton: {
-                showInToolbar: true,
-                showInContextMenu: true,
-                label: "Delete",
-                requireSelection: true
-            },
+            deleteConfirmationEnabled: true,
+            deleteConfirmationTitle: "Confirm Delete",
+            deleteConfirmationMessage: "Are you sure you want to delete this row?",
+            deleteShowInToolbar: true,
+            deleteShowInContextMenu: true,
+            deleteButtonLabel: "Delete",
+            deleteRequireSelection: true,
             enableRowAdd: false,
-            addButton: {
-                showInToolbar: true,
-                label: "Add"
-            },
+            addShowInToolbar: true,
+            addButtonLabel: "Add",
             licenseKey: "",
             enableContextMenu: false,
             useLocalStorage: false,

@@ -32,12 +32,20 @@ export function preview(props: AGGridPreviewProps): ReactElement {
         enablePolling,
         pollingInterval,
         enableNotifications,
+        // Row selection
+        rowSelectionMode,
+        showSelectionCheckboxes,
         // CRUD features
         enableRowAdd,
-        addButton,
+        addShowInToolbar,
+        addButtonLabel,
         onAddRow,
         enableRowDelete,
-        deleteButton,
+        bulkDeleteEnabled,
+        deleteShowInToolbar,
+        deleteShowInContextMenu,
+        deleteButtonLabel,
+        deleteRequireSelection,
         onDeleteRow,
         editMode,
         onCellEditCommit,
@@ -70,10 +78,57 @@ export function preview(props: AGGridPreviewProps): ReactElement {
     const hasEditAction = Boolean(onCellEditCommit);
     const hasRowClickAction = Boolean(onRowClick);
     const hasRowDoubleClickAction = Boolean(onRowDoubleClick);
-    const showDeleteInToolbar = enableRowDelete && (deleteButton?.showInToolbar ?? true);
-    const showDeleteInContext = enableRowDelete && (deleteButton?.showInContextMenu ?? true);
-    const showAddInToolbar = enableRowAdd && (addButton?.showInToolbar ?? true);
+    const showDeleteInToolbar = enableRowDelete && (deleteShowInToolbar ?? true);
+    const showDeleteInContext = enableRowDelete && (deleteShowInContextMenu ?? true);
+    const showAddInToolbar = enableRowAdd && (addShowInToolbar ?? true);
     const anyCrudEnabled = enableRowAdd || enableRowDelete || hasEditableColumns;
+
+    // CRUD validation — collect errors and warnings
+    const crudErrors: string[] = [];
+    const crudWarnings: string[] = [];
+
+    if (enableRowAdd && !hasAddAction) {
+        crudErrors.push(
+            '"Enable Row Add" is ON but no "On Add Row" action is configured. ' +
+                "The Add button will appear but do nothing. Go to Events → On Add Row."
+        );
+    }
+    if (enableRowDelete && !hasDeleteAction) {
+        crudErrors.push(
+            '"Enable Row Delete" is ON but no "On Delete Row" action is configured. ' +
+                "The Delete button will appear but do nothing. Go to Events → On Delete Row."
+        );
+    }
+    if (enableRowDelete && !showDeleteInToolbar && !showDeleteInContext) {
+        crudWarnings.push(
+            "Row delete is enabled but the delete button is hidden from both the toolbar and the context menu. " +
+                "Users will have no way to trigger a delete."
+        );
+    }
+    if (enableRowDelete && (deleteRequireSelection ?? true) && rowSelectionMode === "none") {
+        crudErrors.push(
+            'Row delete requires row selection but Row Selection Mode is "None". ' +
+                'Go to Row Selection → Selection Mode and set it to "Single Row" or "Multiple Rows".'
+        );
+    }
+    if (enableRowDelete && bulkDeleteEnabled && rowSelectionMode !== "multiple") {
+        crudErrors.push(
+            '"Allow Multiple Row Delete" is ON but Row Selection Mode is not "Multiple Rows". ' +
+                'Go to Row Selection → Selection Mode and set it to "Multiple Rows" for bulk delete to work.'
+        );
+    }
+    if (rowSelectionMode === "multiple" && !showSelectionCheckboxes) {
+        crudWarnings.push(
+            'Row Selection Mode is "Multiple Rows" but checkboxes are hidden. ' +
+                "Users can still multi-select by clicking rows, but there is no visual checkbox indicator."
+        );
+    }
+    if (hasEditableColumns && !hasEditAction) {
+        crudErrors.push(
+            'Columns are marked as editable but no "On Cell Edit Commit" action is configured. ' +
+                "Edits will not be persisted. Go to Events → On Cell Edit Commit."
+        );
+    }
 
     // Validate custom formatter references in columns
     const formatterNames: string[] = [];
@@ -200,6 +255,56 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                 </div>
             )}
 
+            {/* CRUD Configuration Errors - TOP PRIORITY */}
+            {crudErrors.length > 0 && (
+                <div
+                    style={{
+                        marginBottom: "10px",
+                        padding: "12px 16px",
+                        backgroundColor: "#ffebee",
+                        border: "2px solid #d32f2f",
+                        borderRadius: "4px",
+                        fontSize: "13px",
+                        color: "#c62828"
+                    }}
+                >
+                    <strong>🚫 CRUD Configuration Error{crudErrors.length > 1 ? "s" : ""}:</strong>
+                    <ul style={{ margin: "8px 0 0 0", paddingLeft: "20px" }}>
+                        {crudErrors.map((err, idx) => (
+                            <li key={idx} style={{ marginBottom: "4px" }}>
+                                {err}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+
+            {/* CRUD Configuration Warnings */}
+            {crudWarnings.length > 0 && (
+                <div
+                    style={{
+                        marginBottom: "10px",
+                        padding: "12px 16px",
+                        backgroundColor: "#fff8e1",
+                        border: "1px solid #f9a825",
+                        borderRadius: "4px",
+                        fontSize: "12px",
+                        color: "#6d4c41"
+                    }}
+                >
+                    <strong>
+                        ⚠️ CRUD Configuration Warning{crudWarnings.length > 1 ? "s" : ""}:
+                    </strong>
+                    <ul style={{ margin: "8px 0 0 0", paddingLeft: "20px" }}>
+                        {crudWarnings.map((warn, idx) => (
+                            <li key={idx} style={{ marginBottom: "4px" }}>
+                                {warn}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+
             {/* Virtual Scrolling Hints */}
             {(showVirtualScrollingWarning || showRowBufferHint || showServerSideCacheHint) && (
                 <div
@@ -267,7 +372,11 @@ export function preview(props: AGGridPreviewProps): ReactElement {
             )}
 
             {/* Toolbar */}
-            {(showViewSelector || hasDrawerFilters || hasToolbarFilters) && (
+            {(showViewSelector ||
+                hasDrawerFilters ||
+                hasToolbarFilters ||
+                showAddInToolbar ||
+                showDeleteInToolbar) && (
                 <div
                     style={{
                         display: "flex",
@@ -409,6 +518,69 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                             >
                                 <i className="fas fa-sliders-h"></i>
                                 Filters ({filterableColumns.length})
+                            </div>
+                        )}
+
+                        {/* Add Button */}
+                        {showAddInToolbar && (
+                            <div
+                                style={{
+                                    padding: "8px 14px",
+                                    border: hasAddAction
+                                        ? "1px solid #4caf50"
+                                        : "2px dashed #ef5350",
+                                    background: hasAddAction ? "#4caf50" : "#fff",
+                                    borderRadius: "6px",
+                                    color: hasAddAction ? "#fff" : "#c62828",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "6px",
+                                    fontSize: "13px",
+                                    fontWeight: 500
+                                }}
+                                title={
+                                    hasAddAction
+                                        ? `Add button: "${addButtonLabel || "Add"}"`
+                                        : "⚠ Add button has no action configured"
+                                }
+                            >
+                                <span style={{ fontSize: "16px", lineHeight: 1 }}>+</span>
+                                {addButtonLabel || "Add"}
+                                {!hasAddAction && <span style={{ fontSize: "11px" }}> ⚠</span>}
+                            </div>
+                        )}
+
+                        {/* Delete Button */}
+                        {showDeleteInToolbar && (
+                            <div
+                                style={{
+                                    padding: "8px 14px",
+                                    border: hasDeleteAction
+                                        ? "1px solid #f44336"
+                                        : "2px dashed #ef5350",
+                                    background: hasDeleteAction ? "#f44336" : "#fff",
+                                    borderRadius: "6px",
+                                    color: hasDeleteAction ? "#fff" : "#c62828",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "6px",
+                                    fontSize: "13px",
+                                    fontWeight: 500,
+                                    opacity: deleteRequireSelection ?? true ? 0.6 : 1
+                                }}
+                                title={
+                                    !hasDeleteAction
+                                        ? "⚠ Delete button has no action configured"
+                                        : deleteRequireSelection ?? true
+                                        ? `Delete button: "${
+                                              deleteButtonLabel || "Delete"
+                                          }" (disabled until rows selected)`
+                                        : `Delete button: "${deleteButtonLabel || "Delete"}"`
+                                }
+                            >
+                                <span style={{ fontSize: "14px", lineHeight: 1 }}>🗑</span>
+                                {deleteButtonLabel || "Delete"}
+                                {!hasDeleteAction && <span style={{ fontSize: "11px" }}> ⚠</span>}
                             </div>
                         )}
                     </div>
@@ -810,7 +982,10 @@ export function preview(props: AGGridPreviewProps): ReactElement {
             )}
 
             {/* CRUD Operations Status */}
-            {(anyCrudEnabled || hasRowClickAction || hasRowDoubleClickAction) && (
+            {(anyCrudEnabled ||
+                hasRowClickAction ||
+                hasRowDoubleClickAction ||
+                rowSelectionMode !== "none") && (
                 <div
                     style={{
                         marginTop: "8px",
@@ -824,6 +999,23 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                 >
                     <strong>📝 CRUD &amp; Row Actions:</strong>
                     <ul style={{ margin: "8px 0 0 0", paddingLeft: "20px", lineHeight: "1.8" }}>
+                        {/* Row Selection */}
+                        <li>
+                            <strong>Row Selection:</strong>{" "}
+                            {rowSelectionMode === "multiple" ? (
+                                <span style={{ color: "#2e7d32" }}>
+                                    ✓ Multiple Rows
+                                    {showSelectionCheckboxes
+                                        ? " (with checkboxes)"
+                                        : " (click to select)"}
+                                </span>
+                            ) : rowSelectionMode === "single" ? (
+                                <span style={{ color: "#2e7d32" }}>✓ Single Row</span>
+                            ) : (
+                                <span style={{ color: "#999" }}>✗ None</span>
+                            )}
+                        </li>
+
                         {/* Add */}
                         <li>
                             <strong>Add Row:</strong>{" "}
@@ -831,8 +1023,8 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                                 <>
                                     <span style={{ color: "#2e7d32" }}>✓ Enabled</span>
                                     {showAddInToolbar && " · Toolbar button"}
-                                    {addButton?.label && addButton.label !== "Add" && (
-                                        <> · Label: &quot;{addButton.label}&quot;</>
+                                    {addButtonLabel && addButtonLabel !== "Add" && (
+                                        <> · Label: &quot;{addButtonLabel}&quot;</>
                                     )}
                                     {hasAddAction ? (
                                         <span style={{ color: "#2e7d32" }}> · Action ✓</span>
@@ -856,6 +1048,7 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                                     <span style={{ color: "#2e7d32" }}>✓ Enabled</span>
                                     {showDeleteInToolbar && " · Toolbar button"}
                                     {showDeleteInContext && " · Context menu"}
+                                    {bulkDeleteEnabled && " · Bulk delete"}
                                     {hasDeleteAction ? (
                                         <span style={{ color: "#2e7d32" }}> · Action ✓</span>
                                     ) : (
