@@ -491,13 +491,15 @@ export function mapMendixColumnToColDef(
  * @param columnVisibility - Map of column IDs to visibility state
  * @param columnOrder - Ordered array of column IDs
  * @param customFormatterRegistry - Registry of custom formatters
+ * @param rowHeightMode - Row height mode (auto mode enables wrapText/autoHeight on all columns)
  * @returns Array of AG Grid column definitions
  */
 export function buildColumnDefs(
     columns: ColumnsType[],
     columnVisibility: Record<string, boolean>,
     columnOrder: string[],
-    customFormatterRegistry?: CustomFormatterRegistry
+    customFormatterRegistry?: CustomFormatterRegistry,
+    rowHeightMode?: "fixed" | "auto" | "custom"
 ): ColDef[] {
     // Filter visible columns
     const visibleColumns = columns.filter((col) => {
@@ -519,7 +521,26 @@ export function buildColumnDefs(
     }
 
     // Map to AG Grid ColDef
-    return orderedColumns.map((col) =>
+    const colDefs = orderedColumns.map((col) =>
         mapMendixColumnToColDef(col, columns, customFormatterRegistry)
     );
+
+    // If row height mode is "auto", enable wrapText and autoHeight on ALL columns
+    if (rowHeightMode === "auto") {
+        console.log("[AGGrid] Row height mode is 'auto' - enabling wrapText and autoHeight on all columns");
+        colDefs.forEach((colDef, idx) => {
+            colDef.wrapText = true;
+            colDef.autoHeight = true;
+            if (idx === 0) {
+                console.log("[AGGrid] Sample column def:", {
+                    field: colDef.field,
+                    wrapText: colDef.wrapText,
+                    autoHeight: colDef.autoHeight
+                });
+            }
+        });
+        console.log(`[AGGrid] Set autoHeight=true on ${colDefs.length} columns`);
+    }
+
+    return colDefs;
 }

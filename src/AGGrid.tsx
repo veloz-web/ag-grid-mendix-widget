@@ -66,7 +66,49 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
         licenseSet = true;
     }
 
-    // --- 2. Refs ---
+    // --- 2. Validate Configuration ---
+    // Check for conflicting domLayout settings
+    if (props.domLayout === "autoHeight" || props.domLayout === "print") {
+        const errors: string[] = [];
+        
+        if (props.pagination) {
+            errors.push(
+                `DOM Layout "${props.domLayout}" conflicts with Pagination. ` +
+                `Auto Height and Print modes show all rows at once, making pagination ineffective. ` +
+                `Set DOM Layout to "Normal" or disable Pagination.`
+            );
+        }
+        
+        if (!props.suppressRowVirtualisation) {
+            errors.push(
+                `DOM Layout "${props.domLayout}" requires disabling Row Virtualization. ` +
+                `Auto Height and Print modes render ALL rows in the DOM at once. ` +
+                `Enable "Disable Virtualisation" or set DOM Layout to "Normal".`
+            );
+        }
+        
+        if (props.rowModelType === "serverSide") {
+            errors.push(
+                `DOM Layout "${props.domLayout}" is incompatible with Server-Side row model. ` +
+                `Server-Side is designed for large datasets with lazy loading, but ${props.domLayout} ` +
+                `loads all rows at once. Set DOM Layout to "Normal" or use Client-Side row model.`
+            );
+        }
+        
+        if (errors.length > 0) {
+            const errorMessage = [
+                "❌ AG Grid Configuration Error:",
+                "",
+                ...errors.map((err, idx) => `${idx + 1}. ${err}`),
+                "",
+                "Fix these issues in the widget properties to continue."
+            ].join("\n");
+            
+            throw new Error(errorMessage);
+        }
+    }
+
+    // --- 3. Refs ---
     const filterButtonRef = useRef<HTMLButtonElement>(null);
     const rowDataCacheRef = useRef<{ signature: string; data: any[] }>({
         signature: "",
@@ -654,10 +696,12 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
                     height,
                     pagination,
                     pageSize,
+                    paginationPosition: props.paginationPosition || "bottom",
                     rowBuffer: props.rowBuffer || 10,
                     suppressRowVirtualisation: Boolean(props.suppressRowVirtualisation),
+                    domLayout: props.domLayout || "normal",
                     rowHeightMode: props.rowHeightMode || "fixed",
-                    rowHeight: props.rowHeight || 40,
+                    rowHeight: props.rowHeight ?? 40,
                     rowHeightExpression: props.rowHeightExpression || "",
                     maxRowHeight: props.maxRowHeight || 0,
                     rowClassMode: props.rowClassMode || "none",

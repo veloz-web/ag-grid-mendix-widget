@@ -1993,4 +1993,9 @@
     }
 }
 
-
+/* ========================================
+   DOM Pagination Position (top mode)
+   When paginationPosition="top", the .ag-paging-panel
+   is moved above the grid via DOM manipulation.
+   No additional styling needed.
+   ======================================== */

@@ -459,9 +459,9 @@
                         <enumerationValue key="custom">Custom (JavaScript expression)</enumerationValue>
                     </enumerationValues>
                 </property>
-                <property key="rowHeight" type="integer" defaultValue="40">
+                <property key="rowHeight" type="integer" required="false">
                     <caption>Row Height (px)</caption>
-                    <description>Row height in pixels. Used as the fixed height when mode is Fixed, or as the default/minimum height for Auto and Custom modes.</description>
+                    <description>Row height in pixels. Used as the fixed height when mode is Fixed, or as the default/minimum height for Auto and Custom modes. Leave empty to use the default (40px).</description>
                 </property>
                 <property key="rowHeightExpression" type="string" required="false" multiline="true">
                     <caption>Height Expression (JS)</caption>
@@ -628,6 +628,14 @@
                 <caption>Page Size</caption>
                 <description>Number of rows per page</description>
             </property>
+            <property key="paginationPosition" type="enumeration" defaultValue="bottom">
+                <caption>Pagination Position</caption>
+                <description>Where to display the pagination bar</description>
+                <enumerationValues>
+                    <enumerationValue key="bottom">Bottom</enumerationValue>
+                    <enumerationValue key="top">Top</enumerationValue>
+                </enumerationValues>
+            </property>
             <property key="rowBuffer" type="integer" defaultValue="10">
                 <caption>Row Buffer</caption>
                 <description>Number of extra rows rendered above and below the visible area. Higher values reduce flicker when scrolling fast but use more memory. Default: 10.</description>
@@ -636,9 +644,18 @@
                 <caption>Disable Virtualisation</caption>
                 <description>When enabled, ALL rows are rendered in the DOM at once (disables virtual scrolling). Only use for small datasets or print layouts. NOT recommended for large datasets.</description>
             </property>
+            <property key="domLayout" type="enumeration" defaultValue="normal">
+                <caption>DOM Layout</caption>
+                <description>Controls grid container behavior. Normal = fixed height with scrolling. Auto Height = grid expands to fit all rows (no scrolling). WARNING: Auto Height disables virtualization and pagination - conflicts with fixed height, pagination, and large datasets. Use only for small grids (&lt;100 rows).</description>
+                <enumerationValues>
+                    <enumerationValue key="normal">Normal (fixed height with scrolling)</enumerationValue>
+                    <enumerationValue key="autoHeight">Auto Height (expand to fit all rows)</enumerationValue>
+                    <enumerationValue key="print">Print (optimized for printing)</enumerationValue>
+                </enumerationValues>
+            </property>
             <property key="height" type="integer" defaultValue="500">
                 <caption>Height</caption>
-                <description>Grid height in pixels</description>
+                <description>Grid height in pixels. Ignored when DOM Layout is set to Auto Height or Print.</description>
             </property>
             <property key="theme" type="enumeration" defaultValue="material">
                 <caption>Theme</caption>

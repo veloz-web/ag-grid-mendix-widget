@@ -9,6 +9,7 @@ export function preview(props: AGGridPreviewProps): ReactElement {
         columns,
         pagination,
         pageSize,
+        paginationPosition,
         height,
         theme,
         rowModelType,
@@ -50,10 +51,35 @@ export function preview(props: AGGridPreviewProps): ReactElement {
         editMode,
         onCellEditCommit,
         onRowClick,
-        onRowDoubleClick
+        onRowDoubleClick,
+        // Row height
+        rowHeightMode,
+        rowHeight,
+        // DOM Layout
+        domLayout
     } = props;
 
     const themeClass = `ag-theme-${theme}`;
+
+    // Calculate row height for preview
+    // Default AG Grid row height is 42px with 10px top/bottom padding
+    let previewRowPadding = "10px 12px"; // Default padding
+    let previewRowMinHeight: number | undefined;
+
+    if (rowHeightMode === "fixed" && rowHeight) {
+        // For fixed height, calculate padding to match configured height
+        // Row height includes padding, so we need to distribute the space
+        const configuredHeight = rowHeight;
+        const verticalPadding = Math.max(6, Math.floor((configuredHeight - 22) / 2)); // 22px for text
+        previewRowPadding = `${verticalPadding}px 12px`;
+    } else if (rowHeightMode === "auto") {
+        // For auto height, use more generous padding and allow wrapping
+        previewRowPadding = "12px 12px";
+        previewRowMinHeight = undefined; // No min height constraint
+    } else if (rowHeightMode === "custom") {
+        // For custom expression, use a moderate default in preview
+        previewRowPadding = "10px 12px";
+    }
 
     // Check if templates are available
     const hasCardTemplate = !!(customCardTemplate && customCardTemplate.trim());
@@ -193,6 +219,40 @@ export function preview(props: AGGridPreviewProps): ReactElement {
     // Validate sort configuration
     const sortValidation = validateSortConfiguration(columns || []);
 
+    // Validate domLayout conflicts
+    const domLayoutWarnings: string[] = [];
+    if (domLayout === "autoHeight") {
+        if (pagination) {
+            domLayoutWarnings.push(
+                "DOM Layout 'Auto Height' conflicts with Pagination. Pagination will be disabled because the grid expands to show all rows."
+            );
+        }
+        if (height && height !== 500) {
+            domLayoutWarnings.push(
+                `DOM Layout 'Auto Height' ignores the configured height (${height}px). The grid will expand to fit all rows.`
+            );
+        }
+        if (!suppressRowVirtualisation) {
+            domLayoutWarnings.push(
+                "DOM Layout 'Auto Height' disables row virtualization. ALL rows will be rendered in the DOM, which can cause performance issues with large datasets (>100 rows)."
+            );
+        }
+        if (rowModelType === "serverSide") {
+            domLayoutWarnings.push(
+                "DOM Layout 'Auto Height' is NOT recommended with Server-Side row model. Server-Side is designed for large datasets, but Auto Height loads all rows at once."
+            );
+        }
+    } else if (domLayout === "print") {
+        if (pagination) {
+            domLayoutWarnings.push(
+                "DOM Layout 'Print' conflicts with Pagination. Pagination will be disabled in print mode."
+            );
+        }
+        domLayoutWarnings.push(
+            "DOM Layout 'Print' is optimized for printing and disables virtualization. Use only when printing the grid."
+        );
+    }
+
     // Prepare preview columns for template rendering
     const previewColumns = (columns || []).map((c: any) => ({
         header: c.header,
@@ -219,6 +279,33 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                 >
                     <strong>🚫 Sort Configuration Error:</strong>
                     <p style={{ margin: "8px 0 0 0" }}>{sortValidation.error}</p>
+                </div>
+            )}
+
+            {/* DOM Layout Warnings */}
+            {domLayoutWarnings.length > 0 && (
+                <div
+                    style={{
+                        marginBottom: "10px",
+                        padding: "12px 16px",
+                        backgroundColor: "#fff3e0",
+                        border: "2px solid #ff9800",
+                        borderRadius: "4px",
+                        fontSize: "13px",
+                        color: "#e65100"
+                    }}
+                >
+                    <strong>⚠️ DOM Layout Configuration Warnings:</strong>
+                    <ul style={{ margin: "8px 0 0 0", paddingLeft: "20px" }}>
+                        {domLayoutWarnings.map((warning, idx) => (
+                            <li key={idx} style={{ marginTop: "4px" }}>
+                                {warning}
+                            </li>
+                        ))}
+                    </ul>
+                    <div style={{ marginTop: "8px", fontStyle: "italic", fontSize: "12px" }}>
+                        💡 Tip: For large datasets with pagination, keep DOM Layout set to "Normal"
+                    </div>
                 </div>
             )}
 
@@ -645,21 +732,25 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                                 style={{
                                     display: "flex",
                                     borderBottom: "1px solid #eee",
-                                    fontSize: "13px"
+                                    fontSize: "13px",
+                                    minHeight: previewRowMinHeight
                                 }}
                             >
                                 {columns.map((col, colIdx) => (
                                     <div
                                         key={colIdx}
                                         style={{
-                                            padding: "10px 12px",
+                                            padding: previewRowPadding,
                                             borderRight:
                                                 colIdx < columns.length - 1
                                                     ? "1px solid #eee"
                                                     : "none",
                                             flex: col.width ? `0 0 ${col.width}px` : "1",
                                             minWidth: col.width || 150,
-                                            color: "#666"
+                                            color: "#666",
+                                            whiteSpace: rowHeightMode === "auto" ? "normal" : "nowrap",
+                                            overflow: rowHeightMode === "auto" ? "visible" : "hidden",
+                                            textOverflow: rowHeightMode === "auto" ? "clip" : "ellipsis"
                                         }}
                                     >
                                         {col.formatter === "link" ? (
@@ -692,7 +783,12 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                         }}
                     >
                         <span>Page 1 of 1</span>
-                        <span>Page size: {pageSize || 20}</span>
+                        <span>
+                            Page size: {pageSize || 20}
+                            {paginationPosition && paginationPosition !== "bottom"
+                                ? ` · Position: ${paginationPosition}`
+                                : ""}
+                        </span>
                     </div>
                 )}
             </div>

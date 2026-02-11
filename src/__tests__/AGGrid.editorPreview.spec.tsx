@@ -137,6 +137,7 @@ describe("AGGrid Editor Preview indicators", () => {
         customFormatters: [],
         pagination: false,
         pageSize: 20,
+        paginationPosition: "bottom" as const,
         height: 400,
         theme: "alpine",
         enablePolling: false,

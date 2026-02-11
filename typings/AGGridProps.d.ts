@@ -96,6 +96,10 @@ export type RowSelectionModeEnum = "none" | "single" | "multiple";
 
 export type EditModeEnum = "cell" | "row";
 
+export type PaginationPositionEnum = "bottom" | "top";
+
+export type DomLayoutEnum = "normal" | "autoHeight" | "print";
+
 export type ThemeEnum = "alpine" | "balham" | "material" | "quartz";
 
 export type ThemeVariantEnum = "auto" | "light" | "dark";
@@ -190,7 +194,7 @@ export interface AGGridContainerProps {
     showGroupRowsOnSeparateLine: boolean;
     suppressAggregationOnGroupRows: boolean;
     rowHeightMode: RowHeightModeEnum;
-    rowHeight: number;
+    rowHeight?: number;
     rowHeightExpression: string;
     maxRowHeight: number;
     rowClassMode: RowClassModeEnum;
@@ -223,8 +227,10 @@ export interface AGGridContainerProps {
     enableToolbarFilterSearch: boolean;
     pagination: boolean;
     pageSize: number;
+    paginationPosition: PaginationPositionEnum;
     rowBuffer: number;
     suppressRowVirtualisation: boolean;
+    domLayout: DomLayoutEnum;
     height: number;
     theme: ThemeEnum;
     themeVariant: ThemeVariantEnum;
@@ -320,8 +326,10 @@ export interface AGGridPreviewProps {
     enableToolbarFilterSearch: boolean;
     pagination: boolean;
     pageSize: number | null;
+    paginationPosition: PaginationPositionEnum;
     rowBuffer: number | null;
     suppressRowVirtualisation: boolean;
+    domLayout: DomLayoutEnum;
     height: number | null;
     theme: ThemeEnum;
     themeVariant: ThemeVariantEnum;

@@ -120,6 +120,48 @@ export function getPreview(values: AGGridPreviewProps): any {
 export function validate(values: AGGridPreviewProps): Problem[] {
     const errors: Problem[] = [];
 
+    // Validate DOM Layout conflicts
+    if (values.domLayout === "autoHeight" || values.domLayout === "print") {
+        if (values.pagination) {
+            errors.push({
+                property: "domLayout",
+                message: `DOM Layout "${values.domLayout}" conflicts with Pagination. ${values.domLayout === "autoHeight" ? "Auto Height" : "Print"} mode shows all rows at once, making pagination ineffective. Set DOM Layout to "Normal" or disable Pagination.`,
+                severity: "error"
+            });
+            errors.push({
+                property: "pagination",
+                message: `Pagination conflicts with DOM Layout "${values.domLayout}". Disable Pagination or set DOM Layout to "Normal".`,
+                severity: "error"
+            });
+        }
+
+        if (!values.suppressRowVirtualisation) {
+            errors.push({
+                property: "domLayout",
+                message: `DOM Layout "${values.domLayout}" requires Row Virtualization to be disabled. ${values.domLayout === "autoHeight" ? "Auto Height" : "Print"} mode renders ALL rows in the DOM at once. Enable "Disable Virtualisation" setting or set DOM Layout to "Normal".`,
+                severity: "error"
+            });
+            errors.push({
+                property: "suppressRowVirtualisation",
+                message: `Row Virtualization must be disabled when DOM Layout is "${values.domLayout}". Enable "Disable Virtualisation" or set DOM Layout to "Normal".`,
+                severity: "error"
+            });
+        }
+
+        if (values.rowModelType === "serverSide") {
+            errors.push({
+                property: "domLayout",
+                message: `DOM Layout "${values.domLayout}" is incompatible with Server-Side row model. Server-Side is designed for large datasets with lazy loading, but ${values.domLayout} loads all rows at once. Set DOM Layout to "Normal" or use Client-Side row model.`,
+                severity: "error"
+            });
+            errors.push({
+                property: "rowModelType",
+                message: `Server-Side row model conflicts with DOM Layout "${values.domLayout}". Use Client-Side row model or set DOM Layout to "Normal".`,
+                severity: "error"
+            });
+        }
+    }
+
     if (values.rowClassMode === "mapping" && !values.rowClassAttribute) {
         errors.push({
             property: "rowClassAttribute",

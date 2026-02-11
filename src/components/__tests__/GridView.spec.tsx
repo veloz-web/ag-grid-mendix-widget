@@ -151,6 +151,7 @@ describe("GridView Component", () => {
         height: 400,
         pagination: true,
         pageSize: 20,
+        paginationPosition: "bottom" as const,
         rowHeightMode: "fixed" as const,
         rowHeight: 40,
         rowHeightExpression: "",

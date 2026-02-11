@@ -41,6 +41,7 @@ describe("AGGrid - Toast Notifications", () => {
             height: 500,
             pagination: false,
             pageSize: 20,
+            paginationPosition: "bottom" as const,
             rowBuffer: 10,
             suppressRowVirtualisation: false,
             theme: "alpine" as any,

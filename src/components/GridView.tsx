@@ -1,5 +1,5 @@
 // GridView.tsx
-import React, { ReactElement, useMemo, useCallback } from "react";
+import React, { ReactElement, useMemo, useCallback, useEffect, useRef } from "react";
 import { AgGridReact } from "ag-grid-react";
 import type { GridReadyEvent, ColumnPinnedEvent } from "ag-grid-community";
 import { ValueStatus } from "mendix";
@@ -16,6 +16,8 @@ interface GridViewProps {
     height: number;
     pagination: boolean;
     pageSize: number;
+    /** Where to render pagination: bottom (default) or top */
+    paginationPosition?: "bottom" | "top";
     /** Row height mode: fixed, auto, or custom */
     rowHeightMode?: "fixed" | "auto" | "custom";
     /** Row height in pixels */
@@ -46,6 +48,8 @@ interface GridViewProps {
     rowBuffer?: number;
     /** Disable row virtualisation — render ALL rows in DOM (default: false) */
     suppressRowVirtualisation?: boolean;
+    /** DOM Layout mode: normal, autoHeight, or print */
+    domLayout?: "normal" | "autoHeight" | "print";
     /** Rows per server-side fetch block (default: 100) */
     cacheBlockSize?: number;
     /** Max server-side blocks in memory (0 = unlimited) */
@@ -96,8 +100,9 @@ export function GridView(props: GridViewProps): ReactElement {
         height,
         pagination,
         pageSize,
+        paginationPosition = "bottom",
         rowHeightMode = "fixed",
-        rowHeight = 40,
+    rowHeight,
         rowHeightExpression,
         maxRowHeight = 0,
         rowClassMode = "none",
@@ -111,10 +116,11 @@ export function GridView(props: GridViewProps): ReactElement {
         undoRedoCellEditing = false,
         rowBuffer = 10,
         suppressRowVirtualisation = false,
+        domLayout = "normal",
         cacheBlockSize = 100,
         maxBlocksInCache = 0,
         maxConcurrentRequests = 2,
-        onGridReady,
+    onGridReady,
         onRowClicked,
         onRowDoubleClicked,
         onCellEditCommit,
@@ -156,6 +162,53 @@ export function GridView(props: GridViewProps): ReactElement {
             : selectionModeProp === "single"
             ? { mode: "singleRow" as const, checkboxes: false, enableClickSelection: true }
             : undefined;
+
+    // --- DOM-based pagination position ---
+    // We use a ref to the wrapper div so we can move the built-in .ag-paging-panel
+    const wrapperRef = useRef<HTMLDivElement>(null);
+
+    // After grid mounts, move the built-in .ag-paging-panel to top if needed
+    useEffect(() => {
+        if (!pagination || paginationPosition !== "top" || !wrapperRef.current) {
+            return;
+        }
+
+        // AG Grid renders the paging panel asynchronously; poll briefly until it appears
+        let attempts = 0;
+        const maxAttempts = 20;
+        const intervalId = setInterval(() => {
+            attempts++;
+            const wrapper = wrapperRef.current;
+            if (!wrapper) {
+                clearInterval(intervalId);
+                return;
+            }
+
+            const pagingPanel = wrapper.querySelector<HTMLElement>(".ag-paging-panel");
+            if (!pagingPanel) {
+                if (attempts >= maxAttempts) {
+                    clearInterval(intervalId);
+                }
+                return;
+            }
+
+            // Found the panel — stop polling
+            clearInterval(intervalId);
+
+            const agRootWrapper = wrapper.querySelector<HTMLElement>(".ag-root-wrapper");
+            if (!agRootWrapper) {
+                return;
+            }
+
+            // Move the native panel above the grid
+            agRootWrapper.parentElement?.insertBefore(pagingPanel, agRootWrapper);
+        }, 50);
+
+        // Cleanup
+        return () => {
+            clearInterval(intervalId);
+        };
+    }, [pagination, paginationPosition]);
 
     const getContextMenuItems = useCallback(
         (params: any) => {
@@ -206,17 +259,72 @@ export function GridView(props: GridViewProps): ReactElement {
         });
     }, [enableAggregationFooter, rowData, columns]);
 
+    const resolvedRowHeight = rowHeight ?? 40;
+
+    // --- Row height configuration ---
+    // Warn if auto height is used with server-side row model
+    if (rowHeightMode === "auto" && props.rowModelType === "serverSide") {
+        console.warn(
+            "[AG Grid] Auto row height is not supported with the Server-Side row model. " +
+                "Falling back to fixed row height. Use Fixed or Custom mode instead."
+        );
+    }
+
+    // Determine effective row height mode (fallback for server-side)
+    const effectiveRowHeightMode =
+        rowHeightMode === "auto" && props.rowModelType === "serverSide" ? "fixed" : rowHeightMode;
+
+    console.log("[AGGrid] Row height configuration:", {
+        rowHeightMode,
+        effectiveRowHeightMode,
+        rowModelType: props.rowModelType,
+        rowHeight: resolvedRowHeight
+    });
+
+    // Wrap onGridReady to handle auto-height recalculation
+    const handleGridReady = useCallback(
+        (params: GridReadyEvent) => {
+            onGridReady(params);
+            
+            // For auto row height mode, force AG Grid to recalculate row heights
+            // after initial render to ensure wrapText/autoHeight take effect
+            if (effectiveRowHeightMode === "auto") {
+                console.log("[AGGrid] Auto-height mode detected - scheduling resetRowHeights()");
+                // Use setTimeout to let AG Grid finish initial render
+                setTimeout(() => {
+                    console.log("[AGGrid] Calling resetRowHeights() on grid ready");
+                    params.api?.resetRowHeights();
+                }, 200); // Increased delay to ensure content is fully rendered
+            }
+        },
+        [onGridReady, effectiveRowHeightMode]
+    );
+
+    // Also reset row heights when data is first rendered (for auto mode)
+    const handleFirstDataRendered = useCallback(
+        (params: any) => {
+            if (effectiveRowHeightMode === "auto") {
+                console.log("[AGGrid] Data rendered - scheduling resetRowHeights()");
+                setTimeout(() => {
+                    console.log("[AGGrid] Calling resetRowHeights() after data render");
+                    params.api?.resetRowHeights();
+                }, 100);
+            }
+        },
+        [effectiveRowHeightMode]
+    );
+
     // --- Column definitions with visibility and ordering applied ---
     const columnDefs = useMemo(() => {
         return buildColumnDefs(
             columns,
             columnVisibility || {},
             columnOrder || [],
-            customFormatterRegistry
+            customFormatterRegistry,
+            effectiveRowHeightMode // Pass row height mode for auto-height
         );
-    }, [columns, columnVisibility, columnOrder, customFormatterRegistry]);
+    }, [columns, columnVisibility, columnOrder, customFormatterRegistry, effectiveRowHeightMode]);
 
-    // --- Row height configuration ---
     // Compile the custom expression once (if provided) for performance
     const compiledRowHeightFn = useMemo(() => {
         if (rowHeightMode !== "custom" || !rowHeightExpression || !rowHeightExpression.trim()) {
@@ -249,25 +357,13 @@ export function GridView(props: GridViewProps): ReactElement {
                     return height;
                 } catch (e) {
                     console.error("[AG Grid] Error in getRowHeight:", e);
-                    return rowHeight; // Fallback to default
+                    return resolvedRowHeight; // Fallback to default
                 }
             }
             return undefined;
         },
-        [rowHeightMode, compiledRowHeightFn, maxRowHeight, rowHeight]
+        [rowHeightMode, compiledRowHeightFn, maxRowHeight, resolvedRowHeight]
     );
-
-    // Warn if auto height is used with server-side row model
-    if (rowHeightMode === "auto" && props.rowModelType === "serverSide") {
-        console.warn(
-            "[AG Grid] Auto row height is not supported with the Server-Side row model. " +
-                "Falling back to fixed row height. Use Fixed or Custom mode instead."
-        );
-    }
-
-    // Determine effective row height mode (fallback for server-side)
-    const effectiveRowHeightMode =
-        rowHeightMode === "auto" && props.rowModelType === "serverSide" ? "fixed" : rowHeightMode;
 
     // --- Row class configuration ---
     const attributeMap = useMemo(() => {
@@ -487,25 +583,63 @@ export function GridView(props: GridViewProps): ReactElement {
             if (!data || oldValue === newValue) return;
 
             const field = colDef?.field;
-            if (field && typeof data.set === "function") {
+            const hasSetMethod = typeof data.set === "function";
+
+            // If the data object has a .set() method (Mendix entity), update it in memory
+            // Otherwise, the microflow will need to handle the update based on the passed values
+            if (field && hasSetMethod) {
                 data.set(field, newValue);
+            } else if (!hasSetMethod) {
+                // For non-entity objects, store the new value in a custom property
+                // so the microflow can access it
+                if (!data._editedValues) {
+                    data._editedValues = {};
+                }
+                data._editedValues[field] = { oldValue, newValue };
             }
 
             const action = onCellEditCommit?.get?.(data);
             if (action && action.canExecute) {
                 try {
                     await action.execute();
+
+                    // Clean up temporary edit tracking if it exists
+                    if (data._editedValues && field) {
+                        delete data._editedValues[field];
+                        if (Object.keys(data._editedValues).length === 0) {
+                            delete data._editedValues;
+                        }
+                    }
                 } catch (error) {
                     console.error("[AG Grid] Cell edit commit failed:", error);
-                    if (field && typeof data.set === "function") {
+
+                    // Revert the change
+                    if (field && hasSetMethod) {
                         data.set(field, oldValue);
+                    } else if (data._editedValues && field) {
+                        // Remove failed edit from tracking
+                        delete data._editedValues[field];
                     }
+
                     api?.refreshCells({
                         rowNodes: node ? [node] : undefined,
                         columns: field ? [field] : undefined,
                         force: true
                     });
                 }
+            } else if (!hasSetMethod) {
+                // If no action configured for non-entity data, warn the user
+                console.warn(
+                    "[AG Grid] Cell edited on non-entity object but no 'On Cell Edit Commit' action is configured. " +
+                        "The edit cannot be persisted. Configure an action to handle the update."
+                );
+
+                // Refresh cell to show original value
+                api?.refreshCells({
+                    rowNodes: node ? [node] : undefined,
+                    columns: field ? [field] : undefined,
+                    force: true
+                });
             }
 
             if (props.rowModelType === "serverSide" && typeof onDataRefresh === "function") {
@@ -533,7 +667,12 @@ export function GridView(props: GridViewProps): ReactElement {
     };
 
     return (
-        <div className={wrapperClassName} style={wrapperStyle} data-testid="ag-grid">
+        <div
+            ref={wrapperRef}
+            className={wrapperClassName}
+            style={wrapperStyle}
+            data-testid="ag-grid"
+        >
             <AgGridReact
                 columnDefs={columnDefs}
                 rowData={rowData}
@@ -554,14 +693,17 @@ export function GridView(props: GridViewProps): ReactElement {
                     props.rowModelType === "serverSide" ? maxConcurrentRequests : undefined
                 }
                 // Row Height Configuration
-                rowHeight={effectiveRowHeightMode === "fixed" ? rowHeight : undefined}
+                rowHeight={effectiveRowHeightMode === "fixed" ? resolvedRowHeight : undefined}
                 getRowHeight={effectiveRowHeightMode === "custom" ? getRowHeight : undefined}
                 getRowClass={rowClassMode !== "none" ? getRowClass : undefined}
+                // DOM Layout
+                domLayout={domLayout}
                 editType={editMode === "row" ? "fullRow" : undefined}
                 stopEditingWhenCellsLoseFocus={stopEditingWhenCellsLoseFocus}
                 undoRedoCellEditing={undoRedoCellEditing}
                 onCellValueChanged={handleCellValueChanged}
-                onGridReady={onGridReady}
+                onGridReady={handleGridReady}
+                onFirstDataRendered={handleFirstDataRendered}
                 onRowClicked={onRowClicked}
                 onRowDoubleClicked={onRowDoubleClicked}
                 onSelectionChanged={onSelectionChanged}

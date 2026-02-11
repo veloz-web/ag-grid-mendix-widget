@@ -172,6 +172,7 @@ describe("AGGrid Component", () => {
         enableToolbarFilterSearch: true,
         pagination: true,
         pageSize: 20,
+        paginationPosition: "bottom" as const,
         rowBuffer: 10,
         suppressRowVirtualisation: false,
         height: 500,

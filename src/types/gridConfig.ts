@@ -39,10 +39,14 @@ export interface GridDisplayConfig {
     pagination: boolean;
     /** Page size (rows per page) */
     pageSize: number;
+    /** Where to render pagination: bottom (AG Grid built-in) or top (moved via DOM) */
+    paginationPosition: "bottom" | "top";
     /** Extra rows rendered above/below the visible viewport (default: 10) */
     rowBuffer: number;
     /** Disable row virtualisation — renders ALL rows in the DOM (default: false) */
     suppressRowVirtualisation: boolean;
+    /** DOM Layout mode: normal (fixed height with scrolling), autoHeight (expand to fit all rows), or print */
+    domLayout: "normal" | "autoHeight" | "print";
     /** Row height mode: fixed, auto, or custom */
     rowHeightMode: "fixed" | "auto" | "custom";
     /** Row height in pixels (fixed height, or default/min for auto/custom) */
