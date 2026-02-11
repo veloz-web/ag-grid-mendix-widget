@@ -459,9 +459,9 @@
                         <enumerationValue key="custom">Custom (JavaScript expression)</enumerationValue>
                     </enumerationValues>
                 </property>
-                <property key="rowHeight" type="integer" required="false">
+                <property key="rowHeight" type="integer" defaultValue="40">
                     <caption>Row Height (px)</caption>
-                    <description>Row height in pixels. Used as the fixed height when mode is Fixed, or as the default/minimum height for Auto and Custom modes. Leave empty to use the default (40px).</description>
+                    <description>Row height in pixels. Used as the fixed height when mode is Fixed. Ignored when mode is Auto (rows fit content). Used as a default when mode is Custom.</description>
                 </property>
                 <property key="rowHeightExpression" type="string" required="false" multiline="true">
                     <caption>Height Expression (JS)</caption>

@@ -194,7 +194,7 @@ export interface AGGridContainerProps {
     showGroupRowsOnSeparateLine: boolean;
     suppressAggregationOnGroupRows: boolean;
     rowHeightMode: RowHeightModeEnum;
-    rowHeight?: number;
+    rowHeight: number;
     rowHeightExpression: string;
     maxRowHeight: number;
     rowClassMode: RowClassModeEnum;
