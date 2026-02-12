@@ -6,7 +6,8 @@ import {
     CsvExportModule,
     QuickFilterModule,
     RowSelectionModule,
-    RowAutoHeightModule
+    RowAutoHeightModule,
+    ColumnAutoSizeModule
 } from "ag-grid-community";
 import {
     CellStyleModule,
@@ -46,5 +47,6 @@ ModuleRegistry.registerModules([
     RowGroupingModule,
     RichSelectModule,
     RowSelectionModule,
-    RowAutoHeightModule
+    RowAutoHeightModule,
+    ColumnAutoSizeModule
 ]);

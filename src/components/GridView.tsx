@@ -1,7 +1,7 @@
 // GridView.tsx
 import React, { ReactElement, useMemo, useCallback, useEffect, useRef } from "react";
 import { AgGridReact } from "ag-grid-react";
-import type { GridReadyEvent, ColumnPinnedEvent } from "ag-grid-community";
+import type { GridReadyEvent, ColumnPinnedEvent, ColumnResizedEvent } from "ag-grid-community";
 import { ValueStatus } from "mendix";
 import { ColumnsType } from "../../typings/AGGridProps";
 import { CustomFormatterRegistry } from "../utils/customFormatters";
@@ -50,6 +50,12 @@ interface GridViewProps {
     suppressRowVirtualisation?: boolean;
     /** DOM Layout mode: normal, autoHeight, or print */
     domLayout?: "normal" | "autoHeight" | "print";
+    /** Auto-size strategy for initial column sizing */
+    autoSizeStrategy?: "none" | "fitGridWidth" | "fitCellContents";
+    /** Skip header text width when auto-sizing to fit cell contents */
+    skipHeaderOnAutoSize?: boolean;
+    /** Whether to persist user-resized column widths to localStorage */
+    persistColumnWidths?: boolean;
     /** Rows per server-side fetch block (default: 100) */
     cacheBlockSize?: number;
     /** Max server-side blocks in memory (0 = unlimited) */
@@ -65,6 +71,8 @@ interface GridViewProps {
     onFilterChanged?: (event: any) => void;
     onColumnMoved?: (event: any) => void;
     onColumnPinned?: (event: ColumnPinnedEvent) => void;
+    /** Called when column is resized by user */
+    onColumnResized?: (event: ColumnResizedEvent) => void;
     /** Called when the 'Show/Hide Columns' header menu item is selected */
     onOpenColumnVisibility?: () => void;
     onOpenHiddenDrawer?: () => void;
@@ -117,6 +125,9 @@ export function GridView(props: GridViewProps): ReactElement {
         rowBuffer = 10,
         suppressRowVirtualisation = false,
         domLayout = "normal",
+        autoSizeStrategy = "none",
+        skipHeaderOnAutoSize = false,
+        persistColumnWidths = true,
         cacheBlockSize = 100,
         maxBlocksInCache = 0,
         maxConcurrentRequests = 2,
@@ -129,6 +140,7 @@ export function GridView(props: GridViewProps): ReactElement {
         onFilterChanged,
         onColumnMoved,
         onColumnPinned,
+        onColumnResized,
         onSelectionChanged,
         onDeleteRows,
         columnVisibility,
@@ -657,6 +669,20 @@ export function GridView(props: GridViewProps): ReactElement {
         .filter(Boolean)
         .join(" ");
 
+    // Build auto-size strategy for AG Grid native column sizing
+    const autoSizeStrategyConfig = useMemo(() => {
+        if (autoSizeStrategy === "fitGridWidth") {
+            return { type: "fitGridWidth" as const };
+        }
+        if (autoSizeStrategy === "fitCellContents") {
+            return {
+                type: "fitCellContents" as const,
+                skipHeader: skipHeaderOnAutoSize
+            };
+        }
+        return undefined;
+    }, [autoSizeStrategy, skipHeaderOnAutoSize]);
+
     // Build wrapper style with optional CSS variable for max row height
     const wrapperStyle: React.CSSProperties = {
         height: `${height}px`,
@@ -698,6 +724,8 @@ export function GridView(props: GridViewProps): ReactElement {
                 getRowClass={rowClassMode !== "none" ? getRowClass : undefined}
                 // DOM Layout
                 domLayout={domLayout}
+                // Column Auto-Size Strategy (AG Grid native)
+                autoSizeStrategy={autoSizeStrategyConfig}
                 editType={editMode === "row" ? "fullRow" : undefined}
                 stopEditingWhenCellsLoseFocus={stopEditingWhenCellsLoseFocus}
                 undoRedoCellEditing={undoRedoCellEditing}
@@ -711,6 +739,7 @@ export function GridView(props: GridViewProps): ReactElement {
                 onFilterChanged={onFilterChanged}
                 onColumnMoved={onColumnMoved}
                 onColumnPinned={onColumnPinned}
+                onColumnResized={persistColumnWidths ? onColumnResized : undefined}
                 getContextMenuItems={getContextMenuItems}
                 rowModelType={props.rowModelType}
                 rowSelection={rowSelectionConfig}

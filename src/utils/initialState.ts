@@ -77,6 +77,17 @@ const loadPersistedState = (storageKey: string): PersistedGridState | null => {
                 ? parsed.gridFilterModel
                 : null;
 
+        // Sanitize column widths
+        const columnWidths: Record<string, number> = {};
+        if (parsed.columnWidths && typeof parsed.columnWidths === "object") {
+            for (const [colId, width] of Object.entries(parsed.columnWidths)) {
+                const numWidth = Number(width);
+                if (!isNaN(numWidth) && numWidth > 0) {
+                    columnWidths[colId] = numWidth;
+                }
+            }
+        }
+
         return {
             viewMode,
             activeFilters: sanitizedFilters,
@@ -86,6 +97,7 @@ const loadPersistedState = (storageKey: string): PersistedGridState | null => {
             columnVisibility: parsed.columnVisibility || {},
             columnOrder: Array.isArray(parsed.columnOrder) ? parsed.columnOrder : [],
             columnPinned,
+            columnWidths,
             preferredExportFormat: parsed.preferredExportFormat,
             preferredExportOptions: parsed.preferredExportOptions
         };
@@ -110,6 +122,7 @@ export const getInitialState = (props: AGGridContainerProps): AGGridState => {
         persisted?.columnVisibility ?? getDefaultColumnVisibility(props.columns);
     const initialColumnOrder = persisted?.columnOrder ?? getDefaultColumnOrder(props.columns);
     const initialColumnPinned = persisted?.columnPinned ?? getDefaultColumnPinned(props.columns);
+    const initialColumnWidths = persisted?.columnWidths ?? {};
 
     const prefersDark =
         typeof window !== "undefined" && window.matchMedia
@@ -129,6 +142,7 @@ export const getInitialState = (props: AGGridContainerProps): AGGridState => {
         isHiddenDrawerOpen: false,
         columnOrder: initialColumnOrder,
         columnPinned: initialColumnPinned,
+        columnWidths: initialColumnWidths,
         prefersDarkScheme: prefersDark,
         toastNotifications: []
     };

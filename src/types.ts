@@ -29,6 +29,8 @@ export interface AGGridState {
     isHiddenDrawerOpen?: boolean;
     columnOrder: string[];
     columnPinned: Record<string, ColumnPinnedState>;
+    /** Persisted column widths from user drag-resizing (colId -> width in px) */
+    columnWidths: Record<string, number>;
     prefersDarkScheme: boolean;
     toastNotifications: ToastNotification[];
 }
@@ -42,6 +44,8 @@ export interface PersistedGridState {
     columnVisibility: Record<string, boolean>;
     columnOrder?: string[];
     columnPinned?: Record<string, ColumnPinnedState>;
+    /** Persisted column widths from user drag-resizing (colId -> width in px) */
+    columnWidths?: Record<string, number>;
     // Persist user's preferred export format and options
     preferredExportFormat?: "csv" | "excel" | "pdf";
     preferredExportOptions?: {

@@ -6,6 +6,7 @@ import {
     FilterChangedEvent,
     ColumnMovedEvent,
     ColumnPinnedEvent,
+    ColumnResizedEvent,
     ColumnState,
     IServerSideDatasource,
     IServerSideGetRowsParams
@@ -209,7 +210,7 @@ export const useGridApi = (
     props: AGGridContainerProps
 ) => {
     const gridApiRef = useRef<ExtendedGridApi | null>(null);
-    const { columnOrder, columnPinned, sortModel, globalSearch, gridFilterModel } = state;
+    const { columnOrder, columnPinned, columnWidths, sortModel, globalSearch, gridFilterModel } = state;
 
     // --- Grid API Helpers ---
 
@@ -408,7 +409,9 @@ export const useGridApi = (
         const currentColumnState = getColumnState();
         const desiredOrder = columnOrder ?? [];
         const desiredPinned = columnPinned ?? {};
+        const desiredWidths = columnWidths ?? {};
         const hasDesiredOrder = Array.isArray(desiredOrder) && desiredOrder.length > 0;
+        const hasDesiredWidths = Object.keys(desiredWidths).length > 0;
 
         const orderDiffers = hasDesiredOrder
             ? desiredOrder.length !== currentColumnState.length ||
@@ -421,7 +424,12 @@ export const useGridApi = (
             return desiredPin !== currentPin;
         });
 
-        if (hasDesiredOrder && (orderDiffers || pinnedDiffers)) {
+        const widthsDiffer = hasDesiredWidths && currentColumnState.some((col) => {
+            const desiredWidth = desiredWidths[col.colId];
+            return desiredWidth !== undefined && desiredWidth !== col.width;
+        });
+
+        if (hasDesiredOrder && (orderDiffers || pinnedDiffers || widthsDiffer)) {
             const seen = new Set<string>();
             const orderedState: ColumnState[] = [];
 
@@ -429,7 +437,8 @@ export const useGridApi = (
                 if (!colId) return;
                 orderedState.push({
                     colId,
-                    pinned: normalizePinnedValue(desiredPinned[colId]) ?? undefined
+                    pinned: normalizePinnedValue(desiredPinned[colId]) ?? undefined,
+                    width: desiredWidths[colId] ?? undefined
                 });
                 seen.add(colId);
             };
@@ -439,17 +448,19 @@ export const useGridApi = (
                 if (seen.has(col.colId)) return;
                 orderedState.push({
                     colId: col.colId,
-                    pinned: normalizePinnedValue(desiredPinned[col.colId]) ?? undefined
+                    pinned: normalizePinnedValue(desiredPinned[col.colId]) ?? undefined,
+                    width: desiredWidths[col.colId] ?? undefined
                 });
             });
 
             applyColumnState({ state: orderedState, applyOrder: true });
-        } else if (!hasDesiredOrder && pinnedDiffers) {
-            const pinnedOnlyState: ColumnState[] = currentColumnState.map((col) => ({
+        } else if (!hasDesiredOrder && (pinnedDiffers || widthsDiffer)) {
+            const stateUpdate: ColumnState[] = currentColumnState.map((col) => ({
                 colId: col.colId,
-                pinned: normalizePinnedValue(desiredPinned[col.colId]) ?? undefined
+                pinned: normalizePinnedValue(desiredPinned[col.colId]) ?? undefined,
+                width: desiredWidths[col.colId] ?? undefined
             }));
-            applyColumnState({ state: pinnedOnlyState });
+            applyColumnState({ state: stateUpdate });
         }
 
         const desiredSort = sortModel ?? [];
@@ -517,7 +528,7 @@ export const useGridApi = (
                 }
             }
         }
-    }, [columnOrder, columnPinned, sortModel, globalSearch, gridFilterModel]);
+    }, [columnOrder, columnPinned, columnWidths, sortModel, globalSearch, gridFilterModel]);
     // Dependency array is specific properties to avoid re-running on unrelated state changes
 
     // --- Event Listeners ---
@@ -574,6 +585,30 @@ export const useGridApi = (
             syncColumnStateFromGrid();
         },
         [syncColumnStateFromGrid]
+    );
+
+    // Persist column widths when user finishes drag-resizing
+    const onColumnResized = useCallback(
+        (params: ColumnResizedEvent) => {
+            // Only capture user-initiated resizes, and only when the drag is finished
+            if (params.source === "api" || !params.finished) return;
+
+            const api = params.api as ExtendedGridApi;
+            const getColumnState = getApiFunction<() => ColumnState[]>(api, "getColumnState");
+            if (!getColumnState) return;
+
+            const columnState = getColumnState();
+            const columnWidths: Record<string, number> = {};
+            columnState.forEach((col) => {
+                if (col.width && col.width > 0) {
+                    columnWidths[col.colId] = col.width;
+                }
+            });
+
+            setState((prev) => ({ ...prev, columnWidths }));
+            savePersistedState({ columnWidths });
+        },
+        [setState, savePersistedState]
     );
 
     // --- Export Logic ---
@@ -639,6 +674,7 @@ export const useGridApi = (
         onFilterChanged,
         onColumnMoved,
         onColumnPinned,
+        onColumnResized,
         applyGridSortModel,
         applyFiltersToGrid,
         applyGlobalSearch,

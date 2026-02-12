@@ -6,7 +6,7 @@
  * configuration into logical units.
  */
 
-import type { GridReadyEvent, ColumnPinnedEvent } from "ag-grid-community";
+import type { GridReadyEvent, ColumnPinnedEvent, ColumnResizedEvent } from "ag-grid-community";
 import { ColumnsType } from "../../typings/AGGridProps";
 import { CustomFormatterRegistry } from "../utils/customFormatters";
 import { ReactNode } from "react";
@@ -47,6 +47,12 @@ export interface GridDisplayConfig {
     suppressRowVirtualisation: boolean;
     /** DOM Layout mode: normal (fixed height with scrolling), autoHeight (expand to fit all rows), or print */
     domLayout: "normal" | "autoHeight" | "print";
+    /** Auto-size strategy for initial column sizing */
+    autoSizeStrategy: "none" | "fitGridWidth" | "fitCellContents";
+    /** Skip header text width when auto-sizing to fit cell contents */
+    skipHeaderOnAutoSize: boolean;
+    /** Whether to persist user-resized column widths to localStorage */
+    persistColumnWidths: boolean;
     /** Row height mode: fixed, auto, or custom */
     rowHeightMode: "fixed" | "auto" | "custom";
     /** Row height in pixels (fixed height, or default/min for auto/custom) */
@@ -168,6 +174,8 @@ export interface GridCallbacks {
     onColumnMoved?: (event: any) => void;
     /** Called when column is pinned */
     onColumnPinned?: (event: ColumnPinnedEvent) => void;
+    /** Called when column is resized (user drag or auto-size) */
+    onColumnResized?: (event: ColumnResizedEvent) => void;
     /** Called when column visibility menu is requested */
     onOpenColumnVisibility?: () => void;
     /** Called when hidden drawer is requested */

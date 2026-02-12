@@ -100,6 +100,8 @@ export type PaginationPositionEnum = "bottom" | "top";
 
 export type DomLayoutEnum = "normal" | "autoHeight" | "print";
 
+export type AutoSizeStrategyEnum = "none" | "fitGridWidth" | "fitCellContents";
+
 export type ThemeEnum = "alpine" | "balham" | "material" | "quartz";
 
 export type ThemeVariantEnum = "auto" | "light" | "dark";
@@ -231,6 +233,9 @@ export interface AGGridContainerProps {
     rowBuffer: number;
     suppressRowVirtualisation: boolean;
     domLayout: DomLayoutEnum;
+    autoSizeStrategy: AutoSizeStrategyEnum;
+    skipHeaderOnAutoSize: boolean;
+    persistColumnWidths: boolean;
     height: number;
     theme: ThemeEnum;
     themeVariant: ThemeVariantEnum;
@@ -330,6 +335,9 @@ export interface AGGridPreviewProps {
     rowBuffer: number | null;
     suppressRowVirtualisation: boolean;
     domLayout: DomLayoutEnum;
+    autoSizeStrategy: AutoSizeStrategyEnum;
+    skipHeaderOnAutoSize: boolean;
+    persistColumnWidths: boolean;
     height: number | null;
     theme: ThemeEnum;
     themeVariant: ThemeVariantEnum;

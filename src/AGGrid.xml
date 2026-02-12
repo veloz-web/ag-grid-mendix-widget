@@ -653,6 +653,23 @@
                     <enumerationValue key="print">Print (optimized for printing)</enumerationValue>
                 </enumerationValues>
             </property>
+            <property key="autoSizeStrategy" type="enumeration" defaultValue="none">
+                <caption>Auto-Size Strategy</caption>
+                <description>How columns are initially sized when the grid loads. None: use per-column width settings. Fit Grid Width: stretch columns to fill the grid. Fit Cell Contents: size columns to fit their content (double-click header border also auto-sizes). Uses AG Grid's native autoSizeStrategy.</description>
+                <enumerationValues>
+                    <enumerationValue key="none">None (use column settings)</enumerationValue>
+                    <enumerationValue key="fitGridWidth">Fit Grid Width</enumerationValue>
+                    <enumerationValue key="fitCellContents">Fit Cell Contents</enumerationValue>
+                </enumerationValues>
+            </property>
+            <property key="skipHeaderOnAutoSize" type="boolean" defaultValue="false">
+                <caption>Skip Header on Auto-Size</caption>
+                <description>When auto-sizing to fit cell contents, ignore header text width. Only applies when Auto-Size Strategy is "Fit Cell Contents".</description>
+            </property>
+            <property key="persistColumnWidths" type="boolean" defaultValue="true">
+                <caption>Persist Column Widths</caption>
+                <description>Save user-resized column widths to localStorage and restore them on next visit. Requires "Use Local Storage" to be enabled.</description>
+            </property>
             <property key="height" type="integer" defaultValue="500">
                 <caption>Height</caption>
                 <description>Grid height in pixels. Ignored when DOM Layout is set to Auto Height or Print.</description>

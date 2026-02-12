@@ -22,6 +22,7 @@ export const usePersistence = (props, state, setState, initialState) => {
                 columnVisibility: partial.columnVisibility ?? state.columnVisibility,
                 columnOrder: partial.columnOrder ?? state.columnOrder,
                 columnPinned: partial.columnPinned ?? state.columnPinned,
+                columnWidths: partial.columnWidths ?? state.columnWidths,
                 preferredExportFormat: partial.preferredExportFormat,
                 preferredExportOptions: partial.preferredExportOptions
             };

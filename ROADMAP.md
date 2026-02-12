@@ -83,10 +83,12 @@ See [LICENSE_SETUP.md](./docs/LICENSE_SETUP.md) for configuration.
 
 **Note**: Column visibility is already implemented via ColumnVisibilityPopover!
 
-- [ ] **Column Resizing**
-  - Enable drag to resize columns
-  - Double-click to auto-size
-  - Save column widths to localStorage
+- [x] **Column Resizing** ✅ **Implemented!**
+  - Drag to resize columns (per-column `resizable` toggle)
+  - Double-click header border to auto-size (AG Grid native)
+  - Auto-Size Strategy: None / Fit Grid Width / Fit Cell Contents
+  - Save column widths to localStorage (persist on resize)
+  - Restored on next visit via `applyColumnState`
 
 - [ ] **Column Reordering**
   - Drag and drop column order
