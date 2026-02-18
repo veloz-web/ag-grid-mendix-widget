@@ -36,6 +36,7 @@ describe("useGridState Hook", () => {
             enableHeaderFilterButtons: true,
             enableFloatingFilters: false,
             enableViewSelector: true,
+            showToolbar: true,
             defaultView: "grid",
             mobileDefaultView: "cards",
             customCardTemplate: "",
@@ -77,6 +78,9 @@ describe("useGridState Hook", () => {
             addShowInToolbar: true,
             addButtonLabel: "Add",
             licenseKey: "",
+            agGridVersion: "34.3.1",
+            agGridVersionDate: "",
+            widgetBuildDate: "",
             enableContextMenu: false,
             useLocalStorage: false,
             showToolbarSearch: true,
@@ -104,6 +108,10 @@ describe("useGridState Hook", () => {
             enableNotifications: false,
             toastPosition: "topRight",
             autoHideDuration: 0,
+            domLayout: "normal",
+            autoSizeStrategy: "none",
+            skipHeaderOnAutoSize: false,
+            persistColumnWidths: true,
             onRowClick: undefined,
             onRowDoubleClick: undefined,
             onCellEditCommit: undefined,
@@ -589,7 +597,8 @@ describe("useGridState Hook", () => {
                 globalSearch: "",
                 sortModel: [],
                 columnVisibility: {},
-                columnOrder: []
+                columnOrder: [],
+                columnWidths: {}
             });
         });
 
@@ -613,7 +622,8 @@ describe("useGridState Hook", () => {
                 globalSearch: "test",
                 sortModel: [{ colId: "name", sort: "asc" }],
                 columnVisibility: {},
-                columnOrder: []
+                columnOrder: [],
+                columnWidths: {}
             });
         });
 

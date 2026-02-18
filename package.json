@@ -12,14 +12,17 @@
   },
   "packagePath": "mendix",
   "scripts": {
+    "predev": "node scripts/update-ag-version.js && node scripts/stamp-build-date.js",
     "start": "pluggable-widgets-tools start:server",
     "dev": "pluggable-widgets-tools start:web",
+    "prebuild": "node scripts/update-ag-version.js && node scripts/stamp-build-date.js",
     "build": "pluggable-widgets-tools build:web",
+    "prerelease": "node scripts/update-ag-version.js && node scripts/stamp-build-date.js",
     "release": "pluggable-widgets-tools release:web && node scripts/strip-console-logs.js",
     "format": "pluggable-widgets-tools format",
-  "lint": "pluggable-widgets-tools lint",
-  "test": "jest --config jest.config.js --coverage --watchAll=false",
-  "test:coverage": "jest --config jest.config.js --coverage --coverageReporters=text-summary --coverageReporters=cobertura --coverageReporters=lcov --watchAll=false"
+    "lint": "pluggable-widgets-tools lint",
+    "test": "jest --config jest.config.js --coverage --watchAll=false",
+    "test:coverage": "jest --config jest.config.js --coverage --coverageReporters=text-summary --coverageReporters=cobertura --coverageReporters=lcov --watchAll=false"
   },
   "devDependencies": {
     "@mendix/pluggable-widgets-tools": "^10.24.0",
@@ -27,12 +30,13 @@
     "@types/pdfmake": "^0.2.12",
     "adm-zip": "^0.5.16",
     "archiver": "^7.0.1",
+    "baseline-browser-mapping": "^2.9.19",
     "terser": "^5.44.1"
   },
   "dependencies": {
-    "ag-grid-community": "^34.3.1",
-    "ag-grid-enterprise": "^34.3.1",
-    "ag-grid-react": "^34.3.1",
+    "ag-grid-community": "^35.1.0",
+    "ag-grid-enterprise": "^35.1.0",
+    "ag-grid-react": "^35.1.0",
     "classnames": "^2.5.1",
     "pdfmake": "^0.2.20"
   },

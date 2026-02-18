@@ -181,6 +181,7 @@ export interface AGGridContainerProps {
     enableColumnMenus: boolean;
     enableHeaderFilterButtons: boolean;
     enableFloatingFilters: boolean;
+    showToolbar: boolean;
     enableViewSelector: boolean;
     defaultView: DefaultViewEnum;
     mobileDefaultView: MobileDefaultViewEnum;
@@ -222,6 +223,9 @@ export interface AGGridContainerProps {
     enableRowAdd: boolean;
     addShowInToolbar: boolean;
     addButtonLabel: string;
+    agGridVersion: string;
+    agGridVersionDate: string;
+    widgetBuildDate: string;
     licenseKey: string;
     enableContextMenu: boolean;
     useLocalStorage: boolean;
@@ -283,6 +287,7 @@ export interface AGGridPreviewProps {
     enableColumnMenus: boolean;
     enableHeaderFilterButtons: boolean;
     enableFloatingFilters: boolean;
+    showToolbar: boolean;
     enableViewSelector: boolean;
     defaultView: DefaultViewEnum;
     mobileDefaultView: MobileDefaultViewEnum;
@@ -324,6 +329,9 @@ export interface AGGridPreviewProps {
     enableRowAdd: boolean;
     addShowInToolbar: boolean;
     addButtonLabel: string;
+    agGridVersion: string;
+    agGridVersionDate: string;
+    widgetBuildDate: string;
     licenseKey: string;
     enableContextMenu: boolean;
     useLocalStorage: boolean;

@@ -352,6 +352,10 @@
         </propertyGroup>
         <propertyGroup caption="View Options">
             <propertyGroup caption="Views &amp; Templates">
+                <property key="showToolbar" type="boolean" defaultValue="true">
+                    <caption>Show Toolbar</caption>
+                    <description>Show the toolbar above the grid. When disabled, the toolbar (view selector, search, filters, export buttons, etc.) is completely hidden. Individual toolbar features like search and filter drawer can still be configured but will not be visible.</description>
+                </property>
                 <property key="enableViewSelector" type="boolean" defaultValue="true">
                     <caption>Enable View Selector</caption>
                     <description>Show grid/list/card view selector</description>
@@ -600,6 +604,18 @@
             </propertyGroup>
         </propertyGroup>
         <propertyGroup caption="Grid Options">
+            <property key="agGridVersion" type="string" required="false" defaultValue="35.1.0">
+                <caption>AG Grid Version</caption>
+                <description>The version of AG Grid bundled with this widget. Automatically updated at build time from the installed ag-grid-community package.</description>
+            </property>
+            <property key="agGridVersionDate" type="string" required="false" defaultValue="2026-02-17 20:30:16 UTC">
+                <caption>Version Synced</caption>
+                <description>Date and time when the AG Grid version was last updated. Automatically set by the build script when the version changes.</description>
+            </property>
+            <property key="widgetBuildDate" type="string" required="false" defaultValue="2026-02-18 13:57:45 UTC">
+                <caption>Widget Build Date</caption>
+                <description>Date and time when this widget was last built. Automatically stamped on every build/release.</description>
+            </property>
             <property key="licenseKey" type="string" required="false">
                 <caption>Enterprise Key</caption>
                 <description>Your AG Grid Enterprise license key. Leave empty for Community edition. This value is masked in Studio.</description>

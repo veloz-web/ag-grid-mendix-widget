@@ -631,6 +631,7 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
                 position={props.toastPosition || "topRight"}
             />
 
+            {props.showToolbar !== false && (
             <Toolbar
                 enableViewSelector={showViewSelector}
                 currentView={currentView}
@@ -682,6 +683,7 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
                 onAddRow={handleAddRow}
                 onExportRequest={handleExportRequest}
             />
+            )}
 
             <ViewRenderer
                 currentView={currentView}

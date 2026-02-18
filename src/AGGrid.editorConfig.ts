@@ -9,15 +9,31 @@ export function getProperties(
 }
 
 export function getPreview(values: AGGridPreviewProps): any {
+    const versionLabel = values.agGridVersion
+        ? `AG Grid v${values.agGridVersion}`
+        : "AG Grid";
+    const dateLabel = values.agGridVersionDate
+        ? ` · synced ${values.agGridVersionDate}`
+        : "";
+    const buildLabel = values.widgetBuildDate
+        ? `Built ${values.widgetBuildDate}`
+        : "";
+
     const children: any[] = [
         {
             type: "Container",
             children: [
                 {
                     type: "Text",
-                    content: "AG Grid",
+                    content: `${versionLabel}${dateLabel}`,
                     fontColor: "#555",
                     fontSize: 14
+                },
+                buildLabel && {
+                    type: "Text",
+                    content: buildLabel,
+                    fontColor: "#999",
+                    fontSize: 11
                 },
                 {
                     type: "Text",
@@ -25,7 +41,7 @@ export function getPreview(values: AGGridPreviewProps): any {
                     fontColor: "#888",
                     fontSize: 12
                 }
-            ]
+            ].filter(Boolean)
         }
     ];
 
