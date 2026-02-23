@@ -81,6 +81,7 @@ describe("useGridState Hook", () => {
             agGridVersion: "34.3.1",
             agGridVersionDate: "",
             widgetBuildDate: "",
+            widgetBuildCommit: "",
             enableContextMenu: false,
             useLocalStorage: false,
             showToolbarSearch: true,

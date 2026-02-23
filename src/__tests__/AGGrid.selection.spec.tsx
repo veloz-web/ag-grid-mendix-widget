@@ -149,6 +149,7 @@ const baseWidgetProps: any = {
     agGridVersion: "34.3.1",
     agGridVersionDate: "",
     widgetBuildDate: "",
+    widgetBuildCommit: "",
     rowSelectionMode: "none" as const,
     showSelectionCheckboxes: true,
     enableRowDelete: false,

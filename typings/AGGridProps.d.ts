@@ -226,6 +226,7 @@ export interface AGGridContainerProps {
     agGridVersion: string;
     agGridVersionDate: string;
     widgetBuildDate: string;
+    widgetBuildCommit: string;
     licenseKey: string;
     enableContextMenu: boolean;
     useLocalStorage: boolean;
@@ -332,6 +333,7 @@ export interface AGGridPreviewProps {
     agGridVersion: string;
     agGridVersionDate: string;
     widgetBuildDate: string;
+    widgetBuildCommit: string;
     licenseKey: string;
     enableContextMenu: boolean;
     useLocalStorage: boolean;

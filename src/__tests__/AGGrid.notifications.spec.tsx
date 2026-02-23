@@ -62,6 +62,7 @@ describe("AGGrid - Toast Notifications", () => {
             agGridVersion: "34.3.1",
             agGridVersionDate: "",
             widgetBuildDate: "",
+            widgetBuildCommit: "",
             enablePolling: false,
             pollingInterval: 5000,
             enableNotifications: false,

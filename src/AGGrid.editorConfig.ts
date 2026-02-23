@@ -1,10 +1,18 @@
 import { Properties, Problem } from "@mendix/pluggable-widgets-tools";
+import { hidePropertiesIn } from "@mendix/pluggable-widgets-tools/dist/utils/PageEditorUtils";
 import { AGGridPreviewProps } from "../typings/AGGridProps";
 
 export function getProperties(
     values: AGGridPreviewProps,
     defaultProperties: Properties
 ): Properties {
+    // Hide version/build info from the properties panel — shown in design preview only
+    hidePropertiesIn(defaultProperties, values, [
+        "agGridVersion",
+        "agGridVersionDate",
+        "widgetBuildDate",
+        "widgetBuildCommit"
+    ]);
     return defaultProperties;
 }
 
@@ -16,7 +24,7 @@ export function getPreview(values: AGGridPreviewProps): any {
         ? ` · synced ${values.agGridVersionDate}`
         : "";
     const buildLabel = values.widgetBuildDate
-        ? `Built ${values.widgetBuildDate}`
+        ? `Built ${values.widgetBuildDate}${values.widgetBuildCommit ? ` · ${values.widgetBuildCommit}` : ""}`
         : "";
 
     const children: any[] = [
