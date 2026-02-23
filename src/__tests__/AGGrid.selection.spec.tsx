@@ -164,6 +164,7 @@ const baseWidgetProps: any = {
     enableRowAdd: false,
     addShowInToolbar: true,
     addButtonLabel: "Add",
+    toolbarButtons: [],
     enableContextMenu: false,
     useLocalStorage: false,
     showToolbarSearch: true,

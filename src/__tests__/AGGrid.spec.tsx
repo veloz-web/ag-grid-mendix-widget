@@ -171,6 +171,7 @@ describe("AGGrid Component", () => {
         enableRowAdd: false,
         addShowInToolbar: true,
         addButtonLabel: "Add",
+        toolbarButtons: [],
         enableContextMenu: false,
         useLocalStorage: true,
         showToolbarSearch: true,
@@ -619,6 +620,169 @@ describe("AGGrid Component", () => {
                 name: /add new row/i
             });
             expect(addButton).not.toBeInTheDocument();
+        });
+    });
+
+    describe("Custom toolbar buttons", () => {
+        it("renders custom toolbar buttons from toolbarButtons prop", () => {
+            const toolbarButtons = [
+                {
+                    buttonLabel: "Approve",
+                    buttonStyle: "success" as const,
+                    buttonIcon: "check" as const,
+                    buttonPosition: "right" as const,
+                    buttonVisible: true,
+                    buttonDisabled: false,
+                    buttonAction: { canExecute: true, execute: jest.fn() }
+                }
+            ];
+
+            render(<AGGrid {...mockProps} toolbarButtons={toolbarButtons as any} />);
+
+            expect(screen.getByRole("button", { name: "Approve" })).toBeInTheDocument();
+        });
+
+        it("does not render custom buttons when toolbarButtons is empty", () => {
+            render(<AGGrid {...mockProps} toolbarButtons={[]} />);
+
+            const customBtns = document.querySelectorAll(".aggrid-custom-btn");
+            expect(customBtns).toHaveLength(0);
+        });
+
+        it("executes Mendix action when custom button is clicked", async () => {
+            const user = userEvent.setup();
+            const execute = jest.fn();
+            const toolbarButtons = [
+                {
+                    buttonLabel: "Run Report",
+                    buttonStyle: "primary" as const,
+                    buttonIcon: "none" as const,
+                    buttonPosition: "right" as const,
+                    buttonVisible: true,
+                    buttonDisabled: false,
+                    buttonAction: { canExecute: true, execute }
+                }
+            ];
+
+            render(<AGGrid {...mockProps} toolbarButtons={toolbarButtons as any} />);
+
+            await user.click(screen.getByRole("button", { name: "Run Report" }));
+
+            expect(execute).toHaveBeenCalledTimes(1);
+        });
+
+        it("does not execute action when canExecute is false", async () => {
+            const user = userEvent.setup();
+            const execute = jest.fn();
+            const toolbarButtons = [
+                {
+                    buttonLabel: "Blocked",
+                    buttonStyle: "danger" as const,
+                    buttonIcon: "none" as const,
+                    buttonPosition: "right" as const,
+                    buttonVisible: true,
+                    buttonDisabled: false,
+                    buttonAction: { canExecute: false, execute }
+                }
+            ];
+
+            render(<AGGrid {...mockProps} toolbarButtons={toolbarButtons as any} />);
+
+            await user.click(screen.getByRole("button", { name: "Blocked" }));
+
+            expect(execute).not.toHaveBeenCalled();
+        });
+
+        it("hides custom buttons when toolbar is hidden", () => {
+            const toolbarButtons = [
+                {
+                    buttonLabel: "Hidden Action",
+                    buttonStyle: "default" as const,
+                    buttonIcon: "none" as const,
+                    buttonPosition: "right" as const,
+                    buttonVisible: true,
+                    buttonDisabled: false,
+                    buttonAction: { canExecute: true, execute: jest.fn() }
+                }
+            ];
+
+            render(
+                <AGGrid
+                    {...mockProps}
+                    showToolbar={false}
+                    toolbarButtons={toolbarButtons as any}
+                />
+            );
+
+            expect(screen.queryByRole("button", { name: "Hidden Action" })).not.toBeInTheDocument();
+        });
+
+        it("renders disabled custom buttons", () => {
+            const toolbarButtons = [
+                {
+                    buttonLabel: "Disabled Action",
+                    buttonStyle: "warning" as const,
+                    buttonIcon: "settings" as const,
+                    buttonPosition: "right" as const,
+                    buttonVisible: true,
+                    buttonDisabled: true,
+                    buttonAction: { canExecute: true, execute: jest.fn() }
+                }
+            ];
+
+            render(<AGGrid {...mockProps} toolbarButtons={toolbarButtons as any} />);
+
+            const button = screen.getByRole("button", { name: "Disabled Action" });
+            expect(button).toBeDisabled();
+        });
+
+        it("does not render invisible custom buttons", () => {
+            const toolbarButtons = [
+                {
+                    buttonLabel: "Invisible",
+                    buttonStyle: "default" as const,
+                    buttonIcon: "none" as const,
+                    buttonPosition: "right" as const,
+                    buttonVisible: false,
+                    buttonDisabled: false,
+                    buttonAction: { canExecute: true, execute: jest.fn() }
+                }
+            ];
+
+            render(<AGGrid {...mockProps} toolbarButtons={toolbarButtons as any} />);
+
+            expect(screen.queryByRole("button", { name: "Invisible" })).not.toBeInTheDocument();
+        });
+
+        it("renders multiple custom buttons with different styles", () => {
+            const toolbarButtons = [
+                {
+                    buttonLabel: "Primary",
+                    buttonStyle: "primary" as const,
+                    buttonIcon: "none" as const,
+                    buttonPosition: "right" as const,
+                    buttonVisible: true,
+                    buttonDisabled: false,
+                    buttonAction: { canExecute: true, execute: jest.fn() }
+                },
+                {
+                    buttonLabel: "Danger",
+                    buttonStyle: "danger" as const,
+                    buttonIcon: "trash" as const,
+                    buttonPosition: "left" as const,
+                    buttonVisible: true,
+                    buttonDisabled: false,
+                    buttonAction: { canExecute: true, execute: jest.fn() }
+                }
+            ];
+
+            render(<AGGrid {...mockProps} toolbarButtons={toolbarButtons as any} />);
+
+            const primaryBtn = screen.getByRole("button", { name: "Primary" });
+            const dangerBtn = screen.getByRole("button", { name: "Danger" });
+
+            expect(primaryBtn).toHaveClass("aggrid-custom-btn-primary");
+            expect(dangerBtn).toHaveClass("aggrid-custom-btn-danger");
         });
     });
 

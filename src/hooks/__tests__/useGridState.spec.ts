@@ -77,6 +77,7 @@ describe("useGridState Hook", () => {
             enableRowAdd: false,
             addShowInToolbar: true,
             addButtonLabel: "Add",
+            toolbarButtons: [],
             licenseKey: "",
             agGridVersion: "34.3.1",
             agGridVersionDate: "",

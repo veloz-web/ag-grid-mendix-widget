@@ -384,6 +384,131 @@
     cursor: not-allowed;
 }
 
+/* Custom Toolbar Buttons - Base */
+.aggrid-custom-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.aggrid-custom-btn:focus-visible {
+    outline-offset: 2px;
+}
+
+.aggrid-custom-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Custom Button - Default */
+.aggrid-custom-btn-default {
+    background: #f3f4f6;
+    color: #374151;
+    border: 1px solid #d1d5db;
+}
+
+.aggrid-custom-btn-default:hover:not(:disabled) {
+    background: #e5e7eb;
+    border-color: #9ca3af;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.aggrid-custom-btn-default:focus-visible {
+    outline: 3px solid rgba(107, 114, 128, 0.35);
+}
+
+/* Custom Button - Primary */
+.aggrid-custom-btn-primary {
+    background: #2563eb;
+    color: #ffffff;
+    border: 1px solid #1d4ed8;
+}
+
+.aggrid-custom-btn-primary:hover:not(:disabled) {
+    background: #1d4ed8;
+    border-color: #1e40af;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.25);
+}
+
+.aggrid-custom-btn-primary:focus-visible {
+    outline: 3px solid rgba(37, 99, 235, 0.35);
+}
+
+/* Custom Button - Success */
+.aggrid-custom-btn-success {
+    background: #16a34a;
+    color: #ffffff;
+    border: 1px solid #15803d;
+}
+
+.aggrid-custom-btn-success:hover:not(:disabled) {
+    background: #15803d;
+    border-color: #166534;
+    box-shadow: 0 2px 4px rgba(22, 163, 74, 0.25);
+}
+
+.aggrid-custom-btn-success:focus-visible {
+    outline: 3px solid rgba(22, 163, 74, 0.35);
+}
+
+/* Custom Button - Danger */
+.aggrid-custom-btn-danger {
+    background: #dc2626;
+    color: #ffffff;
+    border: 1px solid #b91c1c;
+}
+
+.aggrid-custom-btn-danger:hover:not(:disabled) {
+    background: #b91c1c;
+    border-color: #991b1b;
+    box-shadow: 0 2px 4px rgba(220, 38, 38, 0.25);
+}
+
+.aggrid-custom-btn-danger:focus-visible {
+    outline: 3px solid rgba(220, 38, 38, 0.35);
+}
+
+/* Custom Button - Warning */
+.aggrid-custom-btn-warning {
+    background: #d97706;
+    color: #ffffff;
+    border: 1px solid #b45309;
+}
+
+.aggrid-custom-btn-warning:hover:not(:disabled) {
+    background: #b45309;
+    border-color: #92400e;
+    box-shadow: 0 2px 4px rgba(217, 119, 6, 0.25);
+}
+
+.aggrid-custom-btn-warning:focus-visible {
+    outline: 3px solid rgba(217, 119, 6, 0.35);
+}
+
+/* Custom Button - Info */
+.aggrid-custom-btn-info {
+    background: #0891b2;
+    color: #ffffff;
+    border: 1px solid #0e7490;
+}
+
+.aggrid-custom-btn-info:hover:not(:disabled) {
+    background: #0e7490;
+    border-color: #155e75;
+    box-shadow: 0 2px 4px rgba(8, 145, 178, 0.25);
+}
+
+.aggrid-custom-btn-info:focus-visible {
+    outline: 3px solid rgba(8, 145, 178, 0.35);
+}
+
 /* View Selector Styles */
 .aggrid-view-selector {
     display: inline-flex;

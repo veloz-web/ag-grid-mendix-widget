@@ -23,6 +23,7 @@ import { AGGridContainerProps } from "./types";
 
 // Import UI Components
 import { Toolbar } from "./components/Toolbar";
+import type { CustomToolbarButton } from "./components/Toolbar";
 import { FilterDrawer } from "./components/FilterDrawer";
 import { ViewRenderer } from "./components/viewRenderer";
 // ColumnVisibilityPopover replaced by HiddenDrawer
@@ -623,6 +624,24 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
     const showViewSelector = hasCardTemplate || hasListTemplate;
     const storageKey = `aggrid:${props.name || "default"}`;
 
+    // Map custom toolbar buttons from Mendix props to internal format
+    const customButtons: CustomToolbarButton[] = useMemo(() => {
+        if (!props.toolbarButtons || props.toolbarButtons.length === 0) return [];
+        return props.toolbarButtons.map((btn: any) => ({
+            buttonLabel: btn.buttonLabel ?? "Button",
+            buttonStyle: btn.buttonStyle ?? "default",
+            buttonIcon: btn.buttonIcon ?? "none",
+            buttonPosition: btn.buttonPosition ?? "right",
+            buttonVisible: btn.buttonVisible !== false,
+            buttonDisabled: btn.buttonDisabled === true,
+            onAction: () => {
+                if (btn.buttonAction?.canExecute) {
+                    btn.buttonAction.execute();
+                }
+            }
+        }));
+    }, [props.toolbarButtons]);
+
     return (
         <div className="aggrid-container">
             <ToastContainer
@@ -682,6 +701,7 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
                 addButtonLabel={addConfig.addButton.label}
                 onAddRow={handleAddRow}
                 onExportRequest={handleExportRequest}
+                customButtons={customButtons}
             />
             )}
 

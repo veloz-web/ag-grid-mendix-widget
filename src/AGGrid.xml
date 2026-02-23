@@ -602,6 +602,74 @@
                     <description>Label text for the add button.</description>
                 </property>
             </propertyGroup>
+            <propertyGroup caption="Custom Toolbar Buttons">
+                <property key="toolbarButtons" type="object" isList="true" required="false">
+                    <caption>Toolbar Buttons</caption>
+                    <description>Define custom buttons that appear in the toolbar. Each button can trigger a Mendix action (microflow, nanoflow, or open page).</description>
+                    <properties>
+                        <propertyGroup caption="Button">
+                            <property key="buttonLabel" type="string" required="true">
+                                <caption>Label</caption>
+                                <description>Text displayed on the button.</description>
+                            </property>
+                            <property key="buttonStyle" type="enumeration" defaultValue="default" required="true">
+                                <caption>Style</caption>
+                                <description>Visual style of the button.</description>
+                                <enumerationValues>
+                                    <enumerationValue key="default">Default</enumerationValue>
+                                    <enumerationValue key="primary">Primary</enumerationValue>
+                                    <enumerationValue key="success">Success</enumerationValue>
+                                    <enumerationValue key="danger">Danger</enumerationValue>
+                                    <enumerationValue key="warning">Warning</enumerationValue>
+                                    <enumerationValue key="info">Info</enumerationValue>
+                                </enumerationValues>
+                            </property>
+                            <property key="buttonIcon" type="enumeration" defaultValue="none" required="true">
+                                <caption>Icon</caption>
+                                <description>Icon displayed before the button label.</description>
+                                <enumerationValues>
+                                    <enumerationValue key="none">None</enumerationValue>
+                                    <enumerationValue key="plus">Plus (+)</enumerationValue>
+                                    <enumerationValue key="edit">Edit (pencil)</enumerationValue>
+                                    <enumerationValue key="trash">Trash (delete)</enumerationValue>
+                                    <enumerationValue key="refresh">Refresh</enumerationValue>
+                                    <enumerationValue key="download">Download</enumerationValue>
+                                    <enumerationValue key="upload">Upload</enumerationValue>
+                                    <enumerationValue key="check">Check (✓)</enumerationValue>
+                                    <enumerationValue key="close">Close (✕)</enumerationValue>
+                                    <enumerationValue key="search">Search</enumerationValue>
+                                    <enumerationValue key="settings">Settings (gear)</enumerationValue>
+                                    <enumerationValue key="link">Link</enumerationValue>
+                                    <enumerationValue key="copy">Copy</enumerationValue>
+                                    <enumerationValue key="save">Save</enumerationValue>
+                                    <enumerationValue key="mail">Mail (envelope)</enumerationValue>
+                                    <enumerationValue key="print">Print</enumerationValue>
+                                </enumerationValues>
+                            </property>
+                            <property key="buttonPosition" type="enumeration" defaultValue="right" required="true">
+                                <caption>Position</caption>
+                                <description>Where to place the button in the toolbar.</description>
+                                <enumerationValues>
+                                    <enumerationValue key="left">Left</enumerationValue>
+                                    <enumerationValue key="right">Right</enumerationValue>
+                                </enumerationValues>
+                            </property>
+                            <property key="buttonVisible" type="boolean" defaultValue="true">
+                                <caption>Visible</caption>
+                                <description>Whether the button is visible.</description>
+                            </property>
+                            <property key="buttonDisabled" type="boolean" defaultValue="false">
+                                <caption>Disabled</caption>
+                                <description>Whether the button is disabled (greyed out, not clickable).</description>
+                            </property>
+                            <property key="buttonAction" type="action" required="true">
+                                <caption>On Click Action</caption>
+                                <description>The Mendix action to execute when this button is clicked (microflow, nanoflow, or open page).</description>
+                            </property>
+                        </propertyGroup>
+                    </properties>
+                </property>
+            </propertyGroup>
         </propertyGroup>
         <propertyGroup caption="Grid Options">
             <property key="agGridVersion" type="string" required="false" defaultValue="35.1.0">
@@ -612,11 +680,11 @@
                 <caption>Version Synced</caption>
                 <description>Date and time when the AG Grid version was last updated. Automatically set by the build script when the version changes.</description>
             </property>
-            <property key="widgetBuildDate" type="string" required="false" defaultValue="2026-02-18 19:53:28 UTC">
+            <property key="widgetBuildDate" type="string" required="false" defaultValue="2026-02-23 17:43:59 UTC">
                 <caption>Widget Build Date</caption>
                 <description>Date and time when this widget was last built. Automatically stamped on every build/release.</description>
             </property>
-            <property key="widgetBuildCommit" type="string" required="false" defaultValue="f2d1fef">
+            <property key="widgetBuildCommit" type="string" required="false" defaultValue="4d02f32">
                 <caption>Build Commit</caption>
                 <description>Git short commit hash of the source code used for this build. Automatically stamped on every build/release.</description>
             </property>

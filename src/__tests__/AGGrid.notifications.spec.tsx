@@ -103,6 +103,7 @@ describe("AGGrid - Toast Notifications", () => {
             enableRowAdd: false,
             addShowInToolbar: true,
             addButtonLabel: "Add",
+            toolbarButtons: [],
             enableContextMenu: false,
             enableToolbarFilterSearch: false,
             enableCsvExport: false,

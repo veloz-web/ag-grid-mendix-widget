@@ -96,6 +96,22 @@ export type RowSelectionModeEnum = "none" | "single" | "multiple";
 
 export type EditModeEnum = "cell" | "row";
 
+export type ButtonStyleEnum = "default" | "primary" | "success" | "danger" | "warning" | "info";
+
+export type ButtonIconEnum = "none" | "plus" | "edit" | "trash" | "refresh" | "download" | "upload" | "check" | "close" | "search" | "settings" | "link" | "copy" | "save" | "mail" | "print";
+
+export type ButtonPositionEnum = "left" | "right";
+
+export interface ToolbarButtonsType {
+    buttonLabel: string;
+    buttonStyle: ButtonStyleEnum;
+    buttonIcon: ButtonIconEnum;
+    buttonPosition: ButtonPositionEnum;
+    buttonVisible: boolean;
+    buttonDisabled: boolean;
+    buttonAction?: ActionValue;
+}
+
 export type PaginationPositionEnum = "bottom" | "top";
 
 export type DomLayoutEnum = "normal" | "autoHeight" | "print";
@@ -165,6 +181,16 @@ export interface CustomFormattersPreviewType {
     formatterConfig: string;
 }
 
+export interface ToolbarButtonsPreviewType {
+    buttonLabel: string;
+    buttonStyle: ButtonStyleEnum;
+    buttonIcon: ButtonIconEnum;
+    buttonPosition: ButtonPositionEnum;
+    buttonVisible: boolean;
+    buttonDisabled: boolean;
+    buttonAction: {} | null;
+}
+
 export interface AGGridContainerProps {
     name: string;
     class: string;
@@ -223,6 +249,7 @@ export interface AGGridContainerProps {
     enableRowAdd: boolean;
     addShowInToolbar: boolean;
     addButtonLabel: string;
+    toolbarButtons: ToolbarButtonsType[];
     agGridVersion: string;
     agGridVersionDate: string;
     widgetBuildDate: string;
@@ -330,6 +357,7 @@ export interface AGGridPreviewProps {
     enableRowAdd: boolean;
     addShowInToolbar: boolean;
     addButtonLabel: string;
+    toolbarButtons: ToolbarButtonsPreviewType[];
     agGridVersion: string;
     agGridVersionDate: string;
     widgetBuildDate: string;
