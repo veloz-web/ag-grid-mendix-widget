@@ -23,38 +23,9 @@ export type FilterLocationEnum = "none" | "drawer" | "toolbar";
 
 export type AggregationFunctionEnum = "sum" | "min" | "max" | "avg" | "count" | "first" | "last";
 
-export type FormatterEnum =
-    | "none"
-    | "currency"
-    | "currencyEUR"
-    | "currencyGBP"
-    | "percentage"
-    | "number"
-    | "decimal2"
-    | "dateShort"
-    | "dateLong"
-    | "dateISO"
-    | "dateDMY"
-    | "dateMDY"
-    | "dateYMD"
-    | "dateTime"
-    | "time"
-    | "yesNo"
-    | "trueFalse"
-    | "uppercase"
-    | "lowercase"
-    | "capitalize"
-    | "customPrefix"
-    | "link";
+export type FormatterEnum = "none" | "currency" | "currencyEUR" | "currencyGBP" | "percentage" | "number" | "decimal2" | "dateShort" | "dateLong" | "dateISO" | "dateDMY" | "dateMDY" | "dateYMD" | "dateTime" | "time" | "yesNo" | "trueFalse" | "uppercase" | "lowercase" | "capitalize" | "customPrefix" | "link";
 
-export type EditorTypeEnum =
-    | "text"
-    | "number"
-    | "date"
-    | "datetime"
-    | "boolean"
-    | "select"
-    | "richSelect";
+export type EditorTypeEnum = "text" | "number" | "date" | "datetime" | "boolean" | "select" | "richSelect";
 
 export interface ColumnsType {
     header: DynamicValue<string>;
@@ -127,23 +98,7 @@ export type EditModeEnum = "cell" | "row";
 
 export type ButtonStyleEnum = "default" | "primary" | "success" | "danger" | "warning" | "info";
 
-export type ButtonIconEnum =
-    | "none"
-    | "plus"
-    | "edit"
-    | "trash"
-    | "refresh"
-    | "download"
-    | "upload"
-    | "check"
-    | "close"
-    | "search"
-    | "settings"
-    | "link"
-    | "copy"
-    | "save"
-    | "mail"
-    | "print";
+export type ButtonIconEnum = "none" | "plus" | "edit" | "trash" | "refresh" | "download" | "upload" | "check" | "close" | "search" | "settings" | "link" | "copy" | "save" | "mail" | "print";
 
 export type ButtonPositionEnum = "left" | "right";
 
@@ -169,13 +124,7 @@ export type ThemeVariantEnum = "auto" | "light" | "dark";
 
 export type PdfPageOrientationEnum = "landscape" | "portrait";
 
-export type ToastPositionEnum =
-    | "topLeft"
-    | "topCenter"
-    | "topRight"
-    | "bottomLeft"
-    | "bottomCenter"
-    | "bottomRight";
+export type ToastPositionEnum = "topLeft" | "topCenter" | "topRight" | "bottomLeft" | "bottomCenter" | "bottomRight";
 
 export interface ColumnsPreviewType {
     header: string;
