@@ -19,7 +19,7 @@ jest.mock("../agGridModules", () => ({
 }));
 
 // Track what selection config the mock AgGridReact received
-let capturedSelectionConfig: any = undefined;
+let capturedSelectionConfig: any;
 let capturedOnSelectionChanged: ((event: any) => void) | undefined;
 let mockGridApi: any = {};
 
@@ -27,9 +27,10 @@ jest.mock("ag-grid-react", () => ({
     AgGridReact: (props: any) => {
         capturedSelectionConfig = props.rowSelection;
         capturedOnSelectionChanged = props.onSelectionChanged;
+        const { onGridReady } = props;
 
         React.useEffect(() => {
-            if (props.onGridReady) {
+            if (onGridReady) {
                 mockGridApi = {
                     sizeColumnsToFit: jest.fn(),
                     setFilterModel: jest.fn(),
@@ -52,7 +53,7 @@ jest.mock("ag-grid-react", () => ({
                     setSortModel: jest.fn(),
                     applyTransaction: jest.fn()
                 };
-                props.onGridReady({
+                onGridReady({
                     api: mockGridApi,
                     columnApi: {
                         getAllColumns: jest.fn(() => []),
@@ -63,7 +64,7 @@ jest.mock("ag-grid-react", () => ({
                     }
                 });
             }
-        }, [props.onGridReady]);
+        }, [onGridReady]);
 
         return <div data-testid="ag-grid" />;
     }

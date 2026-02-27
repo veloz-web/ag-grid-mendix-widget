@@ -36,7 +36,7 @@ export function ViewSelector(props: ViewSelectorProps): ReactElement {
                     htmlFor={`${baseId}-grid`}
                     className="view-label fas fa-table"
                     title="Grid View"
-                ></label>
+                />
 
                 {hasCardTemplate && (
                     <>
@@ -53,7 +53,7 @@ export function ViewSelector(props: ViewSelectorProps): ReactElement {
                             htmlFor={`${baseId}-cards`}
                             className="view-label fas fa-grid"
                             title="Card View"
-                        ></label>
+                        />
                     </>
                 )}
 
@@ -72,7 +72,7 @@ export function ViewSelector(props: ViewSelectorProps): ReactElement {
                             htmlFor={`${baseId}-list`}
                             className="view-label fas fa-list"
                             title="List View"
-                        ></label>
+                        />
                     </>
                 )}
             </div>

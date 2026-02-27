@@ -11,10 +11,11 @@ jest.mock("ag-grid-react", () => ({
     AgGridReact: (props: any) => {
         capturedAgGridProps = props;
         capturedOnSelectionChanged = props.onSelectionChanged;
+        const { onGridReady } = props;
 
         React.useEffect(() => {
-            if (props.onGridReady) {
-                props.onGridReady({
+            if (onGridReady) {
+                onGridReady({
                     api: {
                         sizeColumnsToFit: jest.fn(),
                         setFilterModel: jest.fn(),
@@ -31,7 +32,7 @@ jest.mock("ag-grid-react", () => ({
                     }
                 });
             }
-        }, [props.onGridReady]);
+        }, [onGridReady]);
 
         return (
             <div data-testid="ag-grid" data-row-selection={JSON.stringify(props.rowSelection)}>

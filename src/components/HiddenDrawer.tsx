@@ -50,7 +50,7 @@ export function HiddenDrawer(props: HiddenDrawerProps): ReactElement | null {
 
     return (
         <div className="aggrid-filter-drawer">
-            <div className="filter-drawer-overlay" onClick={onClose} aria-hidden="true"></div>
+            <div className="filter-drawer-overlay" onClick={onClose} aria-hidden="true" />
             <div
                 ref={drawerRef}
                 className="filter-drawer-content"

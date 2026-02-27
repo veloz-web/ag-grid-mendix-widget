@@ -22,10 +22,11 @@ let capturedProps: Record<string, any> = {};
 jest.mock("ag-grid-react", () => ({
     AgGridReact: (props: any) => {
         capturedProps = props;
+        const { onGridReady } = props;
 
         React.useEffect(() => {
-            if (props.onGridReady) {
-                props.onGridReady({
+            if (onGridReady) {
+                onGridReady({
                     api: {
                         sizeColumnsToFit: jest.fn(),
                         setFilterModel: jest.fn(),
@@ -57,7 +58,7 @@ jest.mock("ag-grid-react", () => ({
                     }
                 });
             }
-        }, [props.onGridReady]);
+        }, [onGridReady]);
 
         return <div data-testid="ag-grid" />;
     }
@@ -495,16 +496,14 @@ describe("AGGrid – Grid Config E2E", () => {
         });
 
         it("hides filter button along with toolbar when hidden", () => {
-            const { container } = render(
-                <AGGrid {...baseWidgetProps} showToolbar={false} enableFilterDrawer={true} />
-            );
+            render(<AGGrid {...baseWidgetProps} showToolbar={false} enableFilterDrawer={true} />);
 
             const filterButton = screen.queryByRole("button", { name: /filters/i });
             expect(filterButton).not.toBeInTheDocument();
         });
 
         it("hides column visibility button along with toolbar when hidden", () => {
-            const { container } = render(<AGGrid {...baseWidgetProps} showToolbar={false} />);
+            render(<AGGrid {...baseWidgetProps} showToolbar={false} />);
 
             const colVisButton = screen.queryByRole("button", { name: /column visibility/i });
             expect(colVisButton).not.toBeInTheDocument();

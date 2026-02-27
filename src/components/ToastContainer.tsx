@@ -1,5 +1,4 @@
 // src/components/ToastContainer.tsx
-import React from "react";
 
 export const ToastContainer = ({ notifications, onDismiss, position }) => {
     if (notifications.length === 0) {
@@ -23,7 +22,7 @@ export const ToastContainer = ({ notifications, onDismiss, position }) => {
         <div className={`aggrid-toast-container ${position}`}>
             {notifications.map((toast) => (
                 <div key={toast.id} className={`aggrid-toast toast-${toast.type}`}>
-                    <i className={`aggrid-toast-icon glyphicon ${getIconClass(toast.type)}`}></i>
+                    <i className={`aggrid-toast-icon glyphicon ${getIconClass(toast.type)}`} />
                     <div className="aggrid-toast-content">
                         <div className="aggrid-toast-message">{toast.message}</div>
                     </div>
@@ -32,7 +31,7 @@ export const ToastContainer = ({ notifications, onDismiss, position }) => {
                         onClick={() => onDismiss(toast.id)}
                         title="Dismiss"
                     >
-                        <i className="glyphicon glyphicon-remove"></i>
+                        <i className="glyphicon glyphicon-remove" />
                     </button>
                 </div>
             ))}

@@ -105,7 +105,7 @@ export function ListView(props: ListViewProps): ReactElement {
                                         className={`sr-callout-preview ${getStatusClassName(
                                             getValue(item, "Status")
                                         )}`}
-                                    ></div>
+                                    />
                                     <div className="sr-callout-full">
                                         <span>{getValue(item, "Status")}</span>
                                     </div>

@@ -115,7 +115,7 @@ export function FilterDrawer(props: FilterDrawerProps): ReactElement | null {
             onKeyDown={handleKeyDown}
             tabIndex={-1}
         >
-            <div className="filter-drawer-overlay" onClick={onClose}></div>
+            <div className="filter-drawer-overlay" onClick={onClose} />
             <div
                 className="filter-drawer-content"
                 role="dialog"

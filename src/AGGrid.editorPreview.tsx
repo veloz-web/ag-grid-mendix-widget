@@ -304,7 +304,9 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                         ))}
                     </ul>
                     <div style={{ marginTop: "8px", fontStyle: "italic", fontSize: "12px" }}>
-                        💡 Tip: For large datasets with pagination, keep DOM Layout set to "Normal"
+                        {
+                            '💡 Tip: For large datasets with pagination, keep DOM Layout set to "Normal"'
+                        }
                     </div>
                 </div>
             )}
@@ -499,7 +501,7 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                                     }}
                                     title="Cards view available (custom template configured)"
                                 >
-                                    <i className="fas fa-grid"></i> Cards
+                                    <i className="fas fa-grid" /> Cards
                                 </div>
                             )}
                             {hasListTemplate && (
@@ -512,7 +514,7 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                                     }}
                                     title="List view available (custom template configured)"
                                 >
-                                    <i className="fas fa-list"></i> List
+                                    <i className="fas fa-list" /> List
                                 </div>
                             )}
                             <div
@@ -524,7 +526,7 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                                 }}
                                 title="Grid view (default - always available)"
                             >
-                                <i className="fas fa-table"></i> Grid
+                                <i className="fas fa-table" /> Grid
                             </div>
                         </div>
                     )}
@@ -559,10 +561,7 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                                         }}
                                         title={`Toolbar filter for ${col.header || col.attribute}`}
                                     >
-                                        <i
-                                            className="fas fa-filter"
-                                            style={{ fontSize: "12px" }}
-                                        ></i>
+                                        <i className="fas fa-filter" style={{ fontSize: "12px" }} />
                                         <span>{col.header || col.attribute}</span>
                                         <select
                                             style={{
@@ -603,7 +602,7 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                                     .map((c) => c.header || c.attribute)
                                     .join(", ")}`}
                             >
-                                <i className="fas fa-sliders-h"></i>
+                                <i className="fas fa-sliders-h" />
                                 Filters ({filterableColumns.length})
                             </div>
                         )}
@@ -760,7 +759,7 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                                             <i
                                                 className="fas fa-eye"
                                                 style={{ color: "#1976d2", cursor: "pointer" }}
-                                            ></i>
+                                            />
                                         ) : (
                                             `Sample data ${rowIdx}`
                                         )}
@@ -1025,7 +1024,7 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                                     fontSize: "14px",
                                     color: enablePolling ? "#7b1fa2" : "#999"
                                 }}
-                            ></i>
+                            />
                             <strong>Polling:</strong>
                             <span style={{ color: enablePolling ? "#7b1fa2" : "#999" }}>
                                 {enablePolling ? (
@@ -1045,7 +1044,7 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                                     fontSize: "14px",
                                     color: enableNotifications ? "#7b1fa2" : "#999"
                                 }}
-                            ></i>
+                            />
                             <strong>Notifications:</strong>
                             <span style={{ color: enableNotifications ? "#7b1fa2" : "#999" }}>
                                 {enableNotifications ? "✓ ON" : "✗ OFF"}

@@ -101,7 +101,7 @@ export function HardenCardView(props: HardenCardViewProps): ReactElement {
                                         className={`"widget-soarcustomspan ${getStatusClassName(
                                             getValue(item, "Status")
                                         )}`}
-                                    ></span>
+                                    />
                                 </div>
                             </div>
                             <div className="sr-callout-full">
@@ -117,7 +117,7 @@ export function HardenCardView(props: HardenCardViewProps): ReactElement {
                         {/* Card Container */}
                         <div className="sr-card-container sr-li-selectable">
                             {/* Main Blocker */}
-                            <span className="sr-card-callout-shield"></span>
+                            <span className="sr-card-callout-shield" />
                             <div className="sr-card-main" onClick={() => handleCardClick(item)}>
                                 {/* Card Header */}
                                 <div className="sr-card-header">

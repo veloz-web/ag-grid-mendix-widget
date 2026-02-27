@@ -10,10 +10,11 @@ let capturedProps: Record<string, any> = {};
 jest.mock("ag-grid-react", () => ({
     AgGridReact: (props: any) => {
         capturedProps = props;
+        const { onGridReady } = props;
 
         React.useEffect(() => {
-            if (props.onGridReady) {
-                props.onGridReady({
+            if (onGridReady) {
+                onGridReady({
                     api: {
                         sizeColumnsToFit: jest.fn(),
                         setFilterModel: jest.fn(),
@@ -28,7 +29,7 @@ jest.mock("ag-grid-react", () => ({
                     }
                 });
             }
-        }, [props.onGridReady]);
+        }, [onGridReady]);
 
         return (
             <div
