@@ -527,7 +527,9 @@ export function buildColumnDefs(
 
     // If row height mode is "auto", enable wrapText and autoHeight on ALL columns
     if (rowHeightMode === "auto") {
-        console.log("[AGGrid] Row height mode is 'auto' - enabling wrapText and autoHeight on all columns");
+        console.log(
+            "[AGGrid] Row height mode is 'auto' - enabling wrapText and autoHeight on all columns"
+        );
         colDefs.forEach((colDef, idx) => {
             colDef.wrapText = true;
             colDef.autoHeight = true;

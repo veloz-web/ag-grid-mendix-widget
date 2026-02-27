@@ -748,9 +748,12 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                                             flex: col.width ? `0 0 ${col.width}px` : "1",
                                             minWidth: col.width || 150,
                                             color: "#666",
-                                            whiteSpace: rowHeightMode === "auto" ? "normal" : "nowrap",
-                                            overflow: rowHeightMode === "auto" ? "visible" : "hidden",
-                                            textOverflow: rowHeightMode === "auto" ? "clip" : "ellipsis"
+                                            whiteSpace:
+                                                rowHeightMode === "auto" ? "normal" : "nowrap",
+                                            overflow:
+                                                rowHeightMode === "auto" ? "visible" : "hidden",
+                                            textOverflow:
+                                                rowHeightMode === "auto" ? "clip" : "ellipsis"
                                         }}
                                     >
                                         {col.formatter === "link" ? (

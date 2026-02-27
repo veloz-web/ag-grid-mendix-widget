@@ -231,24 +231,13 @@ describe("AGGrid – Grid Config E2E", () => {
         });
 
         it("disables pagination entirely", () => {
-            render(
-                <AGGrid
-                    {...baseWidgetProps}
-                    pagination={false}
-                />
-            );
+            render(<AGGrid {...baseWidgetProps} pagination={false} />);
 
             expect(capturedProps.pagination).toBe(false);
         });
 
         it("passes custom page size through the pipeline", () => {
-            render(
-                <AGGrid
-                    {...baseWidgetProps}
-                    pagination={true}
-                    pageSize={100}
-                />
-            );
+            render(<AGGrid {...baseWidgetProps} pagination={true} pageSize={100} />);
 
             expect(capturedProps.paginationPageSize).toBe(100);
         });
@@ -463,27 +452,21 @@ describe("AGGrid – Grid Config E2E", () => {
     // ══════════════════════════════════════════════
     describe("Toolbar Visibility", () => {
         it("renders toolbar by default (showToolbar=true)", () => {
-            const { container } = render(
-                <AGGrid {...baseWidgetProps} showToolbar={true} />
-            );
+            const { container } = render(<AGGrid {...baseWidgetProps} showToolbar={true} />);
 
             const toolbar = container.querySelector(".aggrid-toolbar");
             expect(toolbar).toBeInTheDocument();
         });
 
         it("hides toolbar when showToolbar is false", () => {
-            const { container } = render(
-                <AGGrid {...baseWidgetProps} showToolbar={false} />
-            );
+            const { container } = render(<AGGrid {...baseWidgetProps} showToolbar={false} />);
 
             const toolbar = container.querySelector(".aggrid-toolbar");
             expect(toolbar).not.toBeInTheDocument();
         });
 
         it("still renders the grid when toolbar is hidden", () => {
-            render(
-                <AGGrid {...baseWidgetProps} showToolbar={false} />
-            );
+            render(<AGGrid {...baseWidgetProps} showToolbar={false} />);
 
             const grids = screen.getAllByTestId("ag-grid");
             expect(grids.length).toBeGreaterThan(0);
@@ -491,11 +474,7 @@ describe("AGGrid – Grid Config E2E", () => {
 
         it("renders toolbar search when toolbar is visible", () => {
             const { container } = render(
-                <AGGrid
-                    {...baseWidgetProps}
-                    showToolbar={true}
-                    showToolbarSearch={true}
-                />
+                <AGGrid {...baseWidgetProps} showToolbar={true} showToolbarSearch={true} />
             );
 
             const toolbar = container.querySelector(".aggrid-toolbar");
@@ -504,11 +483,7 @@ describe("AGGrid – Grid Config E2E", () => {
 
         it("hides toolbar search along with toolbar when hidden", () => {
             const { container } = render(
-                <AGGrid
-                    {...baseWidgetProps}
-                    showToolbar={false}
-                    showToolbarSearch={true}
-                />
+                <AGGrid {...baseWidgetProps} showToolbar={false} showToolbarSearch={true} />
             );
 
             const toolbar = container.querySelector(".aggrid-toolbar");
@@ -521,11 +496,7 @@ describe("AGGrid – Grid Config E2E", () => {
 
         it("hides filter button along with toolbar when hidden", () => {
             const { container } = render(
-                <AGGrid
-                    {...baseWidgetProps}
-                    showToolbar={false}
-                    enableFilterDrawer={true}
-                />
+                <AGGrid {...baseWidgetProps} showToolbar={false} enableFilterDrawer={true} />
             );
 
             const filterButton = screen.queryByRole("button", { name: /filters/i });
@@ -533,12 +504,7 @@ describe("AGGrid – Grid Config E2E", () => {
         });
 
         it("hides column visibility button along with toolbar when hidden", () => {
-            const { container } = render(
-                <AGGrid
-                    {...baseWidgetProps}
-                    showToolbar={false}
-                />
-            );
+            const { container } = render(<AGGrid {...baseWidgetProps} showToolbar={false} />);
 
             const colVisButton = screen.queryByRole("button", { name: /column visibility/i });
             expect(colVisButton).not.toBeInTheDocument();
@@ -566,7 +532,9 @@ describe("AGGrid – Grid Config E2E", () => {
                     enableRowDelete={true}
                     deleteShowInToolbar={true}
                     rowSelectionMode="multiple"
-                    onDeleteRow={{ get: jest.fn(() => ({ canExecute: true, execute: jest.fn() })) } as any}
+                    onDeleteRow={
+                        { get: jest.fn(() => ({ canExecute: true, execute: jest.fn() })) } as any
+                    }
                 />
             );
 
@@ -581,7 +549,9 @@ describe("AGGrid – Grid Config E2E", () => {
                     showToolbar={false}
                     enableRowAdd={true}
                     addShowInToolbar={true}
-                    onAddRow={{ get: jest.fn(() => ({ canExecute: true, execute: jest.fn() })) } as any}
+                    onAddRow={
+                        { get: jest.fn(() => ({ canExecute: true, execute: jest.fn() })) } as any
+                    }
                 />
             );
 

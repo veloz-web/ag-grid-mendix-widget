@@ -22,8 +22,7 @@ import { ValueStatus } from "mendix";
 import { AGGridContainerProps } from "./types";
 
 // Import UI Components
-import { Toolbar } from "./components/Toolbar";
-import type { CustomToolbarButton } from "./components/Toolbar";
+import { Toolbar, type CustomToolbarButton } from "./components/Toolbar";
 import { FilterDrawer } from "./components/FilterDrawer";
 import { ViewRenderer } from "./components/viewRenderer";
 // ColumnVisibilityPopover replaced by HiddenDrawer
@@ -71,31 +70,31 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
     // Check for conflicting domLayout settings
     if (props.domLayout === "autoHeight" || props.domLayout === "print") {
         const errors: string[] = [];
-        
+
         if (props.pagination) {
             errors.push(
                 `DOM Layout "${props.domLayout}" conflicts with Pagination. ` +
-                `Auto Height and Print modes show all rows at once, making pagination ineffective. ` +
-                `Set DOM Layout to "Normal" or disable Pagination.`
+                    `Auto Height and Print modes show all rows at once, making pagination ineffective. ` +
+                    `Set DOM Layout to "Normal" or disable Pagination.`
             );
         }
-        
+
         if (!props.suppressRowVirtualisation) {
             errors.push(
                 `DOM Layout "${props.domLayout}" requires disabling Row Virtualization. ` +
-                `Auto Height and Print modes render ALL rows in the DOM at once. ` +
-                `Enable "Disable Virtualisation" or set DOM Layout to "Normal".`
+                    `Auto Height and Print modes render ALL rows in the DOM at once. ` +
+                    `Enable "Disable Virtualisation" or set DOM Layout to "Normal".`
             );
         }
-        
+
         if (props.rowModelType === "serverSide") {
             errors.push(
                 `DOM Layout "${props.domLayout}" is incompatible with Server-Side row model. ` +
-                `Server-Side is designed for large datasets with lazy loading, but ${props.domLayout} ` +
-                `loads all rows at once. Set DOM Layout to "Normal" or use Client-Side row model.`
+                    `Server-Side is designed for large datasets with lazy loading, but ${props.domLayout} ` +
+                    `loads all rows at once. Set DOM Layout to "Normal" or use Client-Side row model.`
             );
         }
-        
+
         if (errors.length > 0) {
             const errorMessage = [
                 "❌ AG Grid Configuration Error:",
@@ -104,7 +103,7 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
                 "",
                 "Fix these issues in the widget properties to continue."
             ].join("\n");
-            
+
             throw new Error(errorMessage);
         }
     }
@@ -569,6 +568,25 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
         }
     }, [addConfig.enableRowAdd, props.onAddRow, showToast]);
 
+    // Map custom toolbar buttons from Mendix props to internal format
+    // (must be above early returns to satisfy Rules of Hooks)
+    const customButtons: CustomToolbarButton[] = useMemo(() => {
+        if (!props.toolbarButtons || props.toolbarButtons.length === 0) return [];
+        return props.toolbarButtons.map((btn: any) => ({
+            buttonLabel: btn.buttonLabel ?? "Button",
+            buttonStyle: btn.buttonStyle ?? "default",
+            buttonIcon: btn.buttonIcon ?? "none",
+            buttonPosition: btn.buttonPosition ?? "right",
+            buttonVisible: btn.buttonVisible !== false,
+            buttonDisabled: btn.buttonDisabled === true,
+            onAction: () => {
+                if (btn.buttonAction?.canExecute) {
+                    btn.buttonAction.execute();
+                }
+            }
+        }));
+    }, [props.toolbarButtons]);
+
     // Loading states
     if (!dataSource || dataSource.status === ValueStatus.Loading) {
         return <div className="aggrid-loading">Loading...</div>;
@@ -624,24 +642,6 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
     const showViewSelector = hasCardTemplate || hasListTemplate;
     const storageKey = `aggrid:${props.name || "default"}`;
 
-    // Map custom toolbar buttons from Mendix props to internal format
-    const customButtons: CustomToolbarButton[] = useMemo(() => {
-        if (!props.toolbarButtons || props.toolbarButtons.length === 0) return [];
-        return props.toolbarButtons.map((btn: any) => ({
-            buttonLabel: btn.buttonLabel ?? "Button",
-            buttonStyle: btn.buttonStyle ?? "default",
-            buttonIcon: btn.buttonIcon ?? "none",
-            buttonPosition: btn.buttonPosition ?? "right",
-            buttonVisible: btn.buttonVisible !== false,
-            buttonDisabled: btn.buttonDisabled === true,
-            onAction: () => {
-                if (btn.buttonAction?.canExecute) {
-                    btn.buttonAction.execute();
-                }
-            }
-        }));
-    }, [props.toolbarButtons]);
-
     return (
         <div className="aggrid-container">
             <ToastContainer
@@ -651,58 +651,58 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
             />
 
             {props.showToolbar !== false && (
-            <Toolbar
-                enableViewSelector={showViewSelector}
-                currentView={currentView}
-                storageKey={storageKey}
-                onViewChange={setCurrentView}
-                hasCardTemplate={hasCardTemplate}
-                hasListTemplate={hasListTemplate}
-                toolbarFilters={toolbarFilters}
-                onToolbarFilterChange={handleToolbarFilterChange}
-                enableToolbarFilterSearch={props.enableToolbarFilterSearch !== false}
-                onResetToolbarFilters={handleToolbarResetFilters}
-                showSortControls={showSortControls}
-                hasSortApplied={hasSortApplied}
-                currentSortColumnId={currentSortColumnId}
-                currentSortDirection={currentSortDirection}
-                sortableColumns={sortableColumns}
-                onSortChange={handleToolbarSortChange}
-                onSortDirectionChange={handleToolbarSortDirectionChange}
-                showToolbarSearch={showToolbarSearch}
-                globalSearch={globalSearch}
-                onSearchChange={handleToolbarSearchChange}
-                onClearSearch={clearToolbarSearch}
-                enableFilterDrawer={enableFilterDrawer}
-                isFilterDrawerOpen={isFilterDrawerOpen}
-                activeFilterCount={activeFilterCount}
-                filterButtonRef={filterButtonRef}
-                onToggleFilterDrawer={toggleFilterDrawer}
-                isColumnVisibilityOpen={!!isHiddenDrawerOpen}
-                onToggleColumnVisibility={columnManagement.toggleColumnVisibility}
-                enableCsvExport={Boolean(props.enableCsvExport)}
-                onCsvExport={() => undefined} // Not used, we use onExportRequest
-                csvFileName={props.csvFileName}
-                enableExcelExport={Boolean(props.enableExcelExport)}
-                onExcelExport={() => undefined} // Not used, we use onExportRequest
-                excelFileName={props.excelFileName}
-                enablePdfExport={Boolean(props.enablePdfExport)}
-                onPdfExport={() => undefined} // Not used, we use onExportRequest
-                pdfFileName={props.pdfFileName}
-                enableRowDelete={deleteConfig.enableRowDelete}
-                showDeleteInToolbar={deleteConfig.deleteButton.showInToolbar}
-                deleteButtonLabel={deleteConfig.deleteButton.label}
-                deleteDisabled={
-                    deleteConfig.deleteButton.requireSelection && selectedRowCount === 0
-                }
-                onDeleteRows={handleToolbarDelete}
-                enableRowAdd={addConfig.enableRowAdd}
-                showAddInToolbar={addConfig.addButton.showInToolbar}
-                addButtonLabel={addConfig.addButton.label}
-                onAddRow={handleAddRow}
-                onExportRequest={handleExportRequest}
-                customButtons={customButtons}
-            />
+                <Toolbar
+                    enableViewSelector={showViewSelector}
+                    currentView={currentView}
+                    storageKey={storageKey}
+                    onViewChange={setCurrentView}
+                    hasCardTemplate={hasCardTemplate}
+                    hasListTemplate={hasListTemplate}
+                    toolbarFilters={toolbarFilters}
+                    onToolbarFilterChange={handleToolbarFilterChange}
+                    enableToolbarFilterSearch={props.enableToolbarFilterSearch !== false}
+                    onResetToolbarFilters={handleToolbarResetFilters}
+                    showSortControls={showSortControls}
+                    hasSortApplied={hasSortApplied}
+                    currentSortColumnId={currentSortColumnId}
+                    currentSortDirection={currentSortDirection}
+                    sortableColumns={sortableColumns}
+                    onSortChange={handleToolbarSortChange}
+                    onSortDirectionChange={handleToolbarSortDirectionChange}
+                    showToolbarSearch={showToolbarSearch}
+                    globalSearch={globalSearch}
+                    onSearchChange={handleToolbarSearchChange}
+                    onClearSearch={clearToolbarSearch}
+                    enableFilterDrawer={enableFilterDrawer}
+                    isFilterDrawerOpen={isFilterDrawerOpen}
+                    activeFilterCount={activeFilterCount}
+                    filterButtonRef={filterButtonRef}
+                    onToggleFilterDrawer={toggleFilterDrawer}
+                    isColumnVisibilityOpen={!!isHiddenDrawerOpen}
+                    onToggleColumnVisibility={columnManagement.toggleColumnVisibility}
+                    enableCsvExport={Boolean(props.enableCsvExport)}
+                    onCsvExport={() => undefined} // Not used, we use onExportRequest
+                    csvFileName={props.csvFileName}
+                    enableExcelExport={Boolean(props.enableExcelExport)}
+                    onExcelExport={() => undefined} // Not used, we use onExportRequest
+                    excelFileName={props.excelFileName}
+                    enablePdfExport={Boolean(props.enablePdfExport)}
+                    onPdfExport={() => undefined} // Not used, we use onExportRequest
+                    pdfFileName={props.pdfFileName}
+                    enableRowDelete={deleteConfig.enableRowDelete}
+                    showDeleteInToolbar={deleteConfig.deleteButton.showInToolbar}
+                    deleteButtonLabel={deleteConfig.deleteButton.label}
+                    deleteDisabled={
+                        deleteConfig.deleteButton.requireSelection && selectedRowCount === 0
+                    }
+                    onDeleteRows={handleToolbarDelete}
+                    enableRowAdd={addConfig.enableRowAdd}
+                    showAddInToolbar={addConfig.addButton.showInToolbar}
+                    addButtonLabel={addConfig.addButton.label}
+                    onAddRow={handleAddRow}
+                    onExportRequest={handleExportRequest}
+                    customButtons={customButtons}
+                />
             )}
 
             <ViewRenderer

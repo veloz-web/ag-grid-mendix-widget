@@ -122,7 +122,9 @@ describe("Toolbar - Custom Buttons", () => {
             const rightSection = container.querySelector(".aggrid-toolbar-right");
 
             expect(leftSection?.querySelector("[aria-label='Left Action']")).toBeInTheDocument();
-            expect(rightSection?.querySelector("[aria-label='Left Action']")).not.toBeInTheDocument();
+            expect(
+                rightSection?.querySelector("[aria-label='Left Action']")
+            ).not.toBeInTheDocument();
         });
 
         it("renders right-positioned buttons in the toolbar-right section", () => {
@@ -133,7 +135,9 @@ describe("Toolbar - Custom Buttons", () => {
             const rightSection = container.querySelector(".aggrid-toolbar-right");
 
             expect(rightSection?.querySelector("[aria-label='Right Action']")).toBeInTheDocument();
-            expect(leftSection?.querySelector("[aria-label='Right Action']")).not.toBeInTheDocument();
+            expect(
+                leftSection?.querySelector("[aria-label='Right Action']")
+            ).not.toBeInTheDocument();
         });
 
         it("renders buttons in both positions simultaneously", () => {
@@ -161,16 +165,13 @@ describe("Toolbar - Custom Buttons", () => {
             { style: "info", cssClass: "aggrid-custom-btn-info" }
         ];
 
-        it.each(styles)(
-            "applies $cssClass for $style style",
-            ({ style, cssClass }) => {
-                const btn = createButton({ buttonLabel: `${style} btn`, buttonStyle: style });
-                render(<Toolbar {...baseProps} customButtons={[btn]} />);
+        it.each(styles)("applies $cssClass for $style style", ({ style, cssClass }) => {
+            const btn = createButton({ buttonLabel: `${style} btn`, buttonStyle: style });
+            render(<Toolbar {...baseProps} customButtons={[btn]} />);
 
-                const button = screen.getByRole("button", { name: `${style} btn` });
-                expect(button).toHaveClass("aggrid-custom-btn", cssClass);
-            }
-        );
+            const button = screen.getByRole("button", { name: `${style} btn` });
+            expect(button).toHaveClass("aggrid-custom-btn", cssClass);
+        });
     });
 
     describe("Icons", () => {
@@ -182,24 +183,33 @@ describe("Toolbar - Custom Buttons", () => {
             expect(button.querySelector("svg")).not.toBeInTheDocument();
         });
 
-        const iconsWithSvg: CustomToolbarButton["buttonIcon"][] = [
-            "plus", "edit", "trash", "refresh", "download", "upload",
-            "check", "close", "search", "settings", "link", "copy",
-            "save", "mail", "print"
+        const iconsWithSvg: Array<CustomToolbarButton["buttonIcon"]> = [
+            "plus",
+            "edit",
+            "trash",
+            "refresh",
+            "download",
+            "upload",
+            "check",
+            "close",
+            "search",
+            "settings",
+            "link",
+            "copy",
+            "save",
+            "mail",
+            "print"
         ];
 
-        it.each(iconsWithSvg)(
-            "renders an SVG icon for '%s'",
-            (icon) => {
-                const btn = createButton({ buttonLabel: `Icon ${icon}`, buttonIcon: icon });
-                render(<Toolbar {...baseProps} customButtons={[btn]} />);
+        it.each(iconsWithSvg)("renders an SVG icon for '%s'", (icon) => {
+            const btn = createButton({ buttonLabel: `Icon ${icon}`, buttonIcon: icon });
+            render(<Toolbar {...baseProps} customButtons={[btn]} />);
 
-                const button = screen.getByRole("button", { name: `Icon ${icon}` });
-                const svg = button.querySelector("svg");
-                expect(svg).toBeInTheDocument();
-                expect(svg).toHaveAttribute("aria-hidden", "true");
-            }
-        );
+            const button = screen.getByRole("button", { name: `Icon ${icon}` });
+            const svg = button.querySelector("svg");
+            expect(svg).toBeInTheDocument();
+            expect(svg).toHaveAttribute("aria-hidden", "true");
+        });
     });
 
     describe("Visibility", () => {
@@ -351,7 +361,9 @@ describe("Toolbar - Custom Buttons", () => {
             );
 
             expect(screen.getByRole("button", { name: "Custom Action" })).toBeInTheDocument();
-            expect(screen.getByRole("button", { name: /delete selected rows/i })).toBeInTheDocument();
+            expect(
+                screen.getByRole("button", { name: /delete selected rows/i })
+            ).toBeInTheDocument();
         });
     });
 });

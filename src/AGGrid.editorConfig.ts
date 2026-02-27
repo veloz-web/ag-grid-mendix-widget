@@ -17,14 +17,12 @@ export function getProperties(
 }
 
 export function getPreview(values: AGGridPreviewProps): any {
-    const versionLabel = values.agGridVersion
-        ? `AG Grid v${values.agGridVersion}`
-        : "AG Grid";
-    const dateLabel = values.agGridVersionDate
-        ? ` · synced ${values.agGridVersionDate}`
-        : "";
+    const versionLabel = values.agGridVersion ? `AG Grid v${values.agGridVersion}` : "AG Grid";
+    const dateLabel = values.agGridVersionDate ? ` · synced ${values.agGridVersionDate}` : "";
     const buildLabel = values.widgetBuildDate
-        ? `Built ${values.widgetBuildDate}${values.widgetBuildCommit ? ` · ${values.widgetBuildCommit}` : ""}`
+        ? `Built ${values.widgetBuildDate}${
+              values.widgetBuildCommit ? ` · ${values.widgetBuildCommit}` : ""
+          }`
         : "";
 
     const children: any[] = [
@@ -149,7 +147,9 @@ export function validate(values: AGGridPreviewProps): Problem[] {
         if (values.pagination) {
             errors.push({
                 property: "domLayout",
-                message: `DOM Layout "${values.domLayout}" conflicts with Pagination. ${values.domLayout === "autoHeight" ? "Auto Height" : "Print"} mode shows all rows at once, making pagination ineffective. Set DOM Layout to "Normal" or disable Pagination.`,
+                message: `DOM Layout "${values.domLayout}" conflicts with Pagination. ${
+                    values.domLayout === "autoHeight" ? "Auto Height" : "Print"
+                } mode shows all rows at once, making pagination ineffective. Set DOM Layout to "Normal" or disable Pagination.`,
                 severity: "error"
             });
             errors.push({
@@ -162,7 +162,11 @@ export function validate(values: AGGridPreviewProps): Problem[] {
         if (!values.suppressRowVirtualisation) {
             errors.push({
                 property: "domLayout",
-                message: `DOM Layout "${values.domLayout}" requires Row Virtualization to be disabled. ${values.domLayout === "autoHeight" ? "Auto Height" : "Print"} mode renders ALL rows in the DOM at once. Enable "Disable Virtualisation" setting or set DOM Layout to "Normal".`,
+                message: `DOM Layout "${
+                    values.domLayout
+                }" requires Row Virtualization to be disabled. ${
+                    values.domLayout === "autoHeight" ? "Auto Height" : "Print"
+                } mode renders ALL rows in the DOM at once. Enable "Disable Virtualisation" setting or set DOM Layout to "Normal".`,
                 severity: "error"
             });
             errors.push({

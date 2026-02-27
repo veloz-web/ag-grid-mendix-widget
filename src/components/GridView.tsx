@@ -110,7 +110,7 @@ export function GridView(props: GridViewProps): ReactElement {
         pageSize,
         paginationPosition = "bottom",
         rowHeightMode = "fixed",
-    rowHeight,
+        rowHeight,
         rowHeightExpression,
         maxRowHeight = 0,
         rowClassMode = "none",
@@ -131,7 +131,7 @@ export function GridView(props: GridViewProps): ReactElement {
         cacheBlockSize = 100,
         maxBlocksInCache = 0,
         maxConcurrentRequests = 2,
-    onGridReady,
+        onGridReady,
         onRowClicked,
         onRowDoubleClicked,
         onCellEditCommit,
@@ -297,7 +297,7 @@ export function GridView(props: GridViewProps): ReactElement {
     const handleGridReady = useCallback(
         (params: GridReadyEvent) => {
             onGridReady(params);
-            
+
             // For auto row height mode, force AG Grid to recalculate row heights
             // after initial render to ensure wrapText/autoHeight take effect
             if (effectiveRowHeightMode === "auto") {

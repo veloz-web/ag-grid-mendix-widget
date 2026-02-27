@@ -321,33 +321,25 @@ describe("GridView – Grid Configuration Integration", () => {
     // ══════════════════════════════════════════════
     describe("Column Menus & Header Filters", () => {
         it("enables column menus by default", () => {
-            render(
-                <GridView {...baseProps} enableColumnMenus={true} />
-            );
+            render(<GridView {...baseProps} enableColumnMenus={true} />);
 
             expect(capturedProps.defaultColDef.suppressHeaderMenuButton).toBe(false);
         });
 
         it("suppresses column menus when disabled", () => {
-            render(
-                <GridView {...baseProps} enableColumnMenus={false} />
-            );
+            render(<GridView {...baseProps} enableColumnMenus={false} />);
 
             expect(capturedProps.defaultColDef.suppressHeaderMenuButton).toBe(true);
         });
 
         it("enables header filter buttons by default", () => {
-            render(
-                <GridView {...baseProps} enableHeaderFilterButtons={true} />
-            );
+            render(<GridView {...baseProps} enableHeaderFilterButtons={true} />);
 
             expect(capturedProps.defaultColDef.suppressHeaderFilterButton).toBe(false);
         });
 
         it("suppresses header filter buttons when disabled", () => {
-            render(
-                <GridView {...baseProps} enableHeaderFilterButtons={false} />
-            );
+            render(<GridView {...baseProps} enableHeaderFilterButtons={false} />);
 
             expect(capturedProps.defaultColDef.suppressHeaderFilterButton).toBe(true);
         });
@@ -596,7 +588,11 @@ describe("GridView – Grid Configuration Integration", () => {
         it("wires onColumnResized when persistColumnWidths is true", () => {
             const onColumnResized = jest.fn();
             render(
-                <GridView {...baseProps} persistColumnWidths={true} onColumnResized={onColumnResized} />
+                <GridView
+                    {...baseProps}
+                    persistColumnWidths={true}
+                    onColumnResized={onColumnResized}
+                />
             );
 
             expect(capturedProps.onColumnResized).toBeDefined();
@@ -605,7 +601,11 @@ describe("GridView – Grid Configuration Integration", () => {
         it("does not wire onColumnResized when persistColumnWidths is false", () => {
             const onColumnResized = jest.fn();
             render(
-                <GridView {...baseProps} persistColumnWidths={false} onColumnResized={onColumnResized} />
+                <GridView
+                    {...baseProps}
+                    persistColumnWidths={false}
+                    onColumnResized={onColumnResized}
+                />
             );
 
             expect(capturedProps.onColumnResized).toBeUndefined();

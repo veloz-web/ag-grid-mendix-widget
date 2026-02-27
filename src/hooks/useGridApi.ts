@@ -210,7 +210,8 @@ export const useGridApi = (
     props: AGGridContainerProps
 ) => {
     const gridApiRef = useRef<ExtendedGridApi | null>(null);
-    const { columnOrder, columnPinned, columnWidths, sortModel, globalSearch, gridFilterModel } = state;
+    const { columnOrder, columnPinned, columnWidths, sortModel, globalSearch, gridFilterModel } =
+        state;
 
     // --- Grid API Helpers ---
 
@@ -424,10 +425,12 @@ export const useGridApi = (
             return desiredPin !== currentPin;
         });
 
-        const widthsDiffer = hasDesiredWidths && currentColumnState.some((col) => {
-            const desiredWidth = desiredWidths[col.colId];
-            return desiredWidth !== undefined && desiredWidth !== col.width;
-        });
+        const widthsDiffer =
+            hasDesiredWidths &&
+            currentColumnState.some((col) => {
+                const desiredWidth = desiredWidths[col.colId];
+                return desiredWidth !== undefined && desiredWidth !== col.width;
+            });
 
         if (hasDesiredOrder && (orderDiffers || pinnedDiffers || widthsDiffer)) {
             const seen = new Set<string>();

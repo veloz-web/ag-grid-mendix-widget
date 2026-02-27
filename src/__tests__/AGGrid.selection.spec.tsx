@@ -229,12 +229,7 @@ describe("AGGrid – Row Selection Integration", () => {
         });
 
         it("passes rowSelectionMode='single' through to AgGridReact", () => {
-            render(
-                <AGGrid
-                    {...baseWidgetProps}
-                    rowSelectionMode="single"
-                />
-            );
+            render(<AGGrid {...baseWidgetProps} rowSelectionMode="single" />);
 
             expect(capturedSelectionConfig).toEqual({
                 mode: "singleRow",
@@ -244,12 +239,7 @@ describe("AGGrid – Row Selection Integration", () => {
         });
 
         it("passes rowSelectionMode='none' as undefined to AgGridReact", () => {
-            render(
-                <AGGrid
-                    {...baseWidgetProps}
-                    rowSelectionMode="none"
-                />
-            );
+            render(<AGGrid {...baseWidgetProps} rowSelectionMode="none" />);
 
             expect(capturedSelectionConfig).toBeUndefined();
         });
@@ -274,7 +264,9 @@ describe("AGGrid – Row Selection Integration", () => {
                     showSelectionCheckboxes={true}
                     enableRowDelete={true}
                     deleteRequireSelection={true}
-                    onDeleteRow={{ get: jest.fn(() => ({ canExecute: true, execute: jest.fn() })) } as any}
+                    onDeleteRow={
+                        { get: jest.fn(() => ({ canExecute: true, execute: jest.fn() })) } as any
+                    }
                 />
             );
 
@@ -305,7 +297,9 @@ describe("AGGrid – Row Selection Integration", () => {
                     showSelectionCheckboxes={true}
                     enableRowDelete={true}
                     deleteRequireSelection={true}
-                    onDeleteRow={{ get: jest.fn(() => ({ canExecute: true, execute: jest.fn() })) } as any}
+                    onDeleteRow={
+                        { get: jest.fn(() => ({ canExecute: true, execute: jest.fn() })) } as any
+                    }
                 />
             );
 
@@ -386,12 +380,16 @@ describe("AGGrid – Row Selection Integration", () => {
                     rowSelectionMode="none"
                     enableRowDelete={true}
                     deleteRequireSelection={true}
-                    onDeleteRow={{ get: jest.fn(() => ({ canExecute: true, execute: jest.fn() })) } as any}
+                    onDeleteRow={
+                        { get: jest.fn(() => ({ canExecute: true, execute: jest.fn() })) } as any
+                    }
                 />
             );
 
             expect(consoleSpy).toHaveBeenCalledWith(
-                expect.stringContaining("Row delete requires row selection but Row Selection Mode is 'None'")
+                expect.stringContaining(
+                    "Row delete requires row selection but Row Selection Mode is 'None'"
+                )
             );
 
             consoleSpy.mockRestore();
@@ -406,12 +404,16 @@ describe("AGGrid – Row Selection Integration", () => {
                     rowSelectionMode="single"
                     enableRowDelete={true}
                     bulkDeleteEnabled={true}
-                    onDeleteRow={{ get: jest.fn(() => ({ canExecute: true, execute: jest.fn() })) } as any}
+                    onDeleteRow={
+                        { get: jest.fn(() => ({ canExecute: true, execute: jest.fn() })) } as any
+                    }
                 />
             );
 
             expect(consoleSpy).toHaveBeenCalledWith(
-                expect.stringContaining("Bulk delete is enabled but Row Selection Mode is not 'Multiple'")
+                expect.stringContaining(
+                    "Bulk delete is enabled but Row Selection Mode is not 'Multiple'"
+                )
             );
 
             consoleSpy.mockRestore();
@@ -429,7 +431,9 @@ describe("AGGrid – Row Selection Integration", () => {
                     enableRowDelete={true}
                     bulkDeleteEnabled={true}
                     deleteRequireSelection={true}
-                    onDeleteRow={{ get: jest.fn(() => ({ canExecute: true, execute: jest.fn() })) } as any}
+                    onDeleteRow={
+                        { get: jest.fn(() => ({ canExecute: true, execute: jest.fn() })) } as any
+                    }
                 />
             );
 
@@ -462,7 +466,9 @@ describe("AGGrid – Row Selection Integration", () => {
                     enableRowDelete={true}
                     deleteShowInToolbar={true}
                     deleteRequireSelection={true}
-                    onDeleteRow={{ get: jest.fn(() => ({ canExecute: true, execute: jest.fn() })) } as any}
+                    onDeleteRow={
+                        { get: jest.fn(() => ({ canExecute: true, execute: jest.fn() })) } as any
+                    }
                 />
             );
 
@@ -480,7 +486,9 @@ describe("AGGrid – Row Selection Integration", () => {
                     enableRowDelete={true}
                     deleteShowInToolbar={true}
                     deleteRequireSelection={true}
-                    onDeleteRow={{ get: jest.fn(() => ({ canExecute: true, execute: jest.fn() })) } as any}
+                    onDeleteRow={
+                        { get: jest.fn(() => ({ canExecute: true, execute: jest.fn() })) } as any
+                    }
                 />
             );
 

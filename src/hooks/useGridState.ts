@@ -80,8 +80,7 @@ export function useGridState(
                 if ("columnVisibility" in updates)
                     persistUpdates.columnVisibility = updates.columnVisibility;
                 if ("columnOrder" in updates) persistUpdates.columnOrder = updates.columnOrder;
-                if ("columnWidths" in updates)
-                    persistUpdates.columnWidths = updates.columnWidths;
+                if ("columnWidths" in updates) persistUpdates.columnWidths = updates.columnWidths;
 
                 if (Object.keys(persistUpdates).length > 0) {
                     onPersist(persistUpdates);
@@ -144,7 +143,15 @@ export function useGridState(
             columnOrder,
             columnWidths
         };
-    }, [currentView, activeFilters, globalSearch, sortModel, columnVisibility, columnOrder, columnWidths]);
+    }, [
+        currentView,
+        activeFilters,
+        globalSearch,
+        sortModel,
+        columnVisibility,
+        columnOrder,
+        columnWidths
+    ]);
 
     return {
         state,

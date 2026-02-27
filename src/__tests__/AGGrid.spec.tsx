@@ -707,11 +707,7 @@ describe("AGGrid Component", () => {
             ];
 
             render(
-                <AGGrid
-                    {...mockProps}
-                    showToolbar={false}
-                    toolbarButtons={toolbarButtons as any}
-                />
+                <AGGrid {...mockProps} showToolbar={false} toolbarButtons={toolbarButtons as any} />
             );
 
             expect(screen.queryByRole("button", { name: "Hidden Action" })).not.toBeInTheDocument();

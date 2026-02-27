@@ -34,10 +34,7 @@ jest.mock("ag-grid-react", () => ({
         }, [props.onGridReady]);
 
         return (
-            <div
-                data-testid="ag-grid"
-                data-row-selection={JSON.stringify(props.rowSelection)}
-            >
+            <div data-testid="ag-grid" data-row-selection={JSON.stringify(props.rowSelection)}>
                 {props.columnDefs?.map((col: any, index: number) => (
                     <div key={index} data-testid={`column-${col.field}`}>
                         {col.headerName}
@@ -328,12 +325,7 @@ describe("GridView – Row Selection Integration", () => {
     // ──────────────────────────────────────────────
     describe("Single Selection Mode", () => {
         it("passes singleRow selection config to AgGridReact", () => {
-            render(
-                <GridView
-                    {...baseProps}
-                    rowSelectionMode="single"
-                />
-            );
+            render(<GridView {...baseProps} rowSelectionMode="single" />);
 
             expect(capturedAgGridProps.rowSelection).toEqual({
                 mode: "singleRow",
@@ -344,11 +336,7 @@ describe("GridView – Row Selection Integration", () => {
 
         it("does not show checkboxes in single selection mode", () => {
             render(
-                <GridView
-                    {...baseProps}
-                    rowSelectionMode="single"
-                    showSelectionCheckboxes={true}
-                />
+                <GridView {...baseProps} rowSelectionMode="single" showSelectionCheckboxes={true} />
             );
 
             // Even when showSelectionCheckboxes is true, single mode uses click selection only
@@ -370,9 +358,7 @@ describe("GridView – Row Selection Integration", () => {
             // Simulate selecting a single row
             const mockApi = {
                 getSelectedRows: jest.fn(() => [sampleRowData[1]]),
-                getSelectedNodes: jest.fn(() => [
-                    { data: sampleRowData[1], rowIndex: 1 }
-                ])
+                getSelectedNodes: jest.fn(() => [{ data: sampleRowData[1], rowIndex: 1 }])
             };
 
             act(() => {
@@ -390,12 +376,7 @@ describe("GridView – Row Selection Integration", () => {
     // ──────────────────────────────────────────────
     describe("No Selection Mode", () => {
         it("does not pass rowSelection when mode is none", () => {
-            render(
-                <GridView
-                    {...baseProps}
-                    rowSelectionMode="none"
-                />
-            );
+            render(<GridView {...baseProps} rowSelectionMode="none" />);
 
             expect(capturedAgGridProps.rowSelection).toBeUndefined();
         });
@@ -471,12 +452,7 @@ describe("GridView – Row Selection Integration", () => {
     // ──────────────────────────────────────────────
     describe("Selection Mode Transitions", () => {
         it("updates selection config when mode changes from none to multiple", () => {
-            const { rerender } = render(
-                <GridView
-                    {...baseProps}
-                    rowSelectionMode="none"
-                />
-            );
+            const { rerender } = render(<GridView {...baseProps} rowSelectionMode="none" />);
 
             expect(capturedAgGridProps.rowSelection).toBeUndefined();
 
@@ -507,12 +483,7 @@ describe("GridView – Row Selection Integration", () => {
 
             expect(capturedAgGridProps.rowSelection?.mode).toBe("multiRow");
 
-            rerender(
-                <GridView
-                    {...baseProps}
-                    rowSelectionMode="single"
-                />
-            );
+            rerender(<GridView {...baseProps} rowSelectionMode="single" />);
 
             expect(capturedAgGridProps.rowSelection).toEqual({
                 mode: "singleRow",
