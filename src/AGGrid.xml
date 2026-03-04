@@ -48,9 +48,19 @@
             </propertyGroup>
         </propertyGroup>
         <propertyGroup caption="Columns">
-            <property key="columns" type="object" isList="true" required="true">
+            <propertyGroup caption="Auto-Column Detection">
+                <property key="enableAutoColumns" type="boolean" defaultValue="false">
+                    <caption>Enable Auto Columns</caption>
+                    <description>Automatically detect and display all entity attributes as columns. Uses the Entity Name from Server-Side Configuration (or auto-detects from the datasource). When enabled, you don't need to manually define each column — the grid discovers attributes at runtime via the Mendix client API.</description>
+                </property>
+                <property key="autoColumnExclusions" type="string" required="false" defaultValue="">
+                    <caption>Exclude Attributes</caption>
+                    <description>Comma-separated list of attribute names to exclude from auto-detected columns (e.g., "createdDate,changedDate,System.owner"). Case-insensitive.</description>
+                </property>
+            </propertyGroup>
+            <property key="columns" type="object" isList="true" required="false">
                 <caption>Columns</caption>
-                <description>Define the columns to display</description>
+                <description>Define the columns to display. When Auto Columns is enabled, these are merged with (and override) auto-detected columns.</description>
                 <properties>
                     <propertyGroup caption="General">
                         <property key="header" type="textTemplate" required="true">

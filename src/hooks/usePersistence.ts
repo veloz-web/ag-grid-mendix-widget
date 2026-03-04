@@ -8,7 +8,7 @@ export const usePersistence = (props, state, setState, initialState) => {
 
     const savePersistedState = useCallback(
         (partial) => {
-            if (!shouldPersist || typeof window === "undefined") {
+            if (!shouldPersist || typeof window === "undefined" || !state) {
                 return;
             }
 
@@ -45,7 +45,9 @@ export const usePersistence = (props, state, setState, initialState) => {
             }
         }
         // Reset state to the calculated initial state
-        setState(initialState);
+        if (typeof setState === "function") {
+            setState(initialState);
+        }
         // todo: We also need to re-apply this to the gridApi
         // This logic should be moved to the useGridApi hook or main component
     }, [shouldPersist, storageKey, setState, initialState]);
