@@ -1,4 +1,4 @@
-import { render } from "@testing-library/react";
+import { render, act, renderHook } from "@testing-library/react";
 import { usePersistence } from "../usePersistence";
 
 type HookOptions = {
@@ -179,5 +179,83 @@ describe("usePersistence", () => {
 
         expect(removeItemSpy).toHaveBeenCalledWith(storageKey);
         expect(setStateMock).toHaveBeenCalledWith(initialState);
+    });
+});
+
+// ---------------------------------------------------------------------------
+// Regression: stale-closure bug – AGGrid.tsx calls usePersistence BEFORE
+// useGridState so the first (and only) savePersistedState reference is
+// created while state is still undefined. Even after re-renders provide real
+// state, the stale closure means saves are permanently no-ops.
+//
+// Fix: use a ref inside usePersistence so the callback always reads the
+// latest state without being recreated on every render.
+// ---------------------------------------------------------------------------
+describe("usePersistence – stale closure (AGGrid.tsx ordering regression)", () => {
+    afterEach(() => {
+        jest.restoreAllMocks();
+        window.localStorage.clear();
+    });
+
+    it("savePersistedState captured before state is available should save once state is provided on re-render (BUG: stale closure means it's a permanent no-op)", () => {
+        // This mirrors exactly what AGGrid.tsx does:
+        //   1st call: usePersistence(props, undefined, undefined, undefined)
+        //   2nd call: usePersistence(props, realState, setState, initialState)
+        // The function reference captured by useGridState on step 1 is reused for ALL
+        // saves. If it closes over the original `state = undefined`, nothing ever saves.
+        const setItemSpy = jest.spyOn(window.localStorage, "setItem");
+        const props = { name: "TestWidget", useLocalStorage: true };
+        const realState = createState({ globalSearch: "wired-up" });
+
+        let capturedSaveFn: ((partial: any) => void) | undefined;
+
+        const { rerender } = renderHook(
+            ({ stateArg }: { stateArg: any }) => {
+                const result = usePersistence(props, stateArg, jest.fn(), createState());
+                // Capture only on the FIRST render (undefined state) – same as AGGrid.tsx
+                if (!capturedSaveFn) capturedSaveFn = result.savePersistedState;
+                return result;
+            },
+            { initialProps: { stateArg: undefined } }
+        );
+
+        // Re-render now provides real state (simulates useGridState being ready)
+        act(() => {
+            rerender({ stateArg: realState });
+        });
+
+        // Call the function captured BEFORE state was available
+        // With stale closure: state is still undefined → no-op → BUG
+        // With ref fix:       ref.current is realState → persists → correct
+        capturedSaveFn!({ globalSearch: "saved" });
+        expect(setItemSpy).toHaveBeenCalledTimes(1);
+
+        const saved = JSON.parse(setItemSpy.mock.calls[0][1]);
+        // Should reflect realState fields merged with the partial update
+        expect(saved.globalSearch).toBe("saved");
+        expect(saved.viewMode).toBe("grid"); // from realState.currentView
+    });
+
+    it("savePersistedState reference should remain stable across re-renders to avoid useEffect churn in consumers", () => {
+        // If savePersistedState has `state` in its useCallback deps, it is recreated
+        // on every render. Consumers like useGridState that put it in their own deps
+        // will rebuild their callbacks on every render – expensive and error-prone.
+        const props = { name: "TestWidget", useLocalStorage: true };
+
+        const { result, rerender } = renderHook(
+            ({ stateArg }: { stateArg: any }) =>
+                usePersistence(props, stateArg, jest.fn(), createState()),
+            { initialProps: { stateArg: createState({ globalSearch: "v1" }) } }
+        );
+
+        const firstRef = result.current.savePersistedState;
+
+        act(() => {
+            rerender({ stateArg: createState({ globalSearch: "v2" }) });
+        });
+
+        // BUG: with state in useCallback deps, reference changes on every render
+        // FIX: with stateRef, the function identity is stable
+        expect(result.current.savePersistedState).toBe(firstRef);
     });
 });

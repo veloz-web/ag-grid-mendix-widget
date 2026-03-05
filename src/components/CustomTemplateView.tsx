@@ -431,7 +431,7 @@ export function CustomTemplateView(props: CustomTemplateViewProps): ReactElement
 
                 return (
                     <div
-                        key={idx}
+                        key={item.id ?? idx}
                         className="aggrid-custom-item"
                         onClick={() => handleItemClick(item)}
                         onDoubleClick={() => handleItemDoubleClick(item)}

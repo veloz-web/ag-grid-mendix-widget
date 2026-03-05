@@ -298,6 +298,7 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                     <strong>⚠️ DOM Layout Configuration Warnings:</strong>
                     <ul style={{ margin: "8px 0 0 0", paddingLeft: "20px" }}>
                         {domLayoutWarnings.map((warning, idx) => (
+                            // eslint-disable-next-line react/no-array-index-key
                             <li key={idx} style={{ marginTop: "4px" }}>
                                 {warning}
                             </li>
@@ -327,6 +328,7 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                     <strong>⚠️ Custom Formatter Errors:</strong>
                     <ul style={{ margin: "8px 0 0 0", paddingLeft: "20px" }}>
                         {columnsWithInvalidFormatters.map((col, idx) => (
+                            // eslint-disable-next-line react/no-array-index-key
                             <li key={idx} style={{ marginBottom: "4px" }}>
                                 Column <strong>&quot;{col.header || "Unknown"}&quot;</strong>{" "}
                                 references formatter{" "}
@@ -360,6 +362,7 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                     <strong>🚫 CRUD Configuration Error{crudErrors.length > 1 ? "s" : ""}:</strong>
                     <ul style={{ margin: "8px 0 0 0", paddingLeft: "20px" }}>
                         {crudErrors.map((err, idx) => (
+                            // eslint-disable-next-line react/no-array-index-key
                             <li key={idx} style={{ marginBottom: "4px" }}>
                                 {err}
                             </li>
@@ -386,6 +389,7 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                     </strong>
                     <ul style={{ margin: "8px 0 0 0", paddingLeft: "20px" }}>
                         {crudWarnings.map((warn, idx) => (
+                            // eslint-disable-next-line react/no-array-index-key
                             <li key={idx} style={{ marginBottom: "4px" }}>
                                 {warn}
                             </li>
@@ -545,6 +549,7 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                             <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
                                 {toolbarFilters.map((col, idx) => (
                                     <div
+                                        // eslint-disable-next-line react/no-array-index-key
                                         key={idx}
                                         className="toolbar-filter"
                                         style={{
@@ -696,6 +701,7 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                     {columns && columns.length > 0 ? (
                         columns.map((col, idx) => (
                             <div
+                                // eslint-disable-next-line react/no-array-index-key
                                 key={idx}
                                 style={{
                                     padding: "12px",
@@ -737,6 +743,7 @@ export function preview(props: AGGridPreviewProps): ReactElement {
                             >
                                 {columns.map((col, colIdx) => (
                                     <div
+                                        // eslint-disable-next-line react/no-array-index-key
                                         key={colIdx}
                                         style={{
                                             padding: previewRowPadding,

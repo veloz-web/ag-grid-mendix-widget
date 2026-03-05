@@ -86,6 +86,7 @@ export function ListView(props: ListViewProps): ReactElement {
     return (
         <div className="aggrid-list-view">
             {rowData.map((item, idx) => (
+                // eslint-disable-next-line react/no-array-index-key
                 <div key={idx} className="sr-list-item form-horizontal form-horizontal">
                     <div
                         className="sr-long sr-li-selectable"

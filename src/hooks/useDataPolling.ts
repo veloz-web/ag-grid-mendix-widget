@@ -1,5 +1,5 @@
 // src/hooks/useDataPolling.js
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { getRowData, getRowSignature } from "../utils/data";
 import { ValueStatus } from "mendix";
 import {
@@ -8,52 +8,49 @@ import {
     formatCumulativeMessage,
     normalizePollingInterval
 } from "../utils/polling";
+import { debugLog } from "../utils/logger";
 
 export const useDataPolling = (props, showToast, _gridApiRef) => {
     const { enablePolling, pollingInterval, enableNotifications, dataSource } = props;
     const pollIntervalRef = useRef(null);
-    const [lastKnownDataCount, setLastKnownDataCount] = useState(0);
-    const [isPollingReload, setIsPollingReload] = useState(false);
-    const [cumulativeChange, setCumulativeChange] = useState(0);
     const lastRowSignatureRef = useRef("");
+
+    // All three of these values change inside checkForNewData. Keeping them as
+    // useState entries causes checkForNewData to be recreated on every change,
+    // which in turn restarts setInterval via the polling useEffect.
+    // Using refs avoids the recreation while still tracking the latest values.
+    const lastKnownDataCountRef = useRef(0);
+    const isPollingReloadRef = useRef(false);
+    const cumulativeChangeRef = useRef(0);
 
     // Initialize baseline count
     useEffect(() => {
         if (dataSource && dataSource.status === ValueStatus.Available) {
             const initialData = getRowData(dataSource);
             const initialCount = initialData.length;
-            setLastKnownDataCount(initialCount);
+            lastKnownDataCountRef.current = initialCount;
             lastRowSignatureRef.current = getRowSignature(initialData);
-            console.log("[AGGrid] Initialized baseline count on mount:", initialCount);
+            debugLog("[AGGrid] Initialized baseline count on mount:", initialCount);
         }
     }, [dataSource]);
 
     const checkForNewData = useCallback(async () => {
-        if (!enablePolling || isPollingReload) return;
+        if (!enablePolling || isPollingReloadRef.current) return;
 
-        setIsPollingReload(true);
+        isPollingReloadRef.current = true;
 
         try {
             if (dataSource && typeof dataSource.reload === "function") {
-                console.log("[AGGrid Polling] Calling datasource.reload()...");
+                debugLog("[AGGrid Polling] Calling datasource.reload()...");
                 await dataSource.reload();
-                console.log(
-                    "[AGGrid Polling] datasource.reload() returned",
-                    dataSource.items?.length
-                );
             }
 
-            // After reload, dataSource prop will update, triggering the effect below
-            // Or we can get it from the ref if Mendix updates it
-            const currentData = getRowData(dataSource); // Use freshest prop
+            const currentData = getRowData(dataSource);
             const currentCount = currentData.length;
             const currentSignature = getRowSignature(currentData);
 
             if (currentSignature === lastRowSignatureRef.current) {
-                console.log(
-                    "[AGGrid Polling] No data change detected after reload; skipping update"
-                );
-                setLastKnownDataCount(currentCount);
+                lastKnownDataCountRef.current = currentCount;
                 return;
             }
 
@@ -61,79 +58,65 @@ export const useDataPolling = (props, showToast, _gridApiRef) => {
 
             const decision = shouldShowNotification(
                 currentCount,
-                lastKnownDataCount,
+                lastKnownDataCountRef.current,
                 enableNotifications
-            );
-
-            console.log(
-                "[AGGrid Polling] Notification decision (shouldShow, delta):",
-                decision.shouldShow,
-                decision.delta
             );
 
             if (decision.shouldShow) {
                 const newCumulative = calculateCumulativeChange(
                     decision.delta,
-                    cumulativeChange,
+                    cumulativeChangeRef.current,
                     true
-                ); // Assume existing
-                setCumulativeChange(newCumulative);
+                );
+                cumulativeChangeRef.current = newCumulative;
                 const message = formatCumulativeMessage(newCumulative);
                 showToast(message, newCumulative > 0 ? "success" : "info", "polling-notification");
-                console.log("[AGGrid Polling] showToast called with:", message);
+                debugLog("[AGGrid Polling] showToast called with:", message);
             }
 
-            setLastKnownDataCount(currentCount);
+            lastKnownDataCountRef.current = currentCount;
         } catch (error) {
             console.error("[AGGrid] Error checking for new data:", error);
         } finally {
-            setIsPollingReload(false);
+            isPollingReloadRef.current = false;
         }
     }, [
+        // All three refs (isPollingReloadRef, cumulativeChangeRef, lastKnownDataCountRef)
+        // are stable objects – they do not need to be in the dep array.
+        // This keeps checkForNewData stable so the interval effect below does not
+        // restart the timer on every data change.
         enablePolling,
-        isPollingReload,
         dataSource,
-        lastKnownDataCount,
         enableNotifications,
-        cumulativeChange,
         showToast
     ]);
 
     // Start/Stop polling effect
     useEffect(() => {
         if (!enablePolling) {
-            console.log("[AGGrid Polling] Not starting - polling disabled");
             return;
         }
 
-        console.log("[AGGrid Polling] ✓ Starting polling (hook)");
+        const intervalMs = normalizePollingInterval(pollingInterval);
+        debugLog("[AGGrid Polling] Starting polling", {
+            intervalSeconds: pollingInterval,
+            intervalMs
+        });
 
-        if (enablePolling) {
-            const intervalMs = normalizePollingInterval(pollingInterval);
-            console.log("[AGGrid Polling] ✓ Starting polling", {
-                intervalSeconds: pollingInterval,
-                intervalMs
-            });
+        pollIntervalRef.current = setInterval(() => {
+            checkForNewData();
+        }, intervalMs);
 
-            // Start the interval
-            pollIntervalRef.current = setInterval(() => {
-                console.log("[AGGrid Polling] ⏰ Interval fired - triggering check");
-                checkForNewData();
-            }, intervalMs);
-
-            return () => {
-                if (pollIntervalRef.current) {
-                    console.log("[AGGrid Polling] Stopping polling");
-                    clearInterval(pollIntervalRef.current);
-                }
-            };
-        }
-    }, [enablePolling, pollingInterval, checkForNewData]); // Add checkForNewData
+        return () => {
+            if (pollIntervalRef.current) {
+                clearInterval(pollIntervalRef.current);
+            }
+        };
+    }, [enablePolling, pollingInterval, checkForNewData]);
 
     // Visibility change effect
     useEffect(() => {
         const handleVisibilityChange = () => {
-            console.log("[AGGrid Polling] Check triggered");
             if (!document.hidden && enablePolling) {
                 checkForNewData();
             }
@@ -143,5 +126,5 @@ export const useDataPolling = (props, showToast, _gridApiRef) => {
         return () => {
             document.removeEventListener("visibilitychange", handleVisibilityChange);
         };
-    }, [enablePolling, checkForNewData]); // Add checkForNewData
+    }, [enablePolling, checkForNewData]);
 };

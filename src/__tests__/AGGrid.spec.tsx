@@ -782,6 +782,7 @@ describe("AGGrid Component", () => {
         });
     });
 
+    // eslint-disable-next-line jest/no-disabled-tests
     describe.skip("Polling and Notifications", () => {
         const advanceAndRun = async (ms: number) => {
             await act(async () => {

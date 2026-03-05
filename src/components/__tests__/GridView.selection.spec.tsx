@@ -37,6 +37,7 @@ jest.mock("ag-grid-react", () => ({
         return (
             <div data-testid="ag-grid" data-row-selection={JSON.stringify(props.rowSelection)}>
                 {props.columnDefs?.map((col: any, index: number) => (
+                    // eslint-disable-next-line react/no-array-index-key
                     <div key={index} data-testid={`column-${col.field}`}>
                         {col.headerName}
                     </div>

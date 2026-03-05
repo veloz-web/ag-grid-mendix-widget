@@ -60,7 +60,7 @@ export function DynamicView(props: DynamicViewProps): ReactElement {
 
                 return (
                     <div
-                        key={idx}
+                        key={item.id ?? idx}
                         className="aggrid-card"
                         onClick={() => handleCardClick(item)}
                         onDoubleClick={() => handleCardDoubleClick(item)}
@@ -93,6 +93,7 @@ export function DynamicView(props: DynamicViewProps): ReactElement {
                             isHtml = formatResult.isHtml;
 
                             return (
+                                // eslint-disable-next-line react/no-array-index-key
                                 <div key={colIdx} className="card-field">
                                     <span className="card-label">{col.header?.value}:</span>
                                     <span className="card-value">

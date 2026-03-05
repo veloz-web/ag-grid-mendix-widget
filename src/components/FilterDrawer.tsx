@@ -176,6 +176,7 @@ export function FilterDrawer(props: FilterDrawerProps): ReactElement | null {
                                             : "";
 
                                     return (
+                                        // eslint-disable-next-line react/no-array-index-key
                                         <div key={idx} className="filter-item">
                                             <label>{col.header?.value || "Field"}</label>
                                             <div className="filter-select-wrapper">
@@ -276,6 +277,7 @@ export function FilterDrawer(props: FilterDrawerProps): ReactElement | null {
                                     };
 
                                     return (
+                                        // eslint-disable-next-line react/no-array-index-key
                                         <div key={idx} className="filter-item">
                                             <label>{col.header?.value || "Field"}</label>
                                             <div className="filter-date-range">
@@ -318,6 +320,7 @@ export function FilterDrawer(props: FilterDrawerProps): ReactElement | null {
                                     typeof filterValue === "string" ? filterValue : "";
 
                                 return (
+                                    // eslint-disable-next-line react/no-array-index-key
                                     <div key={idx} className="filter-item">
                                         <label>{col.header?.value || "Field"}</label>
                                         <div className="filter-select-wrapper">
@@ -333,6 +336,7 @@ export function FilterDrawer(props: FilterDrawerProps): ReactElement | null {
                                             >
                                                 <option value="">All values</option>
                                                 {sortedValues.map((value, vidx) => (
+                                                    // eslint-disable-next-line react/no-array-index-key
                                                     <option key={vidx} value={value}>
                                                         {dataType === "date"
                                                             ? formatDateValue(value)
@@ -447,8 +451,11 @@ export function FilterDrawer(props: FilterDrawerProps): ReactElement | null {
                                         }}
                                     >
                                         <option value="">No sorting</option>
-                                        {sortableColumns.map((col, idx) => (
-                                            <option key={idx} value={col.attribute?.id || ""}>
+                                        {sortableColumns.map((col) => (
+                                            <option
+                                                key={col.attribute?.id || col.header?.value || ""}
+                                                value={col.attribute?.id || ""}
+                                            >
                                                 {col.header?.value || "Field"}
                                             </option>
                                         ))}

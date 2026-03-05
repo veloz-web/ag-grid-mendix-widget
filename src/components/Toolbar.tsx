@@ -297,8 +297,11 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                                     value={currentSortColumnId}
                                     onChange={onSortChange}
                                 >
-                                    {sortableColumns.map((col, idx) => (
-                                        <option key={idx} value={col.attribute?.id || ""}>
+                                    {sortableColumns.map((col) => (
+                                        <option
+                                            key={col.attribute?.id || col.header?.value || ""}
+                                            value={col.attribute?.id || ""}
+                                        >
                                             {col.header?.value || "Field"}
                                         </option>
                                     ))}
