@@ -1,7 +1,7 @@
 import React, { ChangeEvent, RefObject } from "react";
 import { ViewSelector } from "./ViewSelector";
 import { MultiSelectFilter } from "./MultiSelectFilter";
-import { ColumnsType } from "../../typings/AGGridProps";
+import { ColumnsType } from "../columnTypes";
 
 type ViewMode = "grid" | "cards" | "list" | "harden";
 

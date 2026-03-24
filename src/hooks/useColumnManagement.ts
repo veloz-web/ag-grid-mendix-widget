@@ -4,7 +4,7 @@
  */
 
 import { useCallback } from "react";
-import { ColumnsType } from "../../typings/AGGridProps";
+import { ColumnsType } from "../columnTypes";
 import { getDefaultColumnVisibility } from "../utils/state";
 
 export interface UseColumnManagementProps {

@@ -1,5 +1,5 @@
 import { ReactElement, useState, useEffect, useRef } from "react";
-import { ColumnsType } from "../../typings/AGGridProps";
+import { ColumnsType } from "../columnTypes";
 import {
     DateRangeValue,
     isDateRangeValue,

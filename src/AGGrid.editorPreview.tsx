@@ -4,9 +4,49 @@ import { evaluateTemplate } from "./utils/renderers";
 import { ValueStatus } from "mendix";
 import { validateSortConfiguration } from "./utils/data";
 
+// Color helpers for custom toolbar button styles
+function getCustomButtonBgColor(style: string): string {
+    switch (style) {
+        case "primary":
+            return "#1976d2";
+        case "success":
+            return "#4caf50";
+        case "danger":
+            return "#f44336";
+        case "warning":
+            return "#ff9800";
+        case "info":
+            return "#0288d1";
+        default:
+            return "#ffffff";
+    }
+}
+function getCustomButtonTextColor(style: string): string {
+    return style === "default" ? "#333" : "#fff";
+}
+function getCustomButtonBorderColor(style: string): string {
+    switch (style) {
+        case "primary":
+            return "#1565c0";
+        case "success":
+            return "#388e3c";
+        case "danger":
+            return "#c62828";
+        case "warning":
+            return "#e65100";
+        case "info":
+            return "#0277bd";
+        default:
+            return "#bdbdbd";
+    }
+}
+
 export function preview(props: AGGridPreviewProps): ReactElement {
+    // `columns` is defined in AGGrid.xml but omitted from AGGridPreviewProps by
+    // the Mendix code-gen tool; cast once here so the rest of the function is typed.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const columns: any[] = (props as any).columns ?? [];
     const {
-        columns,
         pagination,
         pageSize,
         paginationPosition,
@@ -56,7 +96,11 @@ export function preview(props: AGGridPreviewProps): ReactElement {
         rowHeightMode,
         rowHeight,
         // DOM Layout
-        domLayout
+        domLayout,
+        // Custom toolbar buttons
+        toolbarButtons,
+        // Toolbar visibility
+        showToolbar
     } = props;
 
     const themeClass = `ag-theme-${theme}`;
@@ -108,6 +152,21 @@ export function preview(props: AGGridPreviewProps): ReactElement {
     const showDeleteInContext = enableRowDelete && (deleteShowInContextMenu ?? true);
     const showAddInToolbar = enableRowAdd && (addShowInToolbar ?? true);
     const anyCrudEnabled = enableRowAdd || enableRowDelete || hasEditableColumns;
+
+    // Custom toolbar buttons
+    const allCustomButtons = (toolbarButtons || []) as Array<{
+        buttonLabel: string;
+        buttonStyle: string;
+        buttonIcon: string;
+        buttonPosition: string;
+        buttonVisible: boolean;
+        buttonDisabled: boolean;
+        buttonAction: {} | null;
+    }>;
+    const visibleCustomButtons = allCustomButtons.filter((btn) => btn.buttonVisible !== false);
+    const leftCustomButtons = visibleCustomButtons.filter((btn) => btn.buttonPosition === "left");
+    const rightCustomButtons = visibleCustomButtons.filter((btn) => btn.buttonPosition !== "left");
+    const hasCustomButtons = visibleCustomButtons.length > 0;
 
     // CRUD validation — collect errors and warnings
     const crudErrors: string[] = [];
@@ -465,218 +524,285 @@ export function preview(props: AGGridPreviewProps): ReactElement {
             )}
 
             {/* Toolbar */}
-            {(showViewSelector ||
-                hasDrawerFilters ||
-                hasToolbarFilters ||
-                showAddInToolbar ||
-                showDeleteInToolbar) && (
-                <div
-                    style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        padding: "12px",
-                        background: "#f5f5f5",
-                        borderBottom: "1px solid #ddd",
-                        gap: "12px",
-                        marginBottom: "1px",
-                        flexWrap: "wrap"
-                    }}
-                >
-                    {/* Left side: View Selector */}
-                    {showViewSelector && (
-                        <div
-                            style={{
-                                display: "flex",
-                                gap: "4px",
-                                background: "white",
-                                border: "1px solid #ddd",
-                                borderRadius: "6px",
-                                padding: "4px"
-                            }}
-                        >
-                            {hasCardTemplate && (
-                                <div
-                                    style={{
-                                        padding: "8px 12px",
-                                        color: "#666",
-                                        borderRadius: "4px",
-                                        border: "1px solid transparent"
-                                    }}
-                                    title="Cards view available (custom template configured)"
-                                >
-                                    <i className="fas fa-grid" /> Cards
-                                </div>
-                            )}
-                            {hasListTemplate && (
-                                <div
-                                    style={{
-                                        padding: "8px 12px",
-                                        color: "#666",
-                                        borderRadius: "4px",
-                                        border: "1px solid transparent"
-                                    }}
-                                    title="List view available (custom template configured)"
-                                >
-                                    <i className="fas fa-list" /> List
-                                </div>
-                            )}
-                            <div
-                                style={{
-                                    padding: "8px 12px",
-                                    background: "#1976d2",
-                                    color: "white",
-                                    borderRadius: "4px"
-                                }}
-                                title="Grid view (default - always available)"
-                            >
-                                <i className="fas fa-table" /> Grid
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Center/Right side: Filters */}
+            {showToolbar !== false &&
+                (showViewSelector ||
+                    hasDrawerFilters ||
+                    hasToolbarFilters ||
+                    showAddInToolbar ||
+                    showDeleteInToolbar ||
+                    hasCustomButtons) && (
                     <div
                         style={{
                             display: "flex",
-                            gap: "8px",
+                            justifyContent: "space-between",
                             alignItems: "center",
+                            padding: "12px",
+                            background: "#f5f5f5",
+                            borderBottom: "1px solid #ddd",
+                            gap: "12px",
+                            marginBottom: "1px",
                             flexWrap: "wrap"
                         }}
                     >
-                        {/* Toolbar Filters */}
-                        {hasToolbarFilters && (
-                            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                                {toolbarFilters.map((col, idx) => (
+                        {/* Left side: View Selector */}
+                        {showViewSelector && (
+                            <div
+                                style={{
+                                    display: "flex",
+                                    gap: "4px",
+                                    background: "white",
+                                    border: "1px solid #ddd",
+                                    borderRadius: "6px",
+                                    padding: "4px"
+                                }}
+                            >
+                                {hasCardTemplate && (
+                                    <div
+                                        style={{
+                                            padding: "8px 12px",
+                                            color: "#666",
+                                            borderRadius: "4px",
+                                            border: "1px solid transparent"
+                                        }}
+                                        title="Cards view available (custom template configured)"
+                                    >
+                                        <i className="fas fa-grid" /> Cards
+                                    </div>
+                                )}
+                                {hasListTemplate && (
+                                    <div
+                                        style={{
+                                            padding: "8px 12px",
+                                            color: "#666",
+                                            borderRadius: "4px",
+                                            border: "1px solid transparent"
+                                        }}
+                                        title="List view available (custom template configured)"
+                                    >
+                                        <i className="fas fa-list" /> List
+                                    </div>
+                                )}
+                                <div
+                                    style={{
+                                        padding: "8px 12px",
+                                        background: "#1976d2",
+                                        color: "white",
+                                        borderRadius: "4px"
+                                    }}
+                                    title="Grid view (default - always available)"
+                                >
+                                    <i className="fas fa-table" /> Grid
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Left custom buttons */}
+                        {leftCustomButtons.length > 0 && (
+                            <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                                {leftCustomButtons.map((btn, idx) => (
                                     <div
                                         // eslint-disable-next-line react/no-array-index-key
                                         key={idx}
-                                        className="toolbar-filter"
                                         style={{
+                                            padding: "8px 14px",
+                                            border: `1px solid ${getCustomButtonBorderColor(
+                                                btn.buttonStyle
+                                            )}`,
+                                            background: getCustomButtonBgColor(btn.buttonStyle),
+                                            borderRadius: "6px",
+                                            color: getCustomButtonTextColor(btn.buttonStyle),
                                             display: "flex",
                                             alignItems: "center",
                                             gap: "6px",
-                                            padding: "6px 10px",
-                                            border: "1px solid #ddd",
-                                            background: "white",
-                                            borderRadius: "4px",
                                             fontSize: "13px",
-                                            color: "#666",
-                                            transition: "border-color 0.2s ease"
+                                            fontWeight: 500,
+                                            opacity: btn.buttonDisabled ? 0.5 : 1,
+                                            cursor: btn.buttonDisabled ? "not-allowed" : "pointer"
                                         }}
-                                        title={`Toolbar filter for ${col.header || col.attribute}`}
+                                        title={btn.buttonLabel}
                                     >
-                                        <i className="fas fa-filter" style={{ fontSize: "12px" }} />
-                                        <span>{col.header || col.attribute}</span>
-                                        <select
-                                            style={{
-                                                border: "none",
-                                                background: "transparent",
-                                                color: "#666",
-                                                fontSize: "13px",
-                                                cursor: "pointer"
-                                            }}
-                                            disabled
-                                        >
-                                            <option>All values</option>
-                                        </select>
+                                        {btn.buttonLabel}
                                     </div>
                                 ))}
                             </div>
                         )}
 
-                        {/* Filter Drawer Button */}
-                        {hasDrawerFilters && (
-                            <div
-                                style={{
-                                    padding: "8px 12px",
-                                    border: "1px solid #ddd",
-                                    background: "white",
-                                    borderRadius: "6px",
-                                    color: "#666",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: "6px",
-                                    fontSize: "13px"
-                                }}
-                                title={`Filter drawer with ${
-                                    filterableColumns.length
-                                } filterable column${
-                                    filterableColumns.length === 1 ? "" : "s"
-                                }: ${filterableColumns
-                                    .map((c) => c.header || c.attribute)
-                                    .join(", ")}`}
-                            >
-                                <i className="fas fa-sliders-h" />
-                                Filters ({filterableColumns.length})
-                            </div>
-                        )}
+                        {/* Center/Right side: Filters */}
+                        <div
+                            style={{
+                                display: "flex",
+                                gap: "8px",
+                                alignItems: "center",
+                                flexWrap: "wrap"
+                            }}
+                        >
+                            {/* Toolbar Filters */}
+                            {hasToolbarFilters && (
+                                <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                                    {toolbarFilters.map((col, idx) => (
+                                        <div
+                                            // eslint-disable-next-line react/no-array-index-key
+                                            key={idx}
+                                            className="toolbar-filter"
+                                            style={{
+                                                display: "flex",
+                                                alignItems: "center",
+                                                gap: "6px",
+                                                padding: "6px 10px",
+                                                border: "1px solid #ddd",
+                                                background: "white",
+                                                borderRadius: "4px",
+                                                fontSize: "13px",
+                                                color: "#666",
+                                                transition: "border-color 0.2s ease"
+                                            }}
+                                            title={`Toolbar filter for ${
+                                                col.header || col.attribute
+                                            }`}
+                                        >
+                                            <i
+                                                className="fas fa-filter"
+                                                style={{ fontSize: "12px" }}
+                                            />
+                                            <span>{col.header || col.attribute}</span>
+                                            <select
+                                                style={{
+                                                    border: "none",
+                                                    background: "transparent",
+                                                    color: "#666",
+                                                    fontSize: "13px",
+                                                    cursor: "pointer"
+                                                }}
+                                                disabled
+                                            >
+                                                <option>All values</option>
+                                            </select>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
 
-                        {/* Add Button */}
-                        {showAddInToolbar && (
-                            <div
-                                style={{
-                                    padding: "8px 14px",
-                                    border: hasAddAction
-                                        ? "1px solid #4caf50"
-                                        : "2px dashed #ef5350",
-                                    background: hasAddAction ? "#4caf50" : "#fff",
-                                    borderRadius: "6px",
-                                    color: hasAddAction ? "#fff" : "#c62828",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: "6px",
-                                    fontSize: "13px",
-                                    fontWeight: 500
-                                }}
-                                title={
-                                    hasAddAction
-                                        ? `Add button: "${addButtonLabel || "Add"}"`
-                                        : "⚠ Add button has no action configured"
-                                }
-                            >
-                                <span style={{ fontSize: "16px", lineHeight: 1 }}>+</span>
-                                {addButtonLabel || "Add"}
-                                {!hasAddAction && <span style={{ fontSize: "11px" }}> ⚠</span>}
-                            </div>
-                        )}
+                            {/* Filter Drawer Button */}
+                            {hasDrawerFilters && (
+                                <div
+                                    style={{
+                                        padding: "8px 12px",
+                                        border: "1px solid #ddd",
+                                        background: "white",
+                                        borderRadius: "6px",
+                                        color: "#666",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: "6px",
+                                        fontSize: "13px"
+                                    }}
+                                    title={`Filter drawer with ${
+                                        filterableColumns.length
+                                    } filterable column${
+                                        filterableColumns.length === 1 ? "" : "s"
+                                    }: ${filterableColumns
+                                        .map((c) => c.header || c.attribute)
+                                        .join(", ")}`}
+                                >
+                                    <i className="fas fa-sliders-h" />
+                                    Filters ({filterableColumns.length})
+                                </div>
+                            )}
 
-                        {/* Delete Button */}
-                        {showDeleteInToolbar && (
-                            <div
-                                style={{
-                                    padding: "8px 14px",
-                                    border: hasDeleteAction
-                                        ? "1px solid #f44336"
-                                        : "2px dashed #ef5350",
-                                    background: hasDeleteAction ? "#f44336" : "#fff",
-                                    borderRadius: "6px",
-                                    color: hasDeleteAction ? "#fff" : "#c62828",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: "6px",
-                                    fontSize: "13px",
-                                    fontWeight: 500,
-                                    opacity: deleteRequireSelection ?? true ? 0.6 : 1
-                                }}
-                                title={
-                                    !hasDeleteAction
-                                        ? "⚠ Delete button has no action configured"
-                                        : deleteRequireSelection ?? true
-                                        ? `Delete button: "${
-                                              deleteButtonLabel || "Delete"
-                                          }" (disabled until rows selected)`
-                                        : `Delete button: "${deleteButtonLabel || "Delete"}"`
-                                }
-                            >
-                                <span style={{ fontSize: "14px", lineHeight: 1 }}>🗑</span>
-                                {deleteButtonLabel || "Delete"}
-                                {!hasDeleteAction && <span style={{ fontSize: "11px" }}> ⚠</span>}
-                            </div>
-                        )}
+                            {/* Add Button */}
+                            {showAddInToolbar && (
+                                <div
+                                    style={{
+                                        padding: "8px 14px",
+                                        border: hasAddAction
+                                            ? "1px solid #4caf50"
+                                            : "2px dashed #ef5350",
+                                        background: hasAddAction ? "#4caf50" : "#fff",
+                                        borderRadius: "6px",
+                                        color: hasAddAction ? "#fff" : "#c62828",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: "6px",
+                                        fontSize: "13px",
+                                        fontWeight: 500
+                                    }}
+                                    title={
+                                        hasAddAction
+                                            ? `Add button: "${addButtonLabel || "Add"}"`
+                                            : "⚠ Add button has no action configured"
+                                    }
+                                >
+                                    <span style={{ fontSize: "16px", lineHeight: 1 }}>+</span>
+                                    {addButtonLabel || "Add"}
+                                    {!hasAddAction && <span style={{ fontSize: "11px" }}> ⚠</span>}
+                                </div>
+                            )}
+
+                            {/* Delete Button */}
+                            {showDeleteInToolbar && (
+                                <div
+                                    style={{
+                                        padding: "8px 14px",
+                                        border: hasDeleteAction
+                                            ? "1px solid #f44336"
+                                            : "2px dashed #ef5350",
+                                        background: hasDeleteAction ? "#f44336" : "#fff",
+                                        borderRadius: "6px",
+                                        color: hasDeleteAction ? "#fff" : "#c62828",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: "6px",
+                                        fontSize: "13px",
+                                        fontWeight: 500,
+                                        opacity: deleteRequireSelection ?? true ? 0.6 : 1
+                                    }}
+                                    title={
+                                        !hasDeleteAction
+                                            ? "⚠ Delete button has no action configured"
+                                            : deleteRequireSelection ?? true
+                                            ? `Delete button: "${
+                                                  deleteButtonLabel || "Delete"
+                                              }" (disabled until rows selected)`
+                                            : `Delete button: "${deleteButtonLabel || "Delete"}"`
+                                    }
+                                >
+                                    <span style={{ fontSize: "14px", lineHeight: 1 }}>🗑</span>
+                                    {deleteButtonLabel || "Delete"}
+                                    {!hasDeleteAction && (
+                                        <span style={{ fontSize: "11px" }}> ⚠</span>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Right-positioned custom buttons */}
+                            {rightCustomButtons.map((btn, idx) => (
+                                <div
+                                    // eslint-disable-next-line react/no-array-index-key
+                                    key={idx}
+                                    style={{
+                                        padding: "8px 14px",
+                                        border: `1px solid ${getCustomButtonBorderColor(
+                                            btn.buttonStyle
+                                        )}`,
+                                        background: getCustomButtonBgColor(btn.buttonStyle),
+                                        borderRadius: "6px",
+                                        color: getCustomButtonTextColor(btn.buttonStyle),
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: "6px",
+                                        fontSize: "13px",
+                                        fontWeight: 500,
+                                        opacity: btn.buttonDisabled ? 0.5 : 1,
+                                        cursor: btn.buttonDisabled ? "not-allowed" : "pointer"
+                                    }}
+                                    title={btn.buttonLabel}
+                                >
+                                    {btn.buttonLabel}
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                </div>
-            )}
+                )}
             <div
                 className={`aggrid-preview ${themeClass}`}
                 style={{

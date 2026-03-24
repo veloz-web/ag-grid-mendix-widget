@@ -8,7 +8,7 @@
 import React from "react";
 import { ValueStatus } from "mendix";
 import { mapMendixColumnToColDef, buildColumnDefs } from "../mapping";
-import { ColumnsType } from "../../../../typings/AGGridProps";
+import { ColumnsType } from "../../../columnTypes";
 import { CustomFormatterRegistry } from "../../customFormatters";
 
 // Mock the alignment utility

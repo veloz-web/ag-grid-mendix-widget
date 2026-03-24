@@ -1,4 +1,4 @@
-import { FormatterEnum } from "../../typings/AGGridProps";
+import { FormatterEnum } from "../columnTypes";
 
 // Status mapping interface for status badges
 export interface StatusMapping {

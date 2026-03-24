@@ -1,7 +1,7 @@
 import { createElement } from "react";
 import { render, waitFor } from "@testing-library/react";
 import { AGGrid } from "../AGGrid";
-import { AGGridContainerProps } from "../../typings/AGGridProps";
+import { AGGridContainerProps } from "../types";
 
 describe("AGGrid - Toast Notifications", () => {
     let defaultProps: AGGridContainerProps;

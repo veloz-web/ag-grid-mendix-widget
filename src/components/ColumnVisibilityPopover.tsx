@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { ColumnsType } from "../../typings/AGGridProps";
+import { ColumnsType } from "../columnTypes";
 
 interface ColumnVisibilityPopoverProps {
     isOpen: boolean;

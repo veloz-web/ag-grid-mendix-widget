@@ -1,4 +1,4 @@
-import { ColumnsType, FormatterEnum } from "../../typings/AGGridProps";
+import { ColumnsType, FormatterEnum } from "../columnTypes";
 import { ValueStatus } from "mendix";
 import { renderLink, applyFormatter, AttributeType } from "./formatters";
 

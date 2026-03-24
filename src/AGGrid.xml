@@ -58,6 +58,7 @@
                     <description>Comma-separated list of attribute names to exclude from auto-detected columns (e.g., "createdDate,changedDate,System.owner"). Case-insensitive.</description>
                 </property>
             </propertyGroup>
+            <propertyGroup caption="Column Definitions">
             <property key="columns" type="object" isList="true" required="false">
                 <caption>Columns</caption>
                 <description>Define the columns to display. When Auto Columns is enabled, these are merged with (and override) auto-detected columns.</description>
@@ -345,6 +346,7 @@
 
                 </properties>
             </property>
+            </propertyGroup>
         </propertyGroup>
         <propertyGroup caption="Column Defaults">
             <property key="enableColumnMenus" type="boolean" defaultValue="true">
@@ -690,11 +692,11 @@
                 <caption>Version Synced</caption>
                 <description>Date and time when the AG Grid version was last updated. Automatically set by the build script when the version changes.</description>
             </property>
-            <property key="widgetBuildDate" type="string" required="false" defaultValue="2026-02-27 16:17:49 UTC">
+            <property key="widgetBuildDate" type="string" required="false" defaultValue="2026-03-24 21:26:40 UTC">
                 <caption>Widget Build Date</caption>
                 <description>Date and time when this widget was last built. Automatically stamped on every build/release.</description>
             </property>
-            <property key="widgetBuildCommit" type="string" required="false" defaultValue="5ad197c">
+            <property key="widgetBuildCommit" type="string" required="false" defaultValue="bed781f">
                 <caption>Build Commit</caption>
                 <description>Git short commit hash of the source code used for this build. Automatically stamped on every build/release.</description>
             </property>

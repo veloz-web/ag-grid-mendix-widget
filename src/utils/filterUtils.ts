@@ -1,4 +1,4 @@
-import { ColumnsType } from "../../typings/AGGridProps"; // Adjust path as needed
+import { ColumnsType } from "../columnTypes";
 
 /**
  * Get the data type of a column based on its attribute type

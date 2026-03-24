@@ -8,7 +8,7 @@
 import React from "react";
 import type { ColDef } from "ag-grid-community";
 import { ValueStatus } from "mendix";
-import { ColumnsType } from "../../../typings/AGGridProps";
+import { ColumnsType } from "../../columnTypes";
 import { renderLink, applyFormatter } from "../formatters";
 import { evaluateTemplate } from "../renderers";
 import { CustomFormatterRegistry } from "../customFormatters";

@@ -10,7 +10,7 @@ import {
     getCellAlignmentStyle,
     CellAlignment
 } from "../alignment";
-import { ColumnsType } from "../../../../typings/AGGridProps";
+import { ColumnsType } from "../../../columnTypes";
 
 describe("Column Alignment Utilities", () => {
     describe("getCellAlignment", () => {

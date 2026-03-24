@@ -7,7 +7,7 @@
  */
 
 import type { GridReadyEvent, ColumnPinnedEvent, ColumnResizedEvent } from "ag-grid-community";
-import { ColumnsType } from "../../typings/AGGridProps";
+import { ColumnsType } from "../columnTypes";
 import { CustomFormatterRegistry } from "../utils/customFormatters";
 import { ReactNode } from "react";
 

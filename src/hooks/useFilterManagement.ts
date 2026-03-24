@@ -5,7 +5,7 @@
  */
 
 import { useCallback, ChangeEvent } from "react";
-import { ColumnsType } from "../../typings/AGGridProps";
+import { ColumnsType } from "../columnTypes";
 import { getDistinctValuesForColumn } from "../utils/data";
 
 export interface UseFilterManagementProps {

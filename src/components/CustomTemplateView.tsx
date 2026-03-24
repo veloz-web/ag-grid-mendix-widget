@@ -1,6 +1,6 @@
 import { ReactElement } from "react";
 import { ValueStatus } from "mendix";
-import { ColumnsType } from "../../typings/AGGridProps";
+import { ColumnsType } from "../columnTypes";
 import { DynamicView } from "./CardView";
 import { applyFormatter, renderLink } from "../utils/formatters";
 import { CustomFormatterRegistry } from "../utils/customFormatters";

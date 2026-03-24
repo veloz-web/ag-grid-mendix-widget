@@ -17,6 +17,9 @@ export function getProperties(
 }
 
 export function getPreview(values: AGGridPreviewProps): any {
+    // `columns` is defined in AGGrid.xml but omitted from AGGridPreviewProps by the
+    // Mendix code-gen tool; cast once here so the rest of the function stays typed.
+    const columns: Array<{ header?: string }> = (values as any).columns ?? [];
     const versionLabel = values.agGridVersion ? `AG Grid v${values.agGridVersion}` : "AG Grid";
     const dateLabel = values.agGridVersionDate ? ` · synced ${values.agGridVersionDate}` : "";
     const buildLabel = values.widgetBuildDate
@@ -43,7 +46,7 @@ export function getPreview(values: AGGridPreviewProps): any {
                 },
                 {
                     type: "Text",
-                    content: `${values.columns.length} column(s) configured`,
+                    content: `${columns.length} column(s) configured`,
                     fontColor: "#888",
                     fontSize: 12
                 }
@@ -124,7 +127,7 @@ export function getPreview(values: AGGridPreviewProps): any {
 
     children.push({
         type: "Container",
-        children: values.columns.map((col, index) => ({
+        children: columns.map((col, index) => ({
             type: "Text",
             content: `Column ${index + 1}: ${col.header || "Unnamed"}`,
             fontColor: "#666",

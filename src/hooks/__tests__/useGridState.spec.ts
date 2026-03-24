@@ -7,7 +7,7 @@
 
 import { renderHook, act } from "@testing-library/react";
 import { useGridState } from "../useGridState";
-import { AGGridContainerProps } from "../../../typings/AGGridProps";
+import { AGGridContainerProps } from "../../types";
 import { getInitialState } from "../../utils/initialState";
 
 // Mock the initialState utility

@@ -3,7 +3,7 @@ import React, { ReactElement, useMemo, useCallback, useEffect, useRef } from "re
 import { AgGridReact } from "ag-grid-react";
 import type { GridReadyEvent, ColumnPinnedEvent, ColumnResizedEvent } from "ag-grid-community";
 import { ValueStatus } from "mendix";
-import { ColumnsType } from "../../typings/AGGridProps";
+import { ColumnsType } from "../columnTypes";
 import { CustomFormatterRegistry } from "../utils/customFormatters";
 import { buildColumnDefs } from "../utils/column/mapping";
 import { calculatePinnedBottomRow } from "../utils/aggregation/calculator";

@@ -1,6 +1,6 @@
 import { ReactElement } from "react";
 import { ValueStatus } from "mendix";
-import { ColumnsType } from "../../../typings/AGGridProps";
+import { ColumnsType } from "../../columnTypes";
 import { applyFormatter } from "../../utils/formatters";
 
 interface HardenCardViewProps {

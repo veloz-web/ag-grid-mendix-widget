@@ -1,6 +1,9 @@
 // src/types.js
-import { AGGridContainerProps } from "../typings/AGGridProps";
-export { AGGridContainerProps }; // Re-export for convenience
+import { AGGridContainerProps as AGGridContainerPropsBase } from "../typings/AGGridProps";
+import { ColumnsType } from "./columnTypes";
+// The Mendix code-gen tool omits the `columns` object-list from the generated
+// typings. Extend it here so all imports via this file see the correct shape.
+export type AGGridContainerProps = AGGridContainerPropsBase & { columns?: ColumnsType[] };
 
 export type ViewMode = "grid" | "cards" | "list" | "harden";
 

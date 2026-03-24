@@ -1,6 +1,6 @@
 import { ReactElement, createElement } from "react";
 import { ValueStatus } from "mendix";
-import { ColumnsType } from "../../typings/AGGridProps";
+import { ColumnsType } from "../columnTypes";
 import { formatCardFieldValue, evaluateTemplate } from "../utils/renderers";
 
 interface DynamicViewProps {

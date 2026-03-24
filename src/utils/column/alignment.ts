@@ -7,7 +7,7 @@
  * - Formatter type (links/badges = center)
  */
 
-import { ColumnsType } from "../../../typings/AGGridProps";
+import { ColumnsType } from "../../columnTypes";
 
 export type CellAlignment = "left" | "center" | "right";
 

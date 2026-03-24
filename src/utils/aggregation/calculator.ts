@@ -6,7 +6,7 @@
  */
 
 import { ValueStatus } from "mendix";
-import { ColumnsType } from "../../../typings/AGGridProps";
+import { ColumnsType } from "../../columnTypes";
 import { applyAggregation, type AggregationFunction } from "./functions";
 
 export interface AggregationConfig {
