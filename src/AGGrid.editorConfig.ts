@@ -108,10 +108,10 @@ export function getPreview(values: AGGridPreviewProps): any {
         });
     }
 
-    if (values.rowModelType === "serverSide") {
-        const blockSize = values.cacheBlockSize || 100;
-        const maxBlocks = values.maxBlocksInCache || 0;
-        const maxRequests = values.maxConcurrentRequests || 2;
+    if ((values as any).rowModelType === "serverSide") {
+        const blockSize = (values as any).cacheBlockSize || 100;
+        const maxBlocks = (values as any).maxBlocksInCache || 0;
+        const maxRequests = (values as any).maxConcurrentRequests || 2;
         children.push({
             type: "Container",
             children: [
@@ -179,7 +179,7 @@ export function validate(values: AGGridPreviewProps): Problem[] {
             });
         }
 
-        if (values.rowModelType === "serverSide") {
+        if ((values as any).rowModelType === "serverSide") {
             errors.push({
                 property: "domLayout",
                 message: `DOM Layout "${values.domLayout}" is incompatible with Server-Side row model. Server-Side is designed for large datasets with lazy loading, but ${values.domLayout} loads all rows at once. Set DOM Layout to "Normal" or use Client-Side row model.`,

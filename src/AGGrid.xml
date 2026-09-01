@@ -631,11 +631,11 @@
                 <caption>Version Synced</caption>
                 <description>Date and time when the AG Grid version was last updated. Automatically set by the build script when the version changes.</description>
             </property>
-            <property key="widgetBuildDate" type="string" required="false" defaultValue="2026-09-01 21:34:10 UTC">
+            <property key="widgetBuildDate" type="string" required="false" defaultValue="2026-09-01 22:57:45 UTC">
                 <caption>Widget Build Date</caption>
                 <description>Date and time when this widget was last built. Automatically stamped on every build/release.</description>
             </property>
-            <property key="widgetBuildCommit" type="string" required="false" defaultValue="9d539c4">
+            <property key="widgetBuildCommit" type="string" required="false" defaultValue="d4da657">
                 <caption>Build Commit</caption>
                 <description>Git short commit hash of the source code used for this build. Automatically stamped on every build/release.</description>
             </property>

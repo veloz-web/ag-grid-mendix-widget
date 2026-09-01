@@ -11,6 +11,9 @@
     "developmentPort": 3000
   },
   "packagePath": "mendix",
+  "engines": {
+    "node": ">=22.20.0 <23.0.0-0"
+  },
   "scripts": {
     "predev": "node scripts/update-ag-version.js && node scripts/stamp-build-date.js",
     "start": "pluggable-widgets-tools start:server",
@@ -28,7 +31,7 @@
     "@mendix/pluggable-widgets-tools": "^10.24.0",
     "@types/archiver": "^7.0.0",
     "@types/pdfmake": "^0.2.12",
-    "adm-zip": "^0.5.16",
+    "adm-zip": "^0.6.0",
     "archiver": "^7.0.1",
     "baseline-browser-mapping": "^2.9.19",
     "terser": "^5.44.1"

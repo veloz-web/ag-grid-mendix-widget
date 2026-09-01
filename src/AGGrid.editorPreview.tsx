@@ -42,7 +42,7 @@ function getCustomButtonBorderColor(style: string): string {
 }
 
 export function preview(props: AGGridPreviewProps): ReactElement {
-    // `columns` is defined in AGGrid.xml but omitted from AGGridPreviewProps by
+    // `columns` and other properties are defined in AGGrid.xml but omitted from AGGridPreviewProps by
     // the Mendix code-gen tool; cast once here so the rest of the function is typed.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const columns: any[] = (props as any).columns ?? [];
@@ -95,7 +95,7 @@ export function preview(props: AGGridPreviewProps): ReactElement {
         toolbarButtons,
         // Toolbar visibility
         showToolbar
-    } = props;
+    } = props as any;
 
     const themeClass = `ag-theme-${theme}`;
 

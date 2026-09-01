@@ -3,11 +3,9 @@
  * WARNING: All changes made to this file will be overwritten
  * @author Mendix Widgets Framework Team
  */
-import { CSSProperties } from "react";
-import { ActionValue, DynamicValue, ListValue, ListActionValue, ListAttributeValue } from "mendix";
+import { ActionValue, DynamicValue, ListActionValue, ListAttributeValue, ListValue } from "mendix";
 import { Big } from "big.js";
-
-export type RowModelTypeEnum = "clientSide" | "serverSide";
+import { CSSProperties } from "react";
 
 export type DataTypeEnum = "auto" | "boolean" | "date" | "number" | "string";
 
@@ -23,9 +21,38 @@ export type FilterLocationEnum = "none" | "drawer" | "toolbar";
 
 export type AggregationFunctionEnum = "sum" | "min" | "max" | "avg" | "count" | "first" | "last";
 
-export type FormatterEnum = "none" | "currency" | "currencyEUR" | "currencyGBP" | "percentage" | "number" | "decimal2" | "dateShort" | "dateLong" | "dateISO" | "dateDMY" | "dateMDY" | "dateYMD" | "dateTime" | "time" | "yesNo" | "trueFalse" | "uppercase" | "lowercase" | "capitalize" | "customPrefix" | "link";
+export type FormatterEnum =
+    | "none"
+    | "currency"
+    | "currencyEUR"
+    | "currencyGBP"
+    | "percentage"
+    | "number"
+    | "decimal2"
+    | "dateShort"
+    | "dateLong"
+    | "dateISO"
+    | "dateDMY"
+    | "dateMDY"
+    | "dateYMD"
+    | "dateTime"
+    | "time"
+    | "yesNo"
+    | "trueFalse"
+    | "uppercase"
+    | "lowercase"
+    | "capitalize"
+    | "customPrefix"
+    | "link";
 
-export type EditorTypeEnum = "text" | "number" | "date" | "datetime" | "boolean" | "select" | "richSelect";
+export type EditorTypeEnum =
+    | "text"
+    | "number"
+    | "date"
+    | "datetime"
+    | "boolean"
+    | "select"
+    | "richSelect";
 
 export interface ColumnsType {
     header: DynamicValue<string>;
@@ -98,7 +125,23 @@ export type EditModeEnum = "cell" | "row";
 
 export type ButtonStyleEnum = "default" | "primary" | "success" | "danger" | "warning" | "info";
 
-export type ButtonIconEnum = "none" | "plus" | "edit" | "trash" | "refresh" | "download" | "upload" | "check" | "close" | "search" | "settings" | "link" | "copy" | "save" | "mail" | "print";
+export type ButtonIconEnum =
+    | "none"
+    | "plus"
+    | "edit"
+    | "trash"
+    | "refresh"
+    | "download"
+    | "upload"
+    | "check"
+    | "close"
+    | "search"
+    | "settings"
+    | "link"
+    | "copy"
+    | "save"
+    | "mail"
+    | "print";
 
 export type ButtonPositionEnum = "left" | "right";
 
@@ -124,7 +167,13 @@ export type ThemeVariantEnum = "auto" | "light" | "dark";
 
 export type PdfPageOrientationEnum = "landscape" | "portrait";
 
-export type ToastPositionEnum = "topLeft" | "topCenter" | "topRight" | "bottomLeft" | "bottomCenter" | "bottomRight";
+export type ToastPositionEnum =
+    | "topLeft"
+    | "topCenter"
+    | "topRight"
+    | "bottomLeft"
+    | "bottomCenter"
+    | "bottomRight";
 
 export interface ColumnsPreviewType {
     header: string;
@@ -197,12 +246,6 @@ export interface AGGridContainerProps {
     style?: CSSProperties;
     tabIndex?: number;
     dataSource: ListValue;
-    rowModelType: RowModelTypeEnum;
-    serverSideMicroflow: string;
-    entityName: string;
-    cacheBlockSize: number;
-    maxBlocksInCache: number;
-    maxConcurrentRequests: number;
     enableAutoColumns: boolean;
     autoColumnExclusions: string;
     columns: ColumnsType[];
@@ -217,13 +260,6 @@ export interface AGGridContainerProps {
     customListTemplate: string;
     enableFilterDrawer: boolean;
     customFormatters: CustomFormattersType[];
-    enableSideBar: boolean;
-    enableStatusBar: boolean;
-    enableAggregationFooter: boolean;
-    enableRowGrouping: boolean;
-    groupDefaultExpanded: number;
-    showGroupRowsOnSeparateLine: boolean;
-    suppressAggregationOnGroupRows: boolean;
     rowHeightMode: RowHeightModeEnum;
     rowHeight: number;
     rowHeightExpression: string;
@@ -256,8 +292,6 @@ export interface AGGridContainerProps {
     agGridVersionDate: string;
     widgetBuildDate: string;
     widgetBuildCommit: string;
-    licenseKey: string;
-    enableContextMenu: boolean;
     useLocalStorage: boolean;
     showToolbarSearch: boolean;
     enableToolbarFilterSearch: boolean;
@@ -304,12 +338,6 @@ export interface AGGridPreviewProps {
     renderMode: "design" | "xray" | "structure";
     translate: (text: string) => string;
     dataSource: {} | { caption: string } | { type: string } | null;
-    rowModelType: RowModelTypeEnum;
-    serverSideMicroflow: string;
-    entityName: string;
-    cacheBlockSize: number | null;
-    maxBlocksInCache: number | null;
-    maxConcurrentRequests: number | null;
     enableAutoColumns: boolean;
     autoColumnExclusions: string;
     columns: ColumnsPreviewType[];
@@ -324,13 +352,6 @@ export interface AGGridPreviewProps {
     customListTemplate: string;
     enableFilterDrawer: boolean;
     customFormatters: CustomFormattersPreviewType[];
-    enableSideBar: boolean;
-    enableStatusBar: boolean;
-    enableAggregationFooter: boolean;
-    enableRowGrouping: boolean;
-    groupDefaultExpanded: number | null;
-    showGroupRowsOnSeparateLine: boolean;
-    suppressAggregationOnGroupRows: boolean;
     rowHeightMode: RowHeightModeEnum;
     rowHeight: number | null;
     rowHeightExpression: string;
@@ -363,8 +384,6 @@ export interface AGGridPreviewProps {
     agGridVersionDate: string;
     widgetBuildDate: string;
     widgetBuildCommit: string;
-    licenseKey: string;
-    enableContextMenu: boolean;
     useLocalStorage: boolean;
     showToolbarSearch: boolean;
     enableToolbarFilterSearch: boolean;

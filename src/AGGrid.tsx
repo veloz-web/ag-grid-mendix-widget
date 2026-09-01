@@ -715,24 +715,24 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
                     undoRedoCellEditing: Boolean(props.undoRedoCellEditing)
                 }}
                 uiFeatures={{
-                    enableContextMenu: Boolean(props.enableContextMenu),
-                    enableSideBar: Boolean(props.enableSideBar),
-                    enableStatusBar: Boolean(props.enableStatusBar),
-                    enableColumnMenus: Boolean(props.enableColumnMenus),
-                    enableHeaderFilterButtons: Boolean(props.enableHeaderFilterButtons),
-                    enableFloatingFilters: Boolean(props.enableFloatingFilters)
+                    enableContextMenu: Boolean((props as any).enableContextMenu),
+                    enableSideBar: Boolean((props as any).enableSideBar),
+                    enableStatusBar: Boolean((props as any).enableStatusBar),
+                    enableColumnMenus: Boolean((props as any).enableColumnMenus),
+                    enableHeaderFilterButtons: Boolean((props as any).enableHeaderFilterButtons),
+                    enableFloatingFilters: Boolean((props as any).enableFloatingFilters)
                 }}
                 deleteConfig={deleteConfig}
                 rowSelectionMode={props.rowSelectionMode || "none"}
                 showSelectionCheckboxes={props.showSelectionCheckboxes !== false}
                 advancedFeatures={{
-                    enableAggregationFooter: Boolean(props.enableAggregationFooter)
+                    enableAggregationFooter: Boolean((props as any).enableAggregationFooter)
                 }}
                 grouping={{
-                    enabled: Boolean(props.enableRowGrouping),
-                    defaultExpanded: props.groupDefaultExpanded ?? -1,
-                    showOnSeparateLine: Boolean(props.showGroupRowsOnSeparateLine),
-                    suppressAggregationOnRows: Boolean(props.suppressAggregationOnGroupRows)
+                    enabled: Boolean((props as any).enableRowGrouping),
+                    defaultExpanded: (props as any).groupDefaultExpanded ?? -1,
+                    showOnSeparateLine: Boolean((props as any).showGroupRowsOnSeparateLine),
+                    suppressAggregationOnRows: Boolean((props as any).suppressAggregationOnGroupRows)
                 }}
                 callbacks={{
                     onGridReady,
