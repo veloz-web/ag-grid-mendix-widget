@@ -24,11 +24,9 @@ jest.mock("../agGridModules", () => ({}));
 jest.mock("ag-grid-react", () => ({
     AgGridReact: () => null
 }));
+
 jest.mock("ag-grid-community", () => ({
     ModuleRegistry: { registerModules: jest.fn() }
-}));
-jest.mock("ag-grid-enterprise", () => ({
-    LicenseManager: { setLicenseKey: jest.fn() }
 }));
 
 describe("AGGrid Polling - Integration Tests", () => {

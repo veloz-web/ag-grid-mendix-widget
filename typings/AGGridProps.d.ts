@@ -278,9 +278,6 @@ export interface AGGridContainerProps {
     enableCsvExport: boolean;
     csvFileName: string;
     csvExportAllColumns: boolean;
-    enableExcelExport: boolean;
-    excelFileName: string;
-    excelExportAllColumns: boolean;
     enablePdfExport: boolean;
     pdfFileName: string;
     pdfPageOrientation: PdfPageOrientationEnum;
@@ -388,9 +385,6 @@ export interface AGGridPreviewProps {
     enableCsvExport: boolean;
     csvFileName: string;
     csvExportAllColumns: boolean;
-    enableExcelExport: boolean;
-    excelFileName: string;
-    excelExportAllColumns: boolean;
     enablePdfExport: boolean;
     pdfFileName: string;
     pdfPageOrientation: PdfPageOrientationEnum;

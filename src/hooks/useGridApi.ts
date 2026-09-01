@@ -618,7 +618,7 @@ export const useGridApi = (
 
     const handleExportRequest = useCallback(
         (req: {
-            format: "csv" | "excel" | "pdf";
+            format: "csv" | "pdf";
             fileName: string;
             allColumns: boolean;
             pageOrientation?: "landscape" | "portrait";
@@ -645,17 +645,6 @@ export const useGridApi = (
                         fileName: `${options.fileName}.csv`,
                         allColumns: options.allColumns
                     });
-                    break;
-                case "excel":
-                    // Ensure Enterprise is enabled for this
-                    if (api.exportDataAsExcel) {
-                        api.exportDataAsExcel({
-                            fileName: `${options.fileName}.xlsx`,
-                            allColumns: options.allColumns
-                        });
-                    } else {
-                        console.error("[AGGrid] Excel export requires AG Grid Enterprise");
-                    }
                     break;
                 case "pdf":
                     exportToPDF(api, {

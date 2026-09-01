@@ -77,19 +77,11 @@ jest.mock("ag-grid-react", () => ({
 }));
 
 jest.mock("ag-grid-community", () => ({
-    LicenseManager: {
-        setLicenseKey: jest.fn()
-    },
     ModuleRegistry: {
         registerModules: jest.fn()
     }
 }));
 
-jest.mock("ag-grid-enterprise", () => ({
-    LicenseManager: {
-        setLicenseKey: jest.fn()
-    }
-}));
 
 // Create a proper Mendix ListValue mock
 const createMockListValue = (status: any = "available") => ({
@@ -152,7 +144,6 @@ describe("AGGrid Component", () => {
         editMode: "cell" as const,
         stopEditingWhenCellsLoseFocus: true,
         undoRedoCellEditing: false,
-        licenseKey: "",
         agGridVersion: "34.3.1",
         agGridVersionDate: "",
         widgetBuildDate: "",
@@ -189,9 +180,6 @@ describe("AGGrid Component", () => {
         enableCsvExport: false,
         csvFileName: "export",
         csvExportAllColumns: false,
-        enableExcelExport: false,
-        excelFileName: "export",
-        excelExportAllColumns: false,
         enablePdfExport: false,
         pdfFileName: "export",
         pdfPageOrientation: "landscape" as any,
@@ -221,18 +209,6 @@ describe("AGGrid Component", () => {
             render(<AGGrid {...mockProps} />);
             const grids = screen.getAllByTestId("ag-grid");
             expect(grids.length).toBeGreaterThan(0);
-        });
-
-        it("sets license key when provided", () => {
-            render(<AGGrid {...mockProps} licenseKey="test-key" />);
-
-            expect(LicenseManager.setLicenseKey).toHaveBeenCalledWith("test-key");
-        });
-
-        it("does not set license key when empty", () => {
-            render(<AGGrid {...mockProps} licenseKey="" />);
-
-            expect(LicenseManager.setLicenseKey).not.toHaveBeenCalled();
         });
     });
 

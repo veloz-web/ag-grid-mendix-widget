@@ -14,38 +14,7 @@
                     <description>The data source for the grid</description>
                 </property>
             </propertyGroup>
-            <propertyGroup caption="Row Model">
-                <property key="rowModelType" type="enumeration" defaultValue="clientSide">
-                    <caption>Row Model</caption>
-                    <description>Choose Client-Side for small datasets or Server-Side for large datasets.</description>
-                    <enumerationValues>
-                        <enumerationValue key="clientSide">Client-Side (Standard)</enumerationValue>
-                        <enumerationValue key="serverSide">Server-Side (Large Data)</enumerationValue>
-                    </enumerationValues>
-                </property>
-            </propertyGroup>
-            <propertyGroup caption="Server-Side Configuration">
-                <property key="serverSideMicroflow" type="string" required="false">
-                    <caption>Data Loader Microflow</caption>
-                    <description>Name of the Microflow (e.g. 'MyModule.DS_GetGridData') that accepts an AG Grid Request JSON and returns a Response JSON.</description>
-                </property>
-                <property key="entityName" type="string" required="false">
-                    <caption>Entity Name</caption>
-                    <description>The entity type being retrieved (helper for OQL generation).</description>
-                </property>
-                <property key="cacheBlockSize" type="integer" defaultValue="100">
-                    <caption>Cache Block Size</caption>
-                    <description>Number of rows fetched per block from the server. Larger values reduce requests but increase memory. Default: 100.</description>
-                </property>
-                <property key="maxBlocksInCache" type="integer" defaultValue="0">
-                    <caption>Max Blocks in Cache</caption>
-                    <description>Maximum number of blocks kept in memory. 0 = unlimited (keep all fetched blocks). Reduce to limit memory for very large datasets.</description>
-                </property>
-                <property key="maxConcurrentRequests" type="integer" defaultValue="2">
-                    <caption>Max Concurrent Requests</caption>
-                    <description>Maximum number of simultaneous data requests to the server. Higher values may improve perceived speed but increase server load. Default: 2.</description>
-                </property>
-            </propertyGroup>
+
         </propertyGroup>
         <propertyGroup caption="Columns">
             <propertyGroup caption="Auto-Column Detection">
@@ -434,36 +403,6 @@
                 </property>
             </propertyGroup>
         </propertyGroup>
-        <propertyGroup caption="UI Elements">
-            <property key="enableSideBar" type="boolean" defaultValue="false">
-                <caption>Enable Side Bar</caption>
-                <description>Show the AG Grid side bar so users can access column and filter panels.</description>
-            </property>
-            <property key="enableStatusBar" type="boolean" defaultValue="false">
-                <caption>Enable Status Bar</caption>
-                <description>Show the AG Grid status bar with row counts and selection information.</description>
-            </property>
-            <property key="enableAggregationFooter" type="boolean" defaultValue="false">
-                <caption>Aggregation Footer</caption>
-                <description>Show a pinned bottom row displaying column aggregations (sum, avg, count, etc.). Configure aggregation per column in the Aggregation section.</description>
-            </property>
-            <property key="enableRowGrouping" type="boolean" defaultValue="false">
-                <caption>Enable Row Grouping</caption>
-                <description>Enable hierarchical row grouping. Configure which columns to group by in the Row Grouping section of each column.</description>
-            </property>
-            <property key="groupDefaultExpanded" type="integer" defaultValue="-1">
-                <caption>Group Default Expanded</caption>
-                <description>Number of group levels to expand by default. -1 = expand all, 0 = collapse all, 1 = expand first level, etc.</description>
-            </property>
-            <property key="showGroupRowsOnSeparateLine" type="boolean" defaultValue="false">
-                <caption>Groups on Own Line</caption>
-                <description>Display group rows on a separate line above the data rows. When disabled, groups appear inline with data.</description>
-            </property>
-            <property key="suppressAggregationOnGroupRows" type="boolean" defaultValue="false">
-                <caption>Hide Group Aggregation</caption>
-                <description>Hide aggregation values on group rows. Useful if you only want to show aggregations in the footer.</description>
-            </property>
-        </propertyGroup>
         <propertyGroup caption="Row Options">
             <propertyGroup caption="Row Height">
                 <property key="rowHeightMode" type="enumeration" defaultValue="fixed">
@@ -684,29 +623,21 @@
             </propertyGroup>
         </propertyGroup>
         <propertyGroup caption="Grid Options">
-            <property key="agGridVersion" type="string" required="false" defaultValue="35.1.0">
+            <property key="agGridVersion" type="string" required="false" defaultValue="36.1.0">
                 <caption>AG Grid Version</caption>
                 <description>The version of AG Grid bundled with this widget. Automatically updated at build time from the installed ag-grid-community package.</description>
             </property>
-            <property key="agGridVersionDate" type="string" required="false" defaultValue="2026-02-17 20:30:16 UTC">
+            <property key="agGridVersionDate" type="string" required="false" defaultValue="2026-09-01 21:31:15 UTC">
                 <caption>Version Synced</caption>
                 <description>Date and time when the AG Grid version was last updated. Automatically set by the build script when the version changes.</description>
             </property>
-            <property key="widgetBuildDate" type="string" required="false" defaultValue="2026-03-24 21:26:40 UTC">
+            <property key="widgetBuildDate" type="string" required="false" defaultValue="2026-09-01 21:34:10 UTC">
                 <caption>Widget Build Date</caption>
                 <description>Date and time when this widget was last built. Automatically stamped on every build/release.</description>
             </property>
-            <property key="widgetBuildCommit" type="string" required="false" defaultValue="bed781f">
+            <property key="widgetBuildCommit" type="string" required="false" defaultValue="9d539c4">
                 <caption>Build Commit</caption>
                 <description>Git short commit hash of the source code used for this build. Automatically stamped on every build/release.</description>
-            </property>
-            <property key="licenseKey" type="string" required="false">
-                <caption>Enterprise Key</caption>
-                <description>Your AG Grid Enterprise license key. Leave empty for Community edition. This value is masked in Studio.</description>
-            </property>
-            <property key="enableContextMenu" type="boolean" defaultValue="false">
-                <caption>Enable Context Menu</caption>
-                <description>Show the AG Grid right-click context menu for columns and cells. Disable to prevent context menu access.</description>
             </property>
             <property key="useLocalStorage" type="boolean" defaultValue="true">
                 <caption>Use Local Storage</caption>
@@ -815,18 +746,6 @@
                 <property key="csvExportAllColumns" type="boolean" defaultValue="true">
                     <caption>Export All Columns</caption>
                     <description>Export all columns. Disable to only export visible columns.</description>
-                </property>
-                <property key="enableExcelExport" type="boolean" defaultValue="false">
-                    <caption>Enable Excel Export</caption>
-                    <description>Show Excel export button in the toolbar. Exports to .xlsx format. Requires AG Grid Enterprise license.</description>
-                </property>
-                <property key="excelFileName" type="string" defaultValue="export">
-                    <caption>Excel File Name</caption>
-                    <description>Default filename for Excel export (without .xlsx extension)</description>
-                </property>
-                <property key="excelExportAllColumns" type="boolean" defaultValue="true">
-                    <caption>All Columns (Excel)</caption>
-                    <description>Export all columns to Excel. Disable to only export visible columns.</description>
                 </property>
                 <property key="enablePdfExport" type="boolean" defaultValue="false">
                     <caption>Enable PDF Export</caption>

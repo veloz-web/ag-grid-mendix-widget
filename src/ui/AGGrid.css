@@ -592,7 +592,6 @@
 /* Filter Button & Export Button Styles */
 .aggrid-filter-btn,
 .aggrid-csv-export-btn,
-.aggrid-excel-export-btn,
 .aggrid-pdf-export-btn {
     position: relative;
     display: flex;
@@ -680,7 +679,6 @@
 
 .aggrid-filter-btn:hover,
 .aggrid-csv-export-btn:hover,
-.aggrid-excel-export-btn:hover,
 .aggrid-pdf-export-btn:hover {
     background: #f0f0f0;
     color: #333;
@@ -689,7 +687,6 @@
 
 .aggrid-filter-btn:focus-visible,
 .aggrid-csv-export-btn:focus-visible,
-.aggrid-excel-export-btn:focus-visible,
 .aggrid-pdf-export-btn:focus-visible {
     outline: 3px solid #1f4bbf;
     outline-offset: 2px;
@@ -697,7 +694,6 @@
 }
 
 .aggrid-csv-export-btn .btn-text,
-.aggrid-excel-export-btn .btn-text,
 .aggrid-pdf-export-btn .btn-text {
     font-size: 13px;
     font-weight: 500;

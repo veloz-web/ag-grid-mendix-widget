@@ -50,8 +50,6 @@ const baseProps: ToolbarProps = {
     onToggleColumnVisibility: jest.fn(),
     enableCsvExport: false,
     onCsvExport: jest.fn(),
-    enableExcelExport: false,
-    onExcelExport: jest.fn(),
     enablePdfExport: false,
     onPdfExport: jest.fn(),
     enableRowDelete: false,

@@ -576,17 +576,6 @@ src/
 └── types.ts           # TypeScript interfaces
 ```
 
-## Feature Roadmap
-
-Future enhancements planned:
-- [ ] Cell editing capabilities
-- [ ] Export to Excel/CSV
-- [ ] Column pinning
-- [ ] Row grouping
-- [ ] Master-detail view
-- [ ] Custom cell renderers
-- [ ] Server-side row model for very large datasets
-
 ## License
 
 Apache-2.0

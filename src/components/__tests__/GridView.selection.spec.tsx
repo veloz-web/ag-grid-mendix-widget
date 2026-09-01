@@ -47,11 +47,11 @@ jest.mock("ag-grid-react", () => ({
     }
 }));
 
-jest.mock("ag-grid-community", () => ({
-    LicenseManager: {
-        setLicenseKey: jest.fn()
-    }
-}));
+// jest.mock("ag-grid-community", () => ({
+//     LicenseManager: {
+//         setLicenseKey: jest.fn()
+//     }
+// }));
 
 // --- Base props matching GridView interface ---
 const baseColumns = [

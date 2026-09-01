@@ -128,14 +128,6 @@ export interface GridDeleteConfig {
 export interface GridAdvancedFeatures {
     /** Enable aggregation footer row */
     enableAggregationFooter: boolean;
-    /** Row model type */
-    rowModelType?: "clientSide" | "serverSide";
-    /** Rows fetched per block from the server (server-side only, default: 100) */
-    cacheBlockSize: number;
-    /** Max blocks kept in memory (server-side only, 0 = unlimited) */
-    maxBlocksInCache: number;
-    /** Max simultaneous data requests (server-side only, default: 2) */
-    maxConcurrentRequests: number;
 }
 
 /**

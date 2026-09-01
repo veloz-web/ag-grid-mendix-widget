@@ -50,7 +50,7 @@ export interface PersistedGridState {
     /** Persisted column widths from user drag-resizing (colId -> width in px) */
     columnWidths?: Record<string, number>;
     // Persist user's preferred export format and options
-    preferredExportFormat?: "csv" | "excel" | "pdf";
+    preferredExportFormat?: "csv" | "pdf";
     preferredExportOptions?: {
         fileName?: string;
         allColumns?: boolean;

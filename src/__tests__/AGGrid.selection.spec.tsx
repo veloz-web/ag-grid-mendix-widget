@@ -71,17 +71,8 @@ jest.mock("ag-grid-react", () => ({
 }));
 
 jest.mock("ag-grid-community", () => ({
-    LicenseManager: {
-        setLicenseKey: jest.fn()
-    },
     ModuleRegistry: {
         registerModules: jest.fn()
-    }
-}));
-
-jest.mock("ag-grid-enterprise", () => ({
-    LicenseManager: {
-        setLicenseKey: jest.fn()
     }
 }));
 
@@ -146,7 +137,6 @@ const baseWidgetProps: any = {
     editMode: "cell" as const,
     stopEditingWhenCellsLoseFocus: true,
     undoRedoCellEditing: false,
-    licenseKey: "",
     agGridVersion: "34.3.1",
     agGridVersionDate: "",
     widgetBuildDate: "",
@@ -183,9 +173,6 @@ const baseWidgetProps: any = {
     enableCsvExport: false,
     csvFileName: "export",
     csvExportAllColumns: false,
-    enableExcelExport: false,
-    excelFileName: "export",
-    excelExportAllColumns: false,
     enablePdfExport: false,
     pdfFileName: "export",
     pdfPageOrientation: "landscape" as any,

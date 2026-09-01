@@ -4,8 +4,11 @@
 
 Successfully implemented **hierarchical row grouping** functionality in the AG Grid Mendix Widget, allowing users to organize flat data into multi-level hierarchical structures with expand/collapse controls.
 
+THIS IS AN ENTERPRISE ONLY FEATURE
+
 ---
 
+***
 ## What Was Implemented
 
 ### 1. AG Grid Module Integration

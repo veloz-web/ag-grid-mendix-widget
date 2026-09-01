@@ -12,9 +12,6 @@ import {
 // Import module registration (runs the code)
 import "./agGridModules";
 
-// Import AG Grid specifics
-import { LicenseManager } from "ag-grid-enterprise";
-
 // Import Mendix types
 import { ValueStatus } from "mendix";
 
@@ -56,16 +53,7 @@ import { useFilterManagement } from "./hooks/useFilterManagement";
 // Import base styles
 import "./ui/AGGrid.css";
 
-// Set license key once (outside component)
-let licenseSet = false;
-
 export function AGGrid(props: AGGridContainerProps): ReactElement {
-    // --- 1. Initialize License (once) ---
-    if (!licenseSet && props.licenseKey) {
-        LicenseManager.setLicenseKey(props.licenseKey);
-        licenseSet = true;
-    }
-
     // --- 2. Validate Configuration ---
     // Check for conflicting domLayout settings
     if (props.domLayout === "autoHeight" || props.domLayout === "print") {
@@ -84,14 +72,6 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
                 `DOM Layout "${props.domLayout}" requires disabling Row Virtualization. ` +
                     `Auto Height and Print modes render ALL rows in the DOM at once. ` +
                     `Enable "Disable Virtualisation" or set DOM Layout to "Normal".`
-            );
-        }
-
-        if (props.rowModelType === "serverSide") {
-            errors.push(
-                `DOM Layout "${props.domLayout}" is incompatible with Server-Side row model. ` +
-                    `Server-Side is designed for large datasets with lazy loading, but ${props.domLayout} ` +
-                    `loads all rows at once. Set DOM Layout to "Normal" or use Client-Side row model.`
             );
         }
 
@@ -514,9 +494,7 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
             const failedCount = results.length - successful.length;
 
             if (successful.length > 0) {
-                if (props.rowModelType === "serverSide") {
-                    props.dataSource?.reload?.();
-                } else if (gridApiRef.current?.applyTransaction) {
+                if (gridApiRef.current?.applyTransaction) {
                     gridApiRef.current.applyTransaction({ remove: successful });
                 }
 
@@ -545,7 +523,6 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
             gridApiRef,
             props.dataSource,
             props.onDeleteRow,
-            props.rowModelType,
             showToast
         ]
     );
@@ -683,9 +660,6 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
                     enableCsvExport={Boolean(props.enableCsvExport)}
                     onCsvExport={() => undefined} // Not used, we use onExportRequest
                     csvFileName={props.csvFileName}
-                    enableExcelExport={Boolean(props.enableExcelExport)}
-                    onExcelExport={() => undefined} // Not used, we use onExportRequest
-                    excelFileName={props.excelFileName}
                     enablePdfExport={Boolean(props.enablePdfExport)}
                     onPdfExport={() => undefined} // Not used, we use onExportRequest
                     pdfFileName={props.pdfFileName}
@@ -752,11 +726,7 @@ export function AGGrid(props: AGGridContainerProps): ReactElement {
                 rowSelectionMode={props.rowSelectionMode || "none"}
                 showSelectionCheckboxes={props.showSelectionCheckboxes !== false}
                 advancedFeatures={{
-                    enableAggregationFooter: Boolean(props.enableAggregationFooter),
-                    rowModelType: props.rowModelType,
-                    cacheBlockSize: props.cacheBlockSize || 100,
-                    maxBlocksInCache: props.maxBlocksInCache || 0,
-                    maxConcurrentRequests: props.maxConcurrentRequests || 2
+                    enableAggregationFooter: Boolean(props.enableAggregationFooter)
                 }}
                 grouping={{
                     enabled: Boolean(props.enableRowGrouping),

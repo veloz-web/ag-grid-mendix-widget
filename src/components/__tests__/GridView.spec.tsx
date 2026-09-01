@@ -66,11 +66,11 @@ jest.mock("ag-grid-react", () => ({
     }
 }));
 
-jest.mock("ag-grid-community", () => ({
-    LicenseManager: {
-        setLicenseKey: jest.fn()
-    }
-}));
+// jest.mock("ag-grid-community", () => ({
+//     LicenseManager: {
+//         setLicenseKey: jest.fn()
+//     }
+// }));
 
 describe("GridView Component", () => {
     const mockProps = {

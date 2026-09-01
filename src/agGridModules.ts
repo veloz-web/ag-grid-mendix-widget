@@ -1,52 +1,34 @@
 // src/agGridModules.ts  // ← Fixed extension
 import {
-    ClientSideRowModelModule,
-    ModuleRegistry,
-    ColumnApiModule,
-    CsvExportModule,
-    QuickFilterModule,
-    RowSelectionModule,
-    RowAutoHeightModule,
-    ColumnAutoSizeModule
-} from "ag-grid-community";
-import {
     CellStyleModule,
     ClientSideRowModelApiModule,
-    ColumnsToolPanelModule,
-    MenuModule,
-    PaginationModule,
-    ServerSideRowModelModule,
-    SetFilterModule,
-    TextFilterModule,
-    NumberFilterModule,
+    ClientSideRowModelModule,
+    ColumnAutoSizeModule,
+    ColumnApiModule,
+    CsvExportModule,
     DateFilterModule,
-    MultiFilterModule,
-    ExcelExportModule,
-    RowGroupingModule,
-    RichSelectModule
-} from "ag-grid-enterprise";
+    ModuleRegistry,
+    NumberFilterModule,
+    PaginationModule,
+    QuickFilterModule,
+    RowAutoHeightModule,
+    RowSelectionModule,
+    TextFilterModule,
+} from "ag-grid-community";
 
 // Register only the modules we need for optimal bundle size
 ModuleRegistry.registerModules([
-    ClientSideRowModelModule,
-    ClientSideRowModelApiModule,
-    ServerSideRowModelModule, // Remove if not using server-side row model
-    CsvExportModule,
-    QuickFilterModule,
-    ColumnApiModule,
-    PaginationModule,
-    SetFilterModule,
     CellStyleModule,
-    ColumnsToolPanelModule,
-    MenuModule, // ← Fixed trailing comma
-    TextFilterModule,
-    NumberFilterModule,
+    ClientSideRowModelApiModule,
+    ClientSideRowModelModule,
+    ColumnAutoSizeModule,
+    ColumnApiModule,
+    CsvExportModule,
     DateFilterModule,
-    MultiFilterModule,
-    ExcelExportModule,
-    RowGroupingModule,
-    RichSelectModule,
-    RowSelectionModule,
+    NumberFilterModule,
+    PaginationModule,
+    QuickFilterModule,
     RowAutoHeightModule,
-    ColumnAutoSizeModule
+    RowSelectionModule,
+    TextFilterModule,
 ]);

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 
-type Format = "csv" | "excel" | "pdf";
+type Format = "csv" | "pdf";
 
 export interface ExportRequest {
     format: Format;
@@ -12,10 +12,8 @@ export interface ExportRequest {
 
 interface Props {
     enableCsv: boolean;
-    enableExcel: boolean;
     enablePdf: boolean;
     csvFileName?: string;
-    excelFileName?: string;
     pdfFileName?: string;
     defaultFormat?: Format;
     defaultAllColumns?: boolean;
@@ -26,12 +24,10 @@ interface Props {
 
 export const ExportMenu: React.FC<Props> = ({
     enableCsv,
-    enableExcel,
     enablePdf,
     csvFileName = "export",
-    excelFileName = "export",
     pdfFileName = "export",
-    defaultFormat = enableCsv ? "csv" : enableExcel ? "excel" : enablePdf ? "pdf" : "csv",
+    defaultFormat = enableCsv ? "csv" : enablePdf ? "pdf" : "csv",
     defaultAllColumns = true,
     defaultPdfOrientation = "landscape",
     defaultPdfTitle = "",
@@ -40,7 +36,7 @@ export const ExportMenu: React.FC<Props> = ({
     const [open, setOpen] = useState(false);
     const [format, setFormat] = useState<Format>(defaultFormat);
     const [fileName, setFileName] = useState<string>(
-        format === "csv" ? csvFileName : format === "excel" ? excelFileName : pdfFileName
+        format === "csv" ? csvFileName : pdfFileName
     );
     const [allColumns, setAllColumns] = useState<boolean>(defaultAllColumns);
     const [pdfOrientation, setPdfOrientation] = useState<"landscape" | "portrait">(
@@ -64,14 +60,12 @@ export const ExportMenu: React.FC<Props> = ({
     useEffect(() => {
         setFileName((prev) => {
             if (format === "csv") return csvFileName || prev;
-            if (format === "excel") return excelFileName || prev;
             return pdfFileName || prev;
         });
-    }, [format, csvFileName, excelFileName, pdfFileName]);
+    }, [format, csvFileName, pdfFileName]);
 
     const enabledFormats: Format[] = [];
     if (enableCsv) enabledFormats.push("csv");
-    if (enableExcel) enabledFormats.push("excel");
     if (enablePdf) enabledFormats.push("pdf");
 
     if (enabledFormats.length === 0) return null;
